@@ -29,9 +29,8 @@ const configuredPortfolioReels: ReelWorkItem[] = instagramReels.map((item, idx) 
 // ============================================================================
 export const bookingConfig = {
   // WhatsApp phone number for instant booking redirects
-  // Format: International format without symbols for wa.me, e.g. '919876543210' or '+91 98765 43210'
-  // Placeholder: Replace with YOUR_WHATSAPP_NUMBER when ready
-  whatsappNumber: '+91 98765 43210',
+  // Format: International format without symbols for wa.me, e.g. '919014319818' or '+91 90143 19818'
+  whatsappNumber: '+91 90143 19818',
 
   // Heading & supporting text
   heading: 'BOOK YOUR SHOOT',
@@ -82,8 +81,8 @@ export const siteConfig = {
     headline: 'YOUR MOMENTS OUR SNAPS',
     subheadline:
       'Professional reels, photography and visual content created for events, brands, businesses and social media.',
-    phone: '+91 98765 43210',
-    whatsapp: '+91 98765 43210',
+    phone: '+91 90143 19818',
+    whatsapp: '+91 90143 19818',
     whatsappMessage: 'Hi Snap Shots, I would like to book a shoot in Telangana / USA!',
     email: 'bookings@snapshotstudio.com',
     supportEmail: 'hello@snapshotstudio.com',

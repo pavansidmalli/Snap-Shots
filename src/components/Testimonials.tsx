@@ -33,7 +33,7 @@ export const Testimonials: React.FC = () => {
             Insights from Satisfied Clients
           </h2>
           <p className="mt-3 text-center text-zinc-400 font-normal text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
-            Real stories from couples, brand founders, event hosts, and creators across India.
+            Real stories from couples, brand founders, event hosts, and creators across Telangana, India &amp; USA.
           </p>
         </div>
 

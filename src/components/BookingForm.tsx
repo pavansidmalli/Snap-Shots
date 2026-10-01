@@ -290,7 +290,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ selectedService, selec
 
           {/* Right Column: Form Container */}
           <div className="lg:col-span-7">
-            <div className="rounded-3xl bg-zinc-950 border border-zinc-800 p-6 sm:p-8 shadow-xl shadow-black/40">
+            <div className="rounded-3xl bg-zinc-950 border border-zinc-800 p-4 sm:p-6 md:p-8 shadow-xl shadow-black/40">
               {isSubmitted ? (
                 <div className="py-12 text-center animate-in fade-in duration-300">
                   <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#bd1616] text-white shadow-lg shadow-[#bd1616]/25 mb-4 border border-[#9e1212]">
@@ -376,7 +376,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ selectedService, selec
                         required
                         value={formData.phone}
                         onChange={handleChange}
-                        placeholder="e.g. +91 98765 43210"
+                        placeholder="e.g. +91 90143 19818"
                         className="w-full h-11 px-4 rounded-xl bg-zinc-900 border border-zinc-800 text-base sm:text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#bd1616] focus:border-transparent transition-all"
                         id="booking-input-phone"
                       />

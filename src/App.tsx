@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
+import { ClientLogosSection } from './components/ClientLogosSection';
 import { Services } from './components/Services';
 import { Portfolio } from './components/Portfolio';
 import { PortfolioModal } from './components/PortfolioModal';
@@ -19,7 +20,6 @@ import { CTA } from './components/CTA';
 import { FAQ } from './components/FAQ';
 import { Footer } from './components/Footer';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
-import { LogoUploadModal } from './components/LogoUploadModal';
 import { WelcomePopup } from './components/WelcomePopup';
 import { LogoProvider } from './context/LogoContext';
 import { CountryProvider } from './context/CountryContext';
@@ -130,7 +130,12 @@ export default function App() {
             <Hero onBookClick={() => openBookingModal()} onViewWorkClick={scrollToWork} />
           </FadeInSection>
 
-          {/* 3. Services Section - 9 categories tailored to Snap Shots */}
+          {/* 3. Trusted Brand Logos Marquee Section */}
+          <FadeInSection duration={0.6}>
+            <ClientLogosSection />
+          </FadeInSection>
+
+          {/* 4. Services Section - 9 categories tailored to Snap Shots */}
           <FadeInSection>
             <Services onBookService={handleSelectService} />
           </FadeInSection>
@@ -202,9 +207,6 @@ export default function App() {
           initialPackage={selectedPackage}
           initialCoupon={selectedCoupon}
         />
-
-        {/* Custom Brand Logo Uploader & Preview Modal */}
-        <LogoUploadModal />
 
         {/* Timed Welcome Privilege Offer Popup after Website Load */}
         <WelcomePopup onClaimOffer={() => openBookingModal(undefined, undefined, 'SNAP15')} />

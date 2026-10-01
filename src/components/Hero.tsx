@@ -110,68 +110,108 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
           </p>
         </div>
 
-        {/* Floating Phones / 9:16 Reel Showcase Mockup (Responsive Studio Fan) */}
-        <div className="mt-8 sm:mt-12 flex justify-center overflow-hidden sm:overflow-visible px-2">
-          <div className="relative h-[390px] sm:h-[480px] w-full max-w-[760px] flex items-center justify-center">
-            {/* Phone 1: Far-Left Angled Phone (Editorial Brand) */}
-            <div className="absolute -left-4 sm:left-0 lg:left-4 top-10 sm:top-8 z-5 hidden md:block w-[170px] sm:w-[210px] aspect-[9/16] rounded-[26px] sm:rounded-[32px] bg-zinc-950 p-2 shadow-2xl shadow-black/40 border border-zinc-800/80 transform -rotate-12 transition-transform duration-500 hover:rotate-0 hover:z-30">
-              <div className="relative w-full h-full rounded-[20px] sm:rounded-[26px] overflow-hidden bg-zinc-900">
-                <img
-                  src="https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=600&auto=format&fit=crop"
-                  srcSet={getResponsiveImageSrcSet('https://images.unsplash.com/photo-1509631179647-0177331693ae', [200, 350, 600])}
-                  sizes="(max-width: 640px) 170px, 210px"
-                  width={210}
-                  height={373}
-                  loading="lazy"
-                  decoding="async"
-                  alt="Brand Editorial Reel Preview"
-                  className="w-full h-full object-cover"
+        {/* Floating Phones / 9:16 Reel Showcase Mockup (5 Reels on Desktop, 3 Reels on Mobile) */}
+        <div className="mt-6 sm:mt-12 flex justify-center overflow-hidden sm:overflow-visible px-1 sm:px-2">
+          <div className="relative h-[340px] min-[390px]:h-[380px] sm:h-[480px] md:h-[510px] w-full max-w-[780px] md:max-w-[940px] lg:max-w-[1020px] flex items-center justify-center">
+            {/* Reel 4 (Far-Left Phone - Visible on Desktop only): SubBass Festival */}
+            <div className="hidden md:block absolute md:-left-2 lg:left-4 top-10 lg:top-8 z-5 md:w-[185px] lg:w-[215px] aspect-[9/16] rounded-[26px] lg:rounded-[34px] bg-zinc-950 p-2 shadow-2xl shadow-black/40 border border-zinc-800/80 transform -rotate-12 transition-all duration-500 hover:rotate-0 hover:scale-105 hover:z-30 cursor-pointer group">
+              {/* Dynamic Island */}
+              <div className="absolute top-3.5 left-1/2 -translate-x-1/2 w-12 sm:w-14 h-3 sm:h-3.5 bg-black rounded-full z-30 flex items-center justify-end px-1.5 sm:px-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+              </div>
+
+              {/* Screen */}
+              <div className="relative w-full h-full rounded-[20px] lg:rounded-[28px] overflow-hidden bg-black">
+                <video
+                  src="/videos/concert-reel.mp4"
+                  poster="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=600&auto=format&fit=crop"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/30" />
-                <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-[9px] font-semibold text-white border border-white/10">
-                  Brand Drop
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-black/35 pointer-events-none" />
+
+                {/* Top Overlay */}
+                <div className="absolute top-4 sm:top-5 left-2 sm:left-3 right-2 sm:right-3 flex items-center justify-between pointer-events-none z-20">
+                  <span className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[8px] sm:text-[10px] font-bold text-white border border-white/10">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    CONCERT
+                  </span>
+                  <span className="text-[8px] sm:text-[10px] text-white/80 font-mono font-medium">4K 60FPS</span>
                 </div>
-                <div className="absolute bottom-2.5 left-2.5 right-2.5 text-white text-left">
-                  <div className="text-[10px] font-bold">KINETIC Runway</div>
-                  <div className="text-[8px] text-white/70">215K Views &bull; 0:38</div>
+
+                {/* Bottom Overlay */}
+                <div className="absolute bottom-2.5 sm:bottom-4 left-2 sm:left-3 right-2 sm:right-3 text-left pointer-events-none z-20">
+                  <div className="text-[9px] sm:text-[10px] font-extrabold text-amber-400 uppercase tracking-wider mb-0.5">
+                    Live Event
+                  </div>
+                  <h3 className="text-white text-[10px] sm:text-xs font-bold leading-tight line-clamp-1 drop-shadow-md">
+                    SubBass Festival Drop
+                  </h3>
+                  <div className="mt-1 sm:mt-1.5 flex items-center justify-between text-[8px] sm:text-[9px] text-white/80 border-t border-white/10 pt-1">
+                    <span>⚡ Same-Day</span>
+                    <span className="text-white font-bold">280K views</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Phone 2: Inner-Left Angled Phone (Wedding Special - visible sm and up) */}
-            <div className="hidden sm:block absolute sm:left-10 lg:left-20 top-6 sm:top-4 z-10 sm:w-[220px] lg:w-[235px] aspect-[9/16] rounded-[28px] sm:rounded-[36px] bg-zinc-950 p-2 sm:p-2.5 shadow-2xl shadow-black/30 border border-zinc-700/50 transform -rotate-6 transition-transform duration-500 hover:rotate-0 hover:z-30">
-              <div className="relative w-full h-full rounded-[22px] sm:rounded-[30px] overflow-hidden bg-zinc-900">
-                <img
-                  src="https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=600&auto=format&fit=crop"
-                  srcSet={getResponsiveImageSrcSet('https://images.unsplash.com/photo-1519741497674-611481863552', [240, 400, 600])}
-                  sizes="(max-width: 640px) 190px, 235px"
-                  width={235}
-                  height={418}
-                  loading="eager"
-                  decoding="async"
-                  alt="Wedding Reel Preview"
-                  className="w-full h-full object-cover"
+            {/* Reel 1 (Inner-Left Phone - Visible on Mobile & Desktop): Royal Palace Sangeet */}
+            <div className="absolute -left-2 min-[390px]:-left-3 sm:left-4 md:left-20 lg:left-28 top-6 sm:top-4 z-10 w-[125px] min-[390px]:w-[145px] sm:w-[215px] md:w-[225px] lg:w-[235px] aspect-[9/16] rounded-[24px] sm:rounded-[36px] bg-zinc-950 p-1.5 sm:p-2.5 shadow-2xl shadow-black/50 border border-zinc-700/60 transform -rotate-6 transition-all duration-500 hover:rotate-0 hover:scale-105 hover:z-30 cursor-pointer group">
+              {/* Dynamic Island */}
+              <div className="absolute top-3 sm:top-3.5 left-1/2 -translate-x-1/2 w-10 sm:w-16 h-2.5 sm:h-3.5 bg-black rounded-full z-30 flex items-center justify-end px-1 sm:px-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              </div>
+
+              {/* Screen */}
+              <div className="relative w-full h-full rounded-[20px] sm:rounded-[30px] overflow-hidden bg-black">
+                <video
+                  src="/videos/wedding-reel.mp4"
+                  poster="https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=600&auto=format&fit=crop"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
-                <div className="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-semibold text-white border border-white/10">
-                  Wedding Special
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-black/35 pointer-events-none" />
+
+                {/* Top Overlay */}
+                <div className="absolute top-3.5 sm:top-5 left-1.5 sm:left-3 right-1.5 sm:right-3 flex items-center justify-between pointer-events-none z-20">
+                  <span className="flex items-center gap-1 sm:gap-1.5 px-1 sm:px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[7px] min-[390px]:text-[8px] sm:text-[10px] font-bold text-white border border-white/10">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#bd1616]" />
+                    WEDDING
+                  </span>
+                  <span className="text-[7px] min-[390px]:text-[8px] sm:text-[10px] text-white/80 font-mono font-medium">4K HDR</span>
                 </div>
-                <div className="absolute bottom-3 left-3 right-3 text-white text-left">
-                  <div className="text-[11px] font-bold">Royal Palace Sangeet</div>
-                  <div className="text-[9px] text-white/70">Delivered in 3 Hours &bull; 142K Views</div>
+
+                {/* Bottom Overlay */}
+                <div className="absolute bottom-2 sm:bottom-4 left-1.5 sm:left-3 right-1.5 sm:right-3 text-left pointer-events-none z-20">
+                  <div className="text-[8px] sm:text-[10px] font-extrabold text-[#ffc800] uppercase tracking-wider mb-0.5">
+                    Ceremonial Cut
+                  </div>
+                  <h3 className="text-white text-[9px] min-[390px]:text-[10px] sm:text-xs font-bold leading-tight line-clamp-1 drop-shadow-md">
+                    Royal Palace Sangeet
+                  </h3>
+                  <div className="mt-0.5 sm:mt-1.5 flex items-center justify-between text-[7px] min-[390px]:text-[8px] sm:text-[9px] text-white/80 border-t border-white/10 pt-1">
+                    <span>⚡ 3h Cut</span>
+                    <span className="text-white font-bold">192K</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Phone 3: Center Primary Front Phone (Live 9:16 Video - Main Hero Element) */}
-            <div className="relative z-20 w-[240px] sm:w-[270px] aspect-[9/16] rounded-[32px] sm:rounded-[40px] bg-zinc-950 p-2.5 sm:p-3 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] border border-zinc-700 transition-all duration-300 animate-float hover:scale-105">
-              {/* Phone Dynamic Island / Speaker */}
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 w-16 sm:w-20 h-3.5 sm:h-4 bg-black rounded-full z-30 flex items-center justify-end px-2">
+            {/* Reel 2 (Center Phone - Featured Hero Element - Visible on Mobile & Desktop): Electric Nightlife Gala */}
+            <div className="relative z-20 w-[160px] min-[390px]:w-[180px] sm:w-[250px] md:w-[265px] lg:w-[280px] aspect-[9/16] rounded-[26px] sm:rounded-[40px] bg-zinc-950 p-1.5 sm:p-3 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.6)] border-2 border-[#bd1616]/50 ring-4 ring-[#bd1616]/10 transition-all duration-300 animate-float hover:scale-105 group">
+              {/* Dynamic Island */}
+              <div className="absolute top-3 sm:top-4 left-1/2 -translate-x-1/2 w-12 sm:w-20 h-3 sm:h-4 bg-black rounded-full z-30 flex items-center justify-end px-1 sm:px-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#bd1616] animate-pulse" />
               </div>
 
               {/* Screen Container */}
-              <div className="relative w-full h-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-black">
+              <div className="relative w-full h-full rounded-[22px] sm:rounded-[32px] overflow-hidden bg-black">
                 <video
                   ref={videoRef}
                   src="/videos/hero-reel.mp4"
@@ -180,34 +220,34 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
                   loop
                   muted
                   playsInline
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
 
                 {/* Video Overlay Vignette */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-black/40 pointer-events-none" />
 
                 {/* Top Reel Header Overlay */}
-                <div className="absolute top-6 left-3 right-3 flex items-center justify-between pointer-events-none z-20">
-                  <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-bold text-white border border-white/10">
+                <div className="absolute top-3.5 sm:top-6 left-2 sm:left-3 right-2 sm:right-3 flex items-center justify-between pointer-events-none z-20">
+                  <span className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[8px] sm:text-[10px] font-bold text-white border border-white/10">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#bd1616] animate-ping" />
                     LIVE EDIT
                   </span>
-                  <span className="text-[10px] text-white/80 font-mono font-medium">4K 60FPS</span>
+                  <span className="text-[8px] sm:text-[10px] text-white/80 font-mono font-medium">4K 60FPS</span>
                 </div>
 
                 {/* Bottom Reel Description Overlay */}
-                <div className="absolute bottom-4 left-3 right-3 text-left pointer-events-none z-20">
-                  <div className="flex items-center gap-1 text-[#bd1616] text-[10px] font-extrabold uppercase tracking-wider mb-0.5">
-                    <Sparkles className="w-3 h-3 text-[#bd1616]" />
+                <div className="absolute bottom-2.5 sm:bottom-4 left-2 sm:left-3 right-2 sm:right-3 text-left pointer-events-none z-20">
+                  <div className="flex items-center gap-1 text-[#bd1616] text-[8px] sm:text-[10px] font-extrabold uppercase tracking-wider mb-0.5">
+                    <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#bd1616]" />
                     <span>Trending Audio Sync</span>
                   </div>
-                  <h2 className="text-white text-xs sm:text-sm font-bold leading-tight drop-shadow-md">
-                    Electric Nightlife Gala &bull; Snap Shots Original
+                  <h2 className="text-white text-[10px] min-[390px]:text-[11px] sm:text-sm font-bold leading-tight drop-shadow-md">
+                    Electric Nightlife Gala
                   </h2>
-                  <p className="text-zinc-300 text-[10px] mt-0.5 drop-shadow-sm line-clamp-1">
-                    Shot on iPhone 16 Pro Max with Cinematic Mode
+                  <p className="text-zinc-300 text-[8px] sm:text-[10px] mt-0.5 drop-shadow-sm line-clamp-1">
+                    Shot on iPhone 16 Pro Max Cinematic Mode
                   </p>
-                  <div className="mt-2 flex items-center justify-between text-[9px] text-white/80 border-t border-white/10 pt-1.5">
+                  <div className="mt-1 sm:mt-2 flex items-center justify-between text-[7px] min-[390px]:text-[8px] sm:text-[9px] text-white/80 border-t border-white/10 pt-1 sm:pt-1.5">
                     <span>⚡ Delivered in 2h 45m</span>
                     <span className="text-white font-bold">280K views</span>
                   </div>
@@ -215,52 +255,92 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
               </div>
             </div>
 
-            {/* Phone 4: Inner-Right Angled Phone (Concert & Nightlife - visible sm and up) */}
-            <div className="hidden sm:block absolute sm:right-10 lg:right-20 top-6 sm:top-4 z-10 sm:w-[220px] lg:w-[235px] aspect-[9/16] rounded-[28px] sm:rounded-[36px] bg-zinc-950 p-2 sm:p-2.5 shadow-2xl shadow-black/30 border border-zinc-700/50 transform rotate-6 transition-transform duration-500 hover:rotate-0 hover:z-30">
-              <div className="relative w-full h-full rounded-[22px] sm:rounded-[30px] overflow-hidden bg-zinc-900">
-                <img
-                  src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=600&auto=format&fit=crop"
-                  srcSet={getResponsiveImageSrcSet('https://images.unsplash.com/photo-1470225620780-dba8ba36b745', [240, 400, 600])}
-                  sizes="(max-width: 640px) 190px, 235px"
-                  width={235}
-                  height={418}
-                  loading="eager"
-                  decoding="async"
-                  alt="Concert Reel Preview"
-                  className="w-full h-full object-cover"
+            {/* Reel 3 (Inner-Right Phone - Visible on Mobile & Desktop): KINETIC Runway */}
+            <div className="absolute -right-2 min-[390px]:-right-3 sm:right-4 md:right-20 lg:right-28 top-6 sm:top-4 z-10 w-[125px] min-[390px]:w-[145px] sm:w-[215px] md:w-[225px] lg:w-[235px] aspect-[9/16] rounded-[24px] sm:rounded-[36px] bg-zinc-950 p-1.5 sm:p-2.5 shadow-2xl shadow-black/50 border border-zinc-700/60 transform rotate-6 transition-all duration-500 hover:rotate-0 hover:scale-105 hover:z-30 cursor-pointer group">
+              {/* Dynamic Island */}
+              <div className="absolute top-3 sm:top-3.5 left-1/2 -translate-x-1/2 w-10 sm:w-16 h-2.5 sm:h-3.5 bg-black rounded-full z-30 flex items-center justify-end px-1 sm:px-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+              </div>
+
+              {/* Screen Container */}
+              <div className="relative w-full h-full rounded-[20px] sm:rounded-[30px] overflow-hidden bg-black">
+                <video
+                  src="/videos/brand-reel.mp4"
+                  poster="https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=600&auto=format&fit=crop"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
-                <div className="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-semibold text-white border border-white/10">
-                  Live Event
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-black/35 pointer-events-none" />
+
+                {/* Top Overlay */}
+                <div className="absolute top-3.5 sm:top-5 left-1.5 sm:left-3 right-1.5 sm:right-3 flex items-center justify-between pointer-events-none z-20">
+                  <span className="flex items-center gap-1 sm:gap-1.5 px-1 sm:px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[7px] min-[390px]:text-[8px] sm:text-[10px] font-bold text-white border border-white/10">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                    EDITORIAL
+                  </span>
+                  <span className="text-[7px] min-[390px]:text-[8px] sm:text-[10px] text-white/80 font-mono font-medium">Color Graded</span>
                 </div>
-                <div className="absolute bottom-3 left-3 right-3 text-white text-left">
-                  <div className="text-[11px] font-bold">SubBass Festival Drop</div>
-                  <div className="text-[9px] text-white/70">Same-Day Live &bull; 280K Views</div>
+
+                {/* Bottom Overlay */}
+                <div className="absolute bottom-2 sm:bottom-4 left-1.5 sm:left-3 right-1.5 sm:right-3 text-left pointer-events-none z-20">
+                  <div className="text-[8px] sm:text-[10px] font-extrabold text-cyan-400 uppercase tracking-wider mb-0.5">
+                    Fashion Runway
+                  </div>
+                  <h3 className="text-white text-[9px] min-[390px]:text-[10px] sm:text-xs font-bold leading-tight line-clamp-1 drop-shadow-md">
+                    KINETIC Studio Drop
+                  </h3>
+                  <div className="mt-0.5 sm:mt-1.5 flex items-center justify-between text-[7px] min-[390px]:text-[8px] sm:text-[9px] text-white/80 border-t border-white/10 pt-1">
+                    <span>⚡ Same-Day</span>
+                    <span className="text-white font-bold">215K</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Phone 5: Far-Right Angled Phone (Skyline Lounge) */}
-            <div className="absolute -right-4 sm:right-0 lg:right-4 top-10 sm:top-8 z-5 hidden md:block w-[170px] sm:w-[210px] aspect-[9/16] rounded-[26px] sm:rounded-[32px] bg-zinc-950 p-2 shadow-2xl shadow-black/40 border border-zinc-800/80 transform rotate-12 transition-transform duration-500 hover:rotate-0 hover:z-30">
-              <div className="relative w-full h-full rounded-[20px] sm:rounded-[26px] overflow-hidden bg-zinc-900">
-                <img
-                  src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=600&auto=format&fit=crop"
-                  srcSet={getResponsiveImageSrcSet('https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b', [200, 350, 600])}
-                  sizes="(max-width: 640px) 170px, 210px"
-                  width={210}
-                  height={373}
-                  loading="lazy"
-                  decoding="async"
-                  alt="Sky Lounge Reel Preview"
-                  className="w-full h-full object-cover"
+            {/* Reel 5 (Far-Right Phone - Visible on Desktop only): Lumina Lounge */}
+            <div className="hidden md:block absolute md:-right-2 lg:right-4 top-10 lg:top-8 z-5 md:w-[185px] lg:w-[215px] aspect-[9/16] rounded-[26px] lg:rounded-[34px] bg-zinc-950 p-2 shadow-2xl shadow-black/40 border border-zinc-800/80 transform rotate-12 transition-all duration-500 hover:rotate-0 hover:scale-105 hover:z-30 cursor-pointer group">
+              {/* Dynamic Island */}
+              <div className="absolute top-3.5 left-1/2 -translate-x-1/2 w-12 sm:w-14 h-3 sm:h-3.5 bg-black rounded-full z-30 flex items-center justify-end px-1.5 sm:px-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+              </div>
+
+              {/* Screen Container */}
+              <div className="relative w-full h-full rounded-[20px] lg:rounded-[28px] overflow-hidden bg-black">
+                <video
+                  src="/videos/event-reel.mp4"
+                  poster="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=600&auto=format&fit=crop"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/30" />
-                <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-[9px] font-semibold text-white border border-white/10">
-                  Skyline Gala
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-black/35 pointer-events-none" />
+
+                {/* Top Overlay */}
+                <div className="absolute top-4 sm:top-5 left-2 sm:left-3 right-2 sm:right-3 flex items-center justify-between pointer-events-none z-20">
+                  <span className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[8px] sm:text-[10px] font-bold text-white border border-white/10">
+                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                    SKYLINE
+                  </span>
+                  <span className="text-[8px] sm:text-[10px] text-white/80 font-mono font-medium">4K HDR</span>
                 </div>
-                <div className="absolute bottom-2.5 left-2.5 right-2.5 text-white text-left">
-                  <div className="text-[10px] font-bold">Lumina Lounge</div>
-                  <div className="text-[8px] text-white/70">135K Views &bull; 0:28</div>
+
+                {/* Bottom Overlay */}
+                <div className="absolute bottom-2.5 sm:bottom-4 left-2 sm:left-3 right-2 sm:right-3 text-left pointer-events-none z-20">
+                  <div className="text-[9px] sm:text-[10px] font-extrabold text-purple-400 uppercase tracking-wider mb-0.5">
+                    Skyline Gala
+                  </div>
+                  <h3 className="text-white text-[10px] sm:text-xs font-bold leading-tight line-clamp-1 drop-shadow-md">
+                    Lumina Lounge Night
+                  </h3>
+                  <div className="mt-1 sm:mt-1.5 flex items-center justify-between text-[8px] sm:text-[9px] text-white/80 border-t border-white/10 pt-1">
+                    <span>⚡ Delivered in 2h</span>
+                    <span className="text-white font-bold">135K views</span>
+                  </div>
                 </div>
               </div>
             </div>

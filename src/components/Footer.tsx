@@ -24,20 +24,14 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8 pb-12 border-b border-zinc-900">
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex flex-col items-start gap-1">
-              <a
-                href="#home"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.location.reload();
-                }}
-                className="inline-block hover:opacity-90 transition-opacity cursor-pointer"
-                aria-label="Snap Shots Home - Reload site"
+            <div className="flex flex-col items-start gap-2">
+              <div
+                className="inline-block mb-0.5"
                 id="footer-brand-logo"
               >
-                <BrandLogo variant="footer" />
-              </a>
-              <span className="text-[10px] sm:text-[11px] font-medium tracking-[0.22em] lowercase text-zinc-400 pl-1">
+                <BrandLogo variant="footer" allowUpload={true} />
+              </div>
+              <span className="text-[10px] sm:text-[11px] font-medium tracking-[0.22em] lowercase text-zinc-400">
                 your moments our snaps
               </span>
             </div>
@@ -168,12 +162,12 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Bottom copyright & Back to top */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
+        <div className="pt-8 pb-12 sm:pb-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 text-center sm:text-left">
           <div>
             &copy; {new Date().getFullYear()} {siteConfig.business.name}. All rights reserved. Built for social-first creators &amp; events.
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-4">
             <a href="#home" className="hover:text-zinc-300 transition-colors">
               Privacy Policy
             </a>

@@ -54,7 +54,7 @@ export const FloatingWhatsApp: React.FC = () => {
   const whatsappUrl = `https://wa.me/${siteConfig.business.whatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
-    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex flex-col items-end gap-2 group" id="floating-whatsapp-container">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex flex-col items-end gap-2 group pb-[env(safe-area-inset-bottom,0px)]" id="floating-whatsapp-container">
       {/* Tooltip Bubble */}
       {!isDismissed && (
         <div className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-zinc-950/95 text-white text-xs shadow-xl border border-zinc-800 backdrop-blur-md animate-in fade-in slide-in-from-bottom-2 duration-300">

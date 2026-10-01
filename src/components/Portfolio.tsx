@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Instagram, ChevronLeft, ChevronRight, SlidersHorizontal, LayoutGrid } from 'lucide-react';
+import { Instagram, ChevronLeft, ChevronRight } from 'lucide-react';
 import { siteConfig } from '../config/siteConfig';
 import { PortfolioCard } from './PortfolioCard';
 import { ReelWorkItem } from '../types';
@@ -192,43 +192,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
               </button>
             ))}
           </div>
-
-          {/* Scroller Mode Controls */}
-          <div className="w-full max-w-6xl flex items-center justify-between px-2 pt-2 text-xs">
-            <span className="text-zinc-400 font-medium hidden sm:inline-block">
-              Showing {filteredReels.length} vertical reels in high definition
-            </span>
-            <div className="flex items-center gap-2 ml-auto">
-              <div className="flex items-center bg-zinc-900 p-1 rounded-full border border-zinc-800">
-                <button
-                  type="button"
-                  onClick={() => setViewMode('scroll')}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
-                    viewMode === 'scroll'
-                      ? 'bg-[#bd1616] text-white shadow-xs font-bold'
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                  title="Horizontal Scroller"
-                >
-                  <SlidersHorizontal className="w-3.5 h-3.5" />
-                  <span>Scroller</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('grid')}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
-                    viewMode === 'grid'
-                      ? 'bg-[#bd1616] text-white shadow-xs font-bold'
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                  title="Grid View"
-                >
-                  <LayoutGrid className="w-3.5 h-3.5" />
-                  <span>Grid</span>
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* 9:16 Vertical Reel Scroller / Grid Container */}
@@ -259,7 +222,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
                 key={reel.id}
                 className={
                   viewMode === 'scroll'
-                    ? 'w-[76vw] max-w-[280px] sm:w-[280px] md:w-[320px] shrink-0 snap-start relative hover:z-30 transition-all'
+                    ? 'w-[78vw] max-w-[280px] sm:w-[280px] md:w-[320px] shrink-0 snap-center sm:snap-start relative hover:z-30 transition-all'
                     : 'w-full relative hover:z-30 transition-all'
                 }
               >
@@ -274,7 +237,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
           <button
             onClick={handlePrev}
             disabled={viewMode === 'scroll' && !canScrollLeft}
-            className={`flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full transition-all cursor-pointer shadow-md ${
+            className={`flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full transition-all cursor-pointer shadow-md ${
               viewMode === 'scroll' && !canScrollLeft
                 ? 'bg-zinc-900 border border-zinc-800 text-zinc-600 cursor-not-allowed'
                 : 'bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white hover:scale-105 active:scale-95'
@@ -301,7 +264,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
           <button
             onClick={handleNext}
             disabled={viewMode === 'scroll' && !canScrollRight}
-            className={`flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full transition-all cursor-pointer shadow-md ${
+            className={`flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full transition-all cursor-pointer shadow-md ${
               viewMode === 'scroll' && !canScrollRight
                 ? 'bg-zinc-900 border border-zinc-800 text-zinc-600 cursor-not-allowed'
                 : 'bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white hover:scale-105 active:scale-95'

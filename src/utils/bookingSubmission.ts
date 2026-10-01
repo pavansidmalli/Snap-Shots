@@ -65,7 +65,7 @@ export function buildWhatsAppBookingUrl(
 ): string {
   const rawNumber = bookingConfig.whatsappNumber || siteConfig.business.whatsapp;
   // Strip non-digits
-  const cleanNumber = rawNumber.replace(/[^0-9]/g, '') || '919876543210';
+  const cleanNumber = rawNumber.replace(/[^0-9]/g, '') || '919014319818';
 
   const selectedCountry = data.country || extra?.country || 'India';
   const selectedPrice = data.price || extra?.price;

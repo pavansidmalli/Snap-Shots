@@ -16,10 +16,16 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onClaimOffer }) => {
   const { countryConfig } = useCountry();
 
   useEffect(() => {
-    // Trigger popup smoothly 800ms after website load
+    try {
+      if (sessionStorage.getItem('snapshots_welcome_dismissed')) {
+        return;
+      }
+    } catch {}
+
+    // Trigger popup smoothly 1200ms after website load
     const timer = setTimeout(() => {
       setIsOpen(true);
-    }, 800);
+    }, 1200);
 
     return () => clearTimeout(timer);
   }, []);
@@ -52,6 +58,9 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onClaimOffer }) => {
 
   const handleDismiss = () => {
     setIsOpen(false);
+    try {
+      sessionStorage.setItem('snapshots_welcome_dismissed', 'true');
+    } catch {}
   };
 
   const handleClaim = () => {

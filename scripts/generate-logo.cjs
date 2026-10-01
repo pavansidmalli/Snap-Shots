@@ -1,4 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 140" fill="none">
+// Generate pixel-perfect SVG replicating the uploaded Snap Shots logo
+const fs = require('fs');
+
+const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 140" fill="none">
   <defs>
     <!-- Orange to Yellow gradient for camera outline & text -->
     <linearGradient id="camGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -87,4 +90,28 @@
     <!-- 9. Trailing Letter 's' (Crisp White) -->
     <text x="444" y="88" fill="#FFFFFF" font-family="'Plus Jakarta Sans', 'Inter', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="64" letter-spacing="-1">s</text>
   </g>
-</svg>
+</svg>`;
+
+// Also generate the full profile square version with the dark background & subtle red glow
+const squareSvgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" fill="none">
+  <!-- Solid Black Background -->
+  <rect width="500" height="500" fill="#000000"/>
+  
+  <!-- Subtle Dark Red Central Ambient Glow -->
+  <radialGradient id="profileGlow" cx="45%" cy="50%" r="45%">
+    <stop offset="0%" stop-color="#660a0a" stop-opacity="0.8"/>
+    <stop offset="40%" stop-color="#330000" stop-opacity="0.4"/>
+    <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+  </radialGradient>
+  <rect width="500" height="500" fill="url(#profileGlow)"/>
+
+  <!-- Centered Logo -->
+  <g transform="translate(-20, 180)">
+    ${svgContent.replace('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 140" fill="none">', '').replace('</svg>', '')}
+  </g>
+</svg>`;
+
+fs.writeFileSync('public/snapshots-logo.svg', svgContent);
+fs.writeFileSync('public/logo.svg', svgContent);
+fs.writeFileSync('public/snapshots-logo-square.svg', squareSvgContent);
+console.log('Successfully generated official logo SVGs!');
