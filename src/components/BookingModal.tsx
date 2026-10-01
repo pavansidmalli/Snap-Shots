@@ -1,0 +1,969 @@
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import confetti from 'canvas-confetti';
+import {
+  X,
+  Calendar,
+  Clock,
+  MapPin,
+  User,
+  Phone,
+  Mail,
+  Film,
+  Timer,
+  MessageSquare,
+  CheckCircle2,
+  AlertCircle,
+  Sparkles,
+  Tag,
+} from 'lucide-react';
+import { siteConfig, bookingConfig } from '../config/siteConfig';
+import { BookingFormData } from '../types';
+import { useCountry } from '../context/CountryContext';
+import {
+  validateBookingForm,
+  buildWhatsAppBookingUrl,
+  submitBookingRequest,
+} from '../utils/bookingSubmission';
+import {
+  validateCoupon,
+  calculateDiscountedPrice,
+  CouponResult,
+} from '../utils/couponHelper';
+
+interface BookingModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  initialService?: string;
+  initialPackage?: string;
+  initialCoupon?: string;
+}
+
+export const BookingModal: React.FC<BookingModalProps> = ({
+  isOpen,
+  onClose,
+  initialService,
+  initialPackage,
+  initialCoupon,
+}) => {
+  const { country, setCountry, countryConfig, getPackagePrice, getEliteStartingPrice } = useCountry();
+
+  const [formData, setFormData] = useState<BookingFormData>({
+    name: '',
+    phone: '',
+    email: '',
+    service: initialService || bookingConfig.services[0] || 'Event Reels',
+    date: '',
+    time: '',
+    duration: '2 Hours',
+    location: '',
+    requirements: '',
+  });
+
+  const [errors, setErrors] = useState<Partial<Record<keyof BookingFormData, string>>>({});
+  const [generalError, setGeneralError] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+  const [isWhatsAppPinging, setIsWhatsAppPinging] = useState<boolean>(false);
+  const [couponInput, setCouponInput] = useState<string>(initialCoupon || '');
+  const [appliedCoupon, setAppliedCoupon] = useState<CouponResult | null>(null);
+  const [couponError, setCouponError] = useState<string>('');
+
+  const modalRef = useRef<HTMLDivElement | null>(null);
+
+  // Derive package name and localized price based on visitor's selected country
+  const selectedPackageInfo = useMemo(() => {
+    if (!initialPackage) return null;
+    if (initialPackage === 'elite-select' || initialPackage === 'exclusive-tier') {
+      return {
+        name: siteConfig.exclusiveTier.name,
+        price: getEliteStartingPrice(),
+      };
+    }
+    const pkg = siteConfig.packages.find((p) => p.id === initialPackage);
+    if (pkg) {
+      return {
+        name: pkg.name,
+        price: getPackagePrice(pkg.id),
+      };
+    }
+    return null;
+  }, [initialPackage, getPackagePrice, getEliteStartingPrice]);
+
+  // Dynamic pricing calculation when coupon is applied
+  const pricingCalculation = useMemo(() => {
+    if (!selectedPackageInfo?.price) return null;
+    if (!appliedCoupon || appliedCoupon.discountPercent <= 0) {
+      return {
+        hasDiscount: false,
+        finalPrice: selectedPackageInfo.price,
+        originalPrice: selectedPackageInfo.price,
+      };
+    }
+    const res = calculateDiscountedPrice(selectedPackageInfo.price, appliedCoupon.discountPercent);
+    return {
+      hasDiscount: true,
+      originalPrice: selectedPackageInfo.price,
+      finalPrice: res.discountedPrice || selectedPackageInfo.price,
+      savedAmount: res.savedAmount,
+      percent: appliedCoupon.discountPercent,
+    };
+  }, [selectedPackageInfo, appliedCoupon]);
+
+  const handleApplyCoupon = (codeToApply?: string) => {
+    const code = codeToApply !== undefined ? codeToApply : couponInput;
+    const result = validateCoupon(code);
+    if (result.valid) {
+      setAppliedCoupon(result);
+      setCouponInput(result.code);
+      setCouponError('');
+      setFormData((prev) => ({
+        ...prev,
+        couponCode: result.code,
+        discountApplied: `${result.discountPercent}% OFF`,
+      }));
+    } else {
+      setCouponError(result.errorMessage || 'Invalid coupon code.');
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponInput('');
+    setCouponError('');
+    setFormData((prev) => ({
+      ...prev,
+      couponCode: undefined,
+      discountApplied: undefined,
+    }));
+  };
+
+  // Sync initial coupon if supplied
+  useEffect(() => {
+    if (isOpen && initialCoupon) {
+      handleApplyCoupon(initialCoupon);
+    }
+  }, [isOpen, initialCoupon]);
+
+  // Sync initial service / package props when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      if (initialService) {
+        setFormData((prev) => ({ ...prev, service: initialService }));
+      }
+      if (initialPackage) {
+        const pkg = siteConfig.packages.find((p) => p.id === initialPackage);
+        if (pkg) {
+          const durationMapping = pkg.shootTime.includes('1 Hour')
+            ? '1 Hour'
+            : pkg.shootTime.includes('3 Hours')
+            ? '3 Hours'
+            : 'Full Day';
+          const dynamicPrice = getPackagePrice(pkg.id);
+          setFormData((prev) => ({
+            ...prev,
+            duration: durationMapping,
+            requirements: prev.requirements || `Interested in the ${pkg.name} package (${dynamicPrice}).`,
+          }));
+        } else if (initialPackage === 'elite-select' || initialPackage === 'exclusive-tier') {
+          const elitePrice = getEliteStartingPrice();
+          setFormData((prev) => ({
+            ...prev,
+            duration: 'Full Day',
+            requirements: prev.requirements || `Interested in the ${siteConfig.exclusiveTier.name} package (${elitePrice}).`,
+          }));
+        }
+      }
+    }
+  }, [isOpen, initialService, initialPackage, getPackagePrice, getEliteStartingPrice]);
+
+  // Subtle celebratory confetti effect when booking succeeds
+  useEffect(() => {
+    if (isSubmitted) {
+      try {
+        // First subtle burst from center
+        confetti({
+          particleCount: 45,
+          spread: 55,
+          origin: { y: 0.55 },
+          colors: ['#bd1616', '#ffffff', '#e63939', '#9e1212', '#34d399'],
+          ticks: 200,
+          gravity: 1.15,
+          scalar: 0.85,
+          disableForReducedMotion: true,
+          zIndex: 99999,
+        });
+
+        // Soft staggered side accents for depth
+        const timer = setTimeout(() => {
+          confetti({
+            particleCount: 25,
+            angle: 60,
+            spread: 45,
+            origin: { x: 0.25, y: 0.6 },
+            colors: ['#bd1616', '#ffffff', '#e63939', '#10b981'],
+            ticks: 180,
+            gravity: 1.2,
+            scalar: 0.75,
+            disableForReducedMotion: true,
+            zIndex: 99999,
+          });
+          confetti({
+            particleCount: 25,
+            angle: 120,
+            spread: 45,
+            origin: { x: 0.75, y: 0.6 },
+            colors: ['#bd1616', '#ffffff', '#e63939', '#10b981'],
+            ticks: 180,
+            gravity: 1.2,
+            scalar: 0.75,
+            disableForReducedMotion: true,
+            zIndex: 99999,
+          });
+        }, 180);
+
+        return () => clearTimeout(timer);
+      } catch {
+        // Graceful fallback if confetti environment unavailable
+      }
+    }
+  }, [isSubmitted]);
+
+  // Lock body scroll while open and listen for Escape key
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear field-specific error as user types
+    if (errors[name as keyof BookingFormData]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[name as keyof BookingFormData];
+        return next;
+      });
+    }
+    if (generalError) setGeneralError('');
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const validation = validateBookingForm(formData);
+    if (!validation.isValid) {
+      setErrors(validation.errors);
+      setGeneralError(validation.firstErrorMessage || 'Please complete all required fields.');
+      return;
+    }
+
+    setErrors({});
+    setGeneralError('');
+    setIsSubmitting(true);
+
+    try {
+      await submitBookingRequest({
+        ...formData,
+        country: countryConfig.whatsappCountryName,
+        price: pricingCalculation?.finalPrice || selectedPackageInfo?.price,
+        packageName: selectedPackageInfo?.name,
+      });
+      setIsSubmitted(true);
+    } catch {
+      setGeneralError('An unexpected error occurred. Please try again or book via WhatsApp.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleWhatsAppClick = () => {
+    setIsWhatsAppPinging(false);
+    requestAnimationFrame(() => {
+      setIsWhatsAppPinging(true);
+      setTimeout(() => setIsWhatsAppPinging(false), 900);
+    });
+
+    const url = buildWhatsAppBookingUrl(formData, {
+      country: countryConfig.whatsappCountryName,
+      price: pricingCalculation?.finalPrice || selectedPackageInfo?.price,
+      packageName: selectedPackageInfo?.name || formData.service,
+    });
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleResetAndClose = () => {
+    setIsSubmitted(false);
+    setErrors({});
+    setGeneralError('');
+    setAppliedCoupon(null);
+    setCouponInput('');
+    setCouponError('');
+    onClose();
+  };
+
+  // Get today's date formatted as YYYY-MM-DD for min date picker
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="booking-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
+    >
+      {/* Darkened Semi-Transparent Backdrop Overlay */}
+      <div
+        className="fixed inset-0 bg-black/85 backdrop-blur-md transition-opacity duration-300"
+        onClick={handleResetAndClose}
+        aria-hidden="true"
+      />
+
+      {/* Centered Modal Container */}
+      <div
+        ref={modalRef}
+        className="relative z-10 w-full max-w-lg sm:max-w-xl lg:max-w-2xl max-h-[92vh] sm:max-h-[88vh] overflow-y-auto rounded-2xl sm:rounded-3xl bg-black border border-zinc-800 shadow-[0_25px_70px_rgba(0,0,0,0.85),0_0_40px_rgba(189,22,22,0.18)] text-white p-4 sm:p-6 md:p-8 animate-in fade-in zoom-in-95 duration-200"
+      >
+        {/* Top Close 'X' Button */}
+        <button
+          type="button"
+          onClick={handleResetAndClose}
+          className="absolute top-3.5 right-3.5 sm:top-5 sm:right-5 flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-zinc-900/90 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-[#bd1616] hover:border-[#bd1616] transition-all cursor-pointer z-20"
+          aria-label="Close booking modal"
+          id="booking-modal-close-x"
+        >
+          <X className="w-4 h-4 sm:w-5 sm:h-5" />
+        </button>
+
+        {isSubmitted ? (
+          /* ===================================================================
+           * SUCCESS STATE (Exact specification + subtle celebration animation)
+           * =================================================================== */
+          <div className="py-6 sm:py-10 text-center relative overflow-hidden animate-in fade-in zoom-in-95 duration-300" id="booking-modal-success">
+            {/* Ambient celebration glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-gradient-to-tr from-amber-500/10 via-emerald-500/10 to-transparent rounded-full blur-3xl pointer-events-none -z-10" />
+
+            {/* Pulsing checkmark icon circle */}
+            <div className="relative mx-auto mb-4 sm:mb-6 flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center">
+              <span className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping opacity-60 pointer-events-none" />
+              <div className="relative flex h-full w-full items-center justify-center rounded-full bg-emerald-500/20 border-2 border-emerald-400 text-emerald-300 shadow-[0_0_30px_rgba(16,185,129,0.35)]">
+                <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10 text-emerald-400" />
+              </div>
+            </div>
+
+            {/* Subtle celebration pill badge */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-3 tracking-wide">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+              <span>Booking Request Received</span>
+            </div>
+
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight uppercase leading-tight">
+              {bookingConfig.successHeading}
+            </h2>
+
+            <p className="mt-2.5 text-sm sm:text-base md:text-lg font-medium text-white">
+              {bookingConfig.successMessageLine1}
+            </p>
+
+            <p className="mt-1 text-xs sm:text-sm text-zinc-300 max-w-md mx-auto leading-relaxed">
+              {bookingConfig.successMessageLine2}
+            </p>
+
+            {/* Quick summary of submitted request */}
+            <div className="mt-5 sm:mt-6 p-3.5 sm:p-4 rounded-xl bg-zinc-950/90 border border-zinc-800/80 text-left text-xs sm:text-sm space-y-2 max-w-md mx-auto shadow-inner">
+              <div className="flex justify-between items-center text-zinc-400">
+                <span className="text-[11px] sm:text-xs">Name:</span>
+                <span className="text-white font-semibold">{formData.name}</span>
+              </div>
+              <div className="flex justify-between items-center text-zinc-400">
+                <span className="text-[11px] sm:text-xs">Service:</span>
+                <span className="text-amber-300 font-semibold">{formData.service}</span>
+              </div>
+              <div className="flex justify-between items-center text-zinc-400">
+                <span className="text-[11px] sm:text-xs">Date &amp; Time:</span>
+                <span className="text-white font-semibold">
+                  {formData.date} &bull; {formData.time}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-zinc-400">
+                <span className="text-[11px] sm:text-xs">Location:</span>
+                <span className="text-white font-semibold">{formData.location}</span>
+              </div>
+              {formData.couponCode && (
+                <div className="flex justify-between items-center text-zinc-400 border-t border-zinc-800/60 pt-1.5 mt-1">
+                  <span className="text-[11px] sm:text-xs text-emerald-400 font-semibold flex items-center gap-1">
+                    <Tag className="w-3 h-3" />
+                    Coupon Applied:
+                  </span>
+                  <span className="text-[#bd1616] font-mono font-bold text-xs">
+                    {formData.couponCode} {formData.discountApplied ? `(${formData.discountApplied})` : ''}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={handleWhatsAppClick}
+                className="w-full sm:w-auto h-11 sm:h-12 px-6 rounded-full bg-zinc-900 border border-zinc-700 hover:border-emerald-500 hover:bg-emerald-950/40 text-white text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
+                id="booking-modal-success-whatsapp"
+              >
+                <MessageSquare className="w-4 h-4 text-emerald-400" />
+                <span>Notify Creator via WhatsApp</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleResetAndClose}
+                className="w-full sm:w-auto h-11 sm:h-12 px-8 rounded-full bg-white hover:bg-zinc-200 active:bg-zinc-300 text-black text-xs sm:text-sm font-bold uppercase tracking-wider shadow-lg transition-all cursor-pointer"
+                id="booking-modal-success-close-btn"
+              >
+                CLOSE
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* ===================================================================
+           * BOOKING FORM
+           * =================================================================== */
+          <div id="booking-modal-form-content">
+            {/* Modal Header */}
+            <div className="text-left pr-8 sm:pr-10">
+              <div className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-[#bd1616]/20 border border-[#bd1616]/40 text-[#bd1616] text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mb-2">
+                <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#bd1616]" />
+                <span>Snap Shots Studio</span>
+              </div>
+
+              <h2
+                id="booking-modal-title"
+                className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight uppercase leading-tight"
+              >
+                {bookingConfig.heading}
+              </h2>
+
+              <p className="mt-1 sm:mt-1.5 text-xs sm:text-sm text-zinc-300 leading-relaxed">
+                {bookingConfig.subheading}
+              </p>
+            </div>
+
+            {/* General Validation Error Alert */}
+            {generalError && (
+              <div
+                className="mt-3.5 sm:mt-4 p-3 rounded-xl bg-red-950/60 border border-red-800/80 text-red-200 text-xs sm:text-sm flex items-center gap-2 animate-in fade-in"
+                role="alert"
+                id="booking-modal-error-alert"
+              >
+                <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                <span>{generalError}</span>
+              </div>
+            )}
+
+            {/* Selected Package and Price Display */}
+            {selectedPackageInfo && (
+              <div
+                className="mt-3.5 sm:mt-4 p-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-inner"
+                id="booking-modal-package-summary"
+              >
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">
+                    Selected Package:
+                  </span>
+                  <span className="text-sm sm:text-base font-black text-white">
+                    {selectedPackageInfo.name}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between sm:justify-end gap-3 flex-wrap">
+                  {/* Region Toggle (India & USA only) */}
+                  <div className="inline-flex items-center gap-1 p-0.5 rounded-full bg-zinc-900 border border-zinc-800">
+                    <button
+                      type="button"
+                      onClick={() => setCountry('IN')}
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                        country === 'IN'
+                          ? 'bg-[#bd1616] text-white shadow-xs'
+                          : 'text-zinc-400 hover:text-white'
+                      }`}
+                      id="modal-toggle-in"
+                    >
+                      🇮🇳 India
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCountry('US')}
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                        country === 'US'
+                          ? 'bg-[#bd1616] text-white shadow-xs'
+                          : 'text-zinc-400 hover:text-white'
+                      }`}
+                      id="modal-toggle-us"
+                    >
+                      🇺🇸 USA
+                    </button>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">
+                      Price ({countryConfig.currency}):
+                    </span>
+                    {pricingCalculation?.hasDiscount ? (
+                      <div className="flex items-baseline justify-end gap-1.5 flex-wrap">
+                        <span className="text-xs line-through text-zinc-500 font-medium">
+                          {pricingCalculation.originalPrice}
+                        </span>
+                        <span className="text-sm sm:text-base font-extrabold text-[#bd1616]">
+                          {pricingCalculation.finalPrice}
+                        </span>
+                        <span className="text-[10px] font-black text-emerald-400 bg-emerald-950/80 border border-emerald-800/80 px-1.5 py-0.5 rounded-md">
+                          {pricingCalculation.percent}% OFF
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-sm sm:text-base font-extrabold text-[#bd1616]">
+                        {selectedPackageInfo.price}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="mt-4 sm:mt-6 space-y-3 sm:space-y-4" noValidate>
+              {/* Row 1: Full Name & Phone Number */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label
+                    htmlFor="modal-name"
+                    className="block text-xs sm:text-sm font-semibold text-zinc-200 mb-1 sm:mb-1.5"
+                  >
+                    Full Name <span className="text-red-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                      <User className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      id="modal-name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="Enter your name"
+                      className={`w-full h-11 sm:h-11 md:h-12 pl-9 pr-3 rounded-xl bg-zinc-950 border ${
+                        errors.name ? 'border-red-500 ring-1 ring-red-500' : 'border-zinc-800'
+                      } text-base sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#bd1616] focus:ring-1 focus:ring-[#bd1616] transition-colors`}
+                    />
+                  </div>
+                  {errors.name && (
+                    <p className="text-[11px] sm:text-xs text-red-400 font-medium mt-1">{errors.name}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="modal-phone"
+                    className="block text-xs sm:text-sm font-semibold text-zinc-200 mb-1 sm:mb-1.5"
+                  >
+                    Phone Number <span className="text-red-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                      <Phone className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="tel"
+                      id="modal-phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="Enter your phone number"
+                      className={`w-full h-11 sm:h-11 md:h-12 pl-9 pr-3 rounded-xl bg-zinc-950 border ${
+                        errors.phone ? 'border-red-500 ring-1 ring-red-500' : 'border-zinc-800'
+                      } text-base sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#bd1616] focus:ring-1 focus:ring-[#bd1616] transition-colors`}
+                    />
+                  </div>
+                  {errors.phone && (
+                    <p className="text-[11px] sm:text-xs text-red-400 font-medium mt-1">{errors.phone}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Row 2: Email & Service */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label
+                    htmlFor="modal-email"
+                    className="block text-xs sm:text-sm font-semibold text-zinc-200 mb-1 sm:mb-1.5"
+                  >
+                    Email
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                      <Mail className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="email"
+                      id="modal-email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="Enter your email"
+                      className={`w-full h-11 sm:h-11 md:h-12 pl-9 pr-3 rounded-xl bg-zinc-950 border ${
+                        errors.email ? 'border-red-500 ring-1 ring-red-500' : 'border-zinc-800'
+                      } text-base sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#bd1616] focus:ring-1 focus:ring-[#bd1616] transition-colors`}
+                    />
+                  </div>
+                  {errors.email && (
+                    <p className="text-[11px] sm:text-xs text-red-400 font-medium mt-1">{errors.email}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="modal-service"
+                    className="block text-xs sm:text-sm font-semibold text-zinc-200 mb-1 sm:mb-1.5"
+                  >
+                    Service <span className="text-red-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                      <Film className="w-4 h-4" />
+                    </div>
+                    <select
+                      id="modal-service"
+                      name="service"
+                      value={formData.service}
+                      onChange={handleChange}
+                      className={`w-full h-11 sm:h-11 md:h-12 pl-9 pr-3 rounded-xl bg-zinc-950 border ${
+                        errors.service ? 'border-red-500 ring-1 ring-red-500' : 'border-zinc-800'
+                      } text-base sm:text-sm text-white focus:outline-none focus:border-[#bd1616] focus:ring-1 focus:ring-[#bd1616] transition-colors`}
+                    >
+                      {bookingConfig.services.map((svc) => (
+                        <option key={svc} value={svc} className="bg-zinc-950 text-white py-1">
+                          {svc}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {errors.service && (
+                    <p className="text-[11px] sm:text-xs text-red-400 font-medium mt-1">{errors.service}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Row 3: Preferred Date & Preferred Time */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label
+                    htmlFor="modal-date"
+                    className="block text-xs sm:text-sm font-semibold text-zinc-200 mb-1 sm:mb-1.5"
+                  >
+                    Preferred Date <span className="text-red-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="date"
+                      id="modal-date"
+                      name="date"
+                      min={todayStr}
+                      value={formData.date}
+                      onChange={handleChange}
+                      className={`w-full h-11 sm:h-11 md:h-12 pl-9 pr-3 rounded-xl bg-zinc-950 border ${
+                        errors.date ? 'border-red-500 ring-1 ring-red-500' : 'border-zinc-800'
+                      } text-base sm:text-sm text-white focus:outline-none focus:border-[#bd1616] focus:ring-1 focus:ring-[#bd1616] transition-colors [color-scheme:dark]`}
+                    />
+                  </div>
+                  {errors.date && (
+                    <p className="text-[11px] sm:text-xs text-red-400 font-medium mt-1">{errors.date}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="modal-time"
+                    className="block text-xs sm:text-sm font-semibold text-zinc-200 mb-1 sm:mb-1.5"
+                  >
+                    Preferred Time <span className="text-red-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                      <Clock className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="time"
+                      id="modal-time"
+                      name="time"
+                      value={formData.time}
+                      onChange={handleChange}
+                      className={`w-full h-11 sm:h-11 md:h-12 pl-9 pr-3 rounded-xl bg-zinc-950 border ${
+                        errors.time ? 'border-red-500 ring-1 ring-red-500' : 'border-zinc-800'
+                      } text-base sm:text-sm text-white focus:outline-none focus:border-[#bd1616] focus:ring-1 focus:ring-[#bd1616] transition-colors [color-scheme:dark]`}
+                    />
+                  </div>
+                  {errors.time && (
+                    <p className="text-[11px] sm:text-xs text-red-400 font-medium mt-1">{errors.time}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Row 4: Shoot Duration & Location */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label
+                    htmlFor="modal-duration"
+                    className="block text-xs sm:text-sm font-semibold text-zinc-200 mb-1 sm:mb-1.5"
+                  >
+                    Duration
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                      <Timer className="w-4 h-4" />
+                    </div>
+                    <select
+                      id="modal-duration"
+                      name="duration"
+                      value={formData.duration}
+                      onChange={handleChange}
+                      className="w-full h-11 sm:h-11 md:h-12 pl-9 pr-3 rounded-xl bg-zinc-950 border border-zinc-800 text-base sm:text-sm text-white focus:outline-none focus:border-[#bd1616] focus:ring-1 focus:ring-[#bd1616] transition-colors"
+                    >
+                      {bookingConfig.durations.map((dur) => (
+                        <option key={dur} value={dur} className="bg-zinc-950 text-white py-1">
+                          {dur}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="modal-location"
+                    className="block text-xs sm:text-sm font-semibold text-zinc-200 mb-1 sm:mb-1.5"
+                  >
+                    Shoot Location <span className="text-red-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                      <MapPin className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      id="modal-location"
+                      name="location"
+                      value={formData.location}
+                      onChange={handleChange}
+                      placeholder="Enter shoot location"
+                      className={`w-full h-11 sm:h-11 md:h-12 pl-9 pr-3 rounded-xl bg-zinc-950 border ${
+                        errors.location ? 'border-red-500 ring-1 ring-red-500' : 'border-zinc-800'
+                      } text-base sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#bd1616] focus:ring-1 focus:ring-[#bd1616] transition-colors`}
+                    />
+                  </div>
+                  {errors.location && (
+                    <p className="text-[11px] sm:text-xs text-red-400 font-medium mt-1">{errors.location}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Row 5: Requirements */}
+              <div>
+                <label
+                  htmlFor="modal-requirements"
+                  className="block text-xs sm:text-sm font-semibold text-zinc-200 mb-1 sm:mb-1.5"
+                >
+                  Requirements
+                </label>
+                <textarea
+                  id="modal-requirements"
+                  name="requirements"
+                  rows={3}
+                  value={formData.requirements}
+                  onChange={handleChange}
+                  placeholder="Tell us about your shoot or content requirements..."
+                  className="w-full p-3 rounded-xl bg-zinc-950 border border-zinc-800 text-base sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#bd1616] focus:ring-1 focus:ring-[#bd1616] transition-colors resize-none leading-relaxed"
+                />
+              </div>
+
+              {/* Row 6: Coupon / Promo Code Section */}
+              <div
+                className="p-3.5 sm:p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 space-y-2.5"
+                id="booking-modal-coupon-section"
+              >
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="modal-coupon-code"
+                    className="flex items-center gap-1.5 text-xs font-bold text-zinc-200 uppercase tracking-wider"
+                  >
+                    <Tag className="w-3.5 h-3.5 text-[#bd1616]" />
+                    <span>Have a Coupon Code?</span>
+                  </label>
+                  {appliedCoupon && (
+                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1 bg-emerald-950/70 border border-emerald-800/60 px-2 py-0.5 rounded-full">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                      Applied
+                    </span>
+                  )}
+                </div>
+
+                {!appliedCoupon ? (
+                  <div>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          id="modal-coupon-code"
+                          type="text"
+                          value={couponInput}
+                          onChange={(e) => {
+                            setCouponInput(e.target.value.toUpperCase());
+                            if (couponError) setCouponError('');
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleApplyCoupon();
+                            }
+                          }}
+                          placeholder="Enter coupon code (e.g. SNAP15)"
+                          className="w-full h-10 px-3 uppercase rounded-xl bg-zinc-950 border border-zinc-700/80 text-xs sm:text-sm text-white placeholder-zinc-500 font-mono tracking-wider focus:outline-none focus:border-[#bd1616] focus:ring-1 focus:ring-[#bd1616] transition-colors"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleApplyCoupon()}
+                        className="h-10 px-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white hover:text-[#bd1616] border border-zinc-700 hover:border-[#bd1616] text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shrink-0"
+                        id="booking-modal-apply-coupon-btn"
+                      >
+                        Apply
+                      </button>
+                    </div>
+
+                    {couponError && (
+                      <p className="text-[11px] text-red-400 font-medium mt-1.5 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3 shrink-0" />
+                        <span>{couponError}</span>
+                      </p>
+                    )}
+
+                    <div className="flex items-center gap-1.5 mt-2 text-[11px] text-zinc-400">
+                      <span>Available offer:</span>
+                      <button
+                        type="button"
+                        onClick={() => handleApplyCoupon('SNAP15')}
+                        className="text-[#bd1616] hover:underline font-mono font-bold cursor-pointer inline-flex items-center gap-1"
+                      >
+                        <span>SNAP15</span>
+                        <span className="text-zinc-400 font-normal">(15% OFF)</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-800/60">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400">
+                        <Tag className="w-3.5 h-3.5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-xs font-black text-emerald-300">
+                            {appliedCoupon.code}
+                          </span>
+                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-900/60 px-1.5 py-0.5 rounded">
+                            {appliedCoupon.discountPercent}% OFF
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-zinc-300">
+                          {appliedCoupon.description}
+                          {pricingCalculation?.savedAmount && (
+                            <span className="text-emerald-400 font-bold ml-1">
+                              • Saved {pricingCalculation.savedAmount}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveCoupon}
+                      className="text-xs text-zinc-400 hover:text-red-400 transition-colors cursor-pointer px-2.5 py-1 font-semibold hover:bg-zinc-900/60 rounded-lg"
+                      id="booking-modal-remove-coupon-btn"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <div className="pt-1 sm:pt-2">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full h-11 sm:h-12 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white text-xs sm:text-sm font-extrabold uppercase tracking-wider shadow-lg shadow-[#bd1616]/30 hover:shadow-xl hover:shadow-[#bd1616]/40 transition-all duration-200 cursor-pointer disabled:opacity-70 flex items-center justify-center gap-2"
+                  id="booking-modal-submit-btn"
+                >
+                  {isSubmitting ? (
+                    <span>CONFIRMING DETAILS...</span>
+                  ) : (
+                    <span>{bookingConfig.submitButtonText}</span>
+                  )}
+                </button>
+              </div>
+
+              {/* Divider: OR */}
+              <div className="relative flex items-center justify-center py-0.5 sm:py-1">
+                <div className="border-t border-zinc-800 w-full" />
+                <span className="bg-black px-3 text-[10px] sm:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
+                  OR
+                </span>
+                <div className="border-t border-zinc-800 w-full" />
+              </div>
+
+              {/* WhatsApp Secondary Button */}
+              <div>
+                <button
+                  type="button"
+                  onClick={handleWhatsAppClick}
+                  className="relative overflow-visible w-full h-10 sm:h-11 rounded-full bg-zinc-950 border border-zinc-700/80 hover:border-[#bd1616] hover:bg-[#bd1616]/10 text-white hover:text-[#bd1616] text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer shadow-xs"
+                  id="booking-modal-whatsapp-btn"
+                >
+                  {isWhatsAppPinging && (
+                    <>
+                      <span className="absolute inset-0 rounded-full bg-[#bd1616] animate-ping opacity-60 pointer-events-none" />
+                      <span className="absolute -inset-1 rounded-full border border-[#bd1616] animate-ping opacity-40 pointer-events-none" />
+                    </>
+                  )}
+                  <MessageSquare className="w-4 h-4 text-[#bd1616] relative z-10" />
+                  <span className="relative z-10">{bookingConfig.whatsappButtonText}</span>
+                </button>
+                <p className="text-[10px] sm:text-[11px] text-zinc-500 text-center mt-1 sm:mt-1.5">
+                  Direct connection with certified creators in Telangana &amp; USA
+                </p>
+              </div>
+            </form>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

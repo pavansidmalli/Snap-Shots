@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <rect width="120" height="120" rx="28" fill="#000000" />
+  <rect x="2" y="2" width="116" height="116" rx="26" stroke="#27272a" stroke-width="2" />
+  <!-- Camera Body Outline -->
+  <rect x="24" y="36" width="72" height="52" rx="14" stroke="#bd1616" stroke-width="4.5" />
+  <!-- Pentaprism / Flash -->
+  <path d="M46 36 L52 26 L68 26 L74 36 Z" fill="#bd1616" />
+  <!-- Center Lens -->
+  <circle cx="60" cy="62" r="16" stroke="#ffffff" stroke-width="4" />
+  <circle cx="60" cy="62" r="7" fill="#bd1616" />
+  <!-- Shutter / Record Dot -->
+  <circle cx="82" cy="46" r="3" fill="#bd1616" />
+</svg>
