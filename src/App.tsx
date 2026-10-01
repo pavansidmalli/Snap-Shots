@@ -104,7 +104,7 @@ export default function App() {
       <LogoProvider>
         <div className="min-h-screen bg-gradient-to-b from-[#000000] via-[#1a0000] via-35% to-[#000000] text-white selection:bg-[#bd1616] selection:text-white relative overflow-x-hidden">
         {/* Background Gradient Mesh with Black & Red */}
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden transform-gpu will-change-transform" style={{ transform: 'translate3d(0, 0, 0)' }} aria-hidden="true">
           {/* Top Hero Radial Glow in Red & Black */}
           <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[1200px] h-[700px] bg-[radial-gradient(ellipse_at_center,rgba(189,22,22,0.18)_0%,rgba(117,13,13,0.08)_45%,transparent_75%)] blur-3xl" />
           

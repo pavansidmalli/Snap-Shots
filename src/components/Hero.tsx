@@ -114,7 +114,7 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
         <div className="mt-6 sm:mt-12 flex justify-center overflow-hidden sm:overflow-visible px-1 sm:px-2">
           <div className="relative h-[340px] min-[390px]:h-[380px] sm:h-[480px] md:h-[510px] w-full max-w-[780px] md:max-w-[940px] lg:max-w-[1020px] flex items-center justify-center">
             {/* Reel 4 (Far-Left Phone - Visible on Desktop only): SubBass Festival */}
-            <div className="hidden md:block absolute md:-left-2 lg:left-4 top-10 lg:top-8 z-5 md:w-[185px] lg:w-[215px] aspect-[9/16] rounded-[26px] lg:rounded-[34px] bg-zinc-950 p-2 shadow-2xl shadow-black/40 border border-zinc-800/80 transform -rotate-12 transition-all duration-500 hover:rotate-0 hover:scale-105 hover:z-30 cursor-pointer group">
+            <div className="hidden md:block absolute md:-left-2 lg:left-4 top-10 lg:top-8 z-5 md:w-[185px] lg:w-[215px] aspect-[9/16] rounded-[26px] lg:rounded-[34px] bg-zinc-950 p-2 shadow-2xl shadow-black/40 border border-zinc-800/80 transform -rotate-12 transition-all duration-500 hover:rotate-0 hover:scale-105 hover:z-30 cursor-pointer group transform-gpu will-change-transform">
               {/* Dynamic Island */}
               <div className="absolute top-3.5 left-1/2 -translate-x-1/2 w-12 sm:w-14 h-3 sm:h-3.5 bg-black rounded-full z-30 flex items-center justify-end px-1.5 sm:px-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
@@ -125,11 +125,13 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
                 <video
                   src="/videos/concert-reel.mp4"
                   poster="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=600&auto=format&fit=crop"
+                  preload="metadata"
                   autoPlay
                   loop
                   muted
                   playsInline
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  disablePictureInPicture
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-black/35 pointer-events-none" />
 
@@ -159,7 +161,7 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
             </div>
 
             {/* Reel 1 (Inner-Left Phone - Visible on Mobile & Desktop): Royal Palace Sangeet */}
-            <div className="absolute -left-2 min-[390px]:-left-3 sm:left-4 md:left-20 lg:left-28 top-6 sm:top-4 z-10 w-[125px] min-[390px]:w-[145px] sm:w-[215px] md:w-[225px] lg:w-[235px] aspect-[9/16] rounded-[24px] sm:rounded-[36px] bg-zinc-950 p-1.5 sm:p-2.5 shadow-2xl shadow-black/50 border border-zinc-700/60 transform -rotate-6 transition-all duration-500 hover:rotate-0 hover:scale-105 hover:z-30 cursor-pointer group">
+            <div className="absolute -left-2 min-[390px]:-left-3 sm:left-4 md:left-20 lg:left-28 top-6 sm:top-4 z-10 w-[125px] min-[390px]:w-[145px] sm:w-[215px] md:w-[225px] lg:w-[235px] aspect-[9/16] rounded-[24px] sm:rounded-[36px] bg-zinc-950 p-1.5 sm:p-2.5 shadow-2xl shadow-black/50 border border-zinc-700/60 transform -rotate-6 transition-all duration-500 hover:rotate-0 hover:scale-105 hover:z-30 cursor-pointer group transform-gpu will-change-transform">
               {/* Dynamic Island */}
               <div className="absolute top-3 sm:top-3.5 left-1/2 -translate-x-1/2 w-10 sm:w-16 h-2.5 sm:h-3.5 bg-black rounded-full z-30 flex items-center justify-end px-1 sm:px-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -170,11 +172,13 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
                 <video
                   src="/videos/wedding-reel.mp4"
                   poster="https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=600&auto=format&fit=crop"
+                  preload="metadata"
                   autoPlay
                   loop
                   muted
                   playsInline
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  disablePictureInPicture
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-black/35 pointer-events-none" />
 
@@ -204,7 +208,7 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
             </div>
 
             {/* Reel 2 (Center Phone - Featured Hero Element - Visible on Mobile & Desktop): Electric Nightlife Gala */}
-            <div className="relative z-20 w-[160px] min-[390px]:w-[180px] sm:w-[250px] md:w-[265px] lg:w-[280px] aspect-[9/16] rounded-[26px] sm:rounded-[40px] bg-zinc-950 p-1.5 sm:p-3 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.6)] border-2 border-[#bd1616]/50 ring-4 ring-[#bd1616]/10 transition-all duration-300 animate-float hover:scale-105 group">
+            <div className="relative z-20 w-[160px] min-[390px]:w-[180px] sm:w-[250px] md:w-[265px] lg:w-[280px] aspect-[9/16] rounded-[26px] sm:rounded-[40px] bg-zinc-950 p-1.5 sm:p-3 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.6)] border-2 border-[#bd1616]/50 ring-4 ring-[#bd1616]/10 transition-all duration-300 animate-float hover:scale-105 group transform-gpu will-change-transform">
               {/* Dynamic Island */}
               <div className="absolute top-3 sm:top-4 left-1/2 -translate-x-1/2 w-12 sm:w-20 h-3 sm:h-4 bg-black rounded-full z-30 flex items-center justify-end px-1 sm:px-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#bd1616] animate-pulse" />
@@ -216,11 +220,13 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
                   ref={videoRef}
                   src="/videos/hero-reel.mp4"
                   poster="https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=800&auto=format&fit=crop"
+                  preload="metadata"
                   autoPlay
                   loop
                   muted
                   playsInline
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  disablePictureInPicture
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform"
                 />
 
                 {/* Video Overlay Vignette */}
@@ -256,7 +262,7 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
             </div>
 
             {/* Reel 3 (Inner-Right Phone - Visible on Mobile & Desktop): KINETIC Runway */}
-            <div className="absolute -right-2 min-[390px]:-right-3 sm:right-4 md:right-20 lg:right-28 top-6 sm:top-4 z-10 w-[125px] min-[390px]:w-[145px] sm:w-[215px] md:w-[225px] lg:w-[235px] aspect-[9/16] rounded-[24px] sm:rounded-[36px] bg-zinc-950 p-1.5 sm:p-2.5 shadow-2xl shadow-black/50 border border-zinc-700/60 transform rotate-6 transition-all duration-500 hover:rotate-0 hover:scale-105 hover:z-30 cursor-pointer group">
+            <div className="absolute -right-2 min-[390px]:-right-3 sm:right-4 md:right-20 lg:right-28 top-6 sm:top-4 z-10 w-[125px] min-[390px]:w-[145px] sm:w-[215px] md:w-[225px] lg:w-[235px] aspect-[9/16] rounded-[24px] sm:rounded-[36px] bg-zinc-950 p-1.5 sm:p-2.5 shadow-2xl shadow-black/50 border border-zinc-700/60 transform rotate-6 transition-all duration-500 hover:rotate-0 hover:scale-105 hover:z-30 cursor-pointer group transform-gpu will-change-transform">
               {/* Dynamic Island */}
               <div className="absolute top-3 sm:top-3.5 left-1/2 -translate-x-1/2 w-10 sm:w-16 h-2.5 sm:h-3.5 bg-black rounded-full z-30 flex items-center justify-end px-1 sm:px-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
@@ -267,11 +273,13 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
                 <video
                   src="/videos/brand-reel.mp4"
                   poster="https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=600&auto=format&fit=crop"
+                  preload="metadata"
                   autoPlay
                   loop
                   muted
                   playsInline
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  disablePictureInPicture
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-black/35 pointer-events-none" />
 
@@ -301,7 +309,7 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
             </div>
 
             {/* Reel 5 (Far-Right Phone - Visible on Desktop only): Lumina Lounge */}
-            <div className="hidden md:block absolute md:-right-2 lg:right-4 top-10 lg:top-8 z-5 md:w-[185px] lg:w-[215px] aspect-[9/16] rounded-[26px] lg:rounded-[34px] bg-zinc-950 p-2 shadow-2xl shadow-black/40 border border-zinc-800/80 transform rotate-12 transition-all duration-500 hover:rotate-0 hover:scale-105 hover:z-30 cursor-pointer group">
+            <div className="hidden md:block absolute md:-right-2 lg:right-4 top-10 lg:top-8 z-5 md:w-[185px] lg:w-[215px] aspect-[9/16] rounded-[26px] lg:rounded-[34px] bg-zinc-950 p-2 shadow-2xl shadow-black/40 border border-zinc-800/80 transform rotate-12 transition-all duration-500 hover:rotate-0 hover:scale-105 hover:z-30 cursor-pointer group transform-gpu will-change-transform">
               {/* Dynamic Island */}
               <div className="absolute top-3.5 left-1/2 -translate-x-1/2 w-12 sm:w-14 h-3 sm:h-3.5 bg-black rounded-full z-30 flex items-center justify-end px-1.5 sm:px-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
@@ -312,11 +320,13 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
                 <video
                   src="/videos/event-reel.mp4"
                   poster="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=600&auto=format&fit=crop"
+                  preload="metadata"
                   autoPlay
                   loop
                   muted
                   playsInline
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  disablePictureInPicture
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-black/35 pointer-events-none" />
 

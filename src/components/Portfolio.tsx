@@ -212,7 +212,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
             onMouseLeave={handleMouseUpOrLeave}
             className={
               viewMode === 'scroll'
-                ? 'flex gap-4 sm:gap-8 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar py-6 sm:py-8 px-2 sm:px-6 cursor-grab active:cursor-grabbing touch-pan-x'
+                ? 'flex gap-4 sm:gap-8 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar py-6 sm:py-8 px-2 sm:px-6 cursor-grab active:cursor-grabbing touch-pan-x overscroll-x-contain'
                 : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 py-4'
             }
             id="portfolio-scroller-container"

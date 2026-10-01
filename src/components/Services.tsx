@@ -234,7 +234,7 @@ export const Services: React.FC<ServicesProps> = ({ onBookService }) => {
             onMouseLeave={handleMouseUpOrLeave}
             className={
               viewMode === 'scroll'
-                ? 'flex gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar py-4 px-2 sm:px-4 cursor-grab active:cursor-grabbing touch-pan-x'
+                ? 'flex gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar py-4 px-2 sm:px-4 cursor-grab active:cursor-grabbing touch-pan-x overscroll-x-contain'
                 : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8'
             }
             id="services-scroll-container"

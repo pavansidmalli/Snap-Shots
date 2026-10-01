@@ -95,7 +95,7 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({ reel, onSelect }) 
             playsInline
             preload="metadata"
             onTimeUpdate={handleTimeUpdate}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 transform-gpu will-change-transform"
           />
         ) : (
           <img
@@ -107,7 +107,7 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({ reel, onSelect }) 
             loading="lazy"
             decoding="async"
             alt={reel.title}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 transform-gpu will-change-transform"
           />
         )}
 

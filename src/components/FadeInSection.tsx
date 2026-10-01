@@ -43,6 +43,7 @@ export const FadeInSection: React.FC<FadeInSectionProps> = ({
         ease: [0.22, 1, 0.36, 1], // Smooth cubic-bezier for subtle premium feel
         delay,
       }}
+      style={{ willChange: 'opacity, transform' }}
       className={className}
     >
       {children}

@@ -77,30 +77,30 @@
 
 @keyframes float {
   0%, 100% {
-    transform: translateY(0px);
+    transform: translate3d(0, 0px, 0);
   }
   50% {
-    transform: translateY(-8px);
+    transform: translate3d(0, -8px, 0);
   }
 }
 
 @keyframes float-alt {
   0%, 100% {
-    transform: translateY(0px) rotate(-1deg);
+    transform: translate3d(0, 0px, 0) rotate(-1deg);
   }
   50% {
-    transform: translateY(-6px) rotate(1deg);
+    transform: translate3d(0, -6px, 0) rotate(1deg);
   }
 }
 
 @keyframes pulse-soft {
   0%, 100% {
     opacity: 0.3;
-    transform: scale(1);
+    transform: scale3d(1, 1, 1);
   }
   50% {
     opacity: 0.7;
-    transform: scale(1.05);
+    transform: scale3d(1.05, 1.05, 1);
   }
 }
 
@@ -231,27 +231,36 @@
   scrollbar-width: none;
 }
 
-/* Smooth Infinite Brand Logo Marquee */
+/* Smooth Infinite Brand Logo Marquee with GPU Acceleration */
 @keyframes marquee {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-50%); }
+  0% { transform: translate3d(0%, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
 }
 
 .animate-marquee {
   display: flex;
   width: max-content;
   animation: marquee 32s linear infinite;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
 }
 
 .animate-marquee:hover {
   animation-play-state: paused;
 }
 
-/* Mobile-Friendly Optimization Utilities */
+/* Fluid Micro-Interaction Easing */
+button, a {
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Mobile-Friendly & Smooth Scrolling Optimization Utilities */
 html {
   -webkit-text-size-adjust: 100%;
   touch-action: manipulation;
   overflow-x: hidden;
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
 }
 
 body {
@@ -260,6 +269,14 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Hardware accelerated layer */
+.gpu-layer {
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 /* Prevent auto-zoom on iOS inputs when focused */
@@ -269,10 +286,11 @@ body {
   }
 }
 
-/* Momentum scrolling on iOS devices */
+/* Momentum scrolling on touch devices */
 .touch-scroll {
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
 }
 
 /* Safe area padding */
