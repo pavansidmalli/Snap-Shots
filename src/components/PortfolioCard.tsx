@@ -55,13 +55,9 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({ reel, onSelect }) 
     }
   };
 
-  const handleWatchOnInstagram = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const targetUrl = isValidInstagramUrl(reel.instagramUrl)
-      ? getCleanInstagramUrl(reel.instagramUrl)
-      : siteConfig.business.instagram;
-    window.open(targetUrl, '_blank', 'noopener,noreferrer');
-  };
+  const targetInstagramUrl = isValidInstagramUrl(reel.instagramUrl)
+    ? getCleanInstagramUrl(reel.instagramUrl)
+    : siteConfig.business.instagram;
 
   return (
     <div className="relative group">
@@ -169,16 +165,18 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({ reel, onSelect }) 
         >
           {isInstagram ? (
             <div className="flex flex-col items-center gap-2">
-              <button
-                type="button"
-                onClick={handleWatchOnInstagram}
+              <a
+                href={targetInstagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white text-xs font-bold uppercase tracking-wider shadow-xl shadow-black/80 border border-[#9e1212] transition-all hover:scale-105 cursor-pointer group/btn"
                 title="Watch on Instagram (opens in new tab)"
               >
                 <Instagram className="w-3.5 h-3.5 text-white group-hover/btn:scale-110 transition-transform" />
                 <span>WATCH ON INSTAGRAM</span>
                 <ArrowUpRight className="w-3.5 h-3.5 text-white" />
-              </button>
+              </a>
               <span className="text-[10px] text-zinc-300/80 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-xs">
                 Click card to open player
               </span>

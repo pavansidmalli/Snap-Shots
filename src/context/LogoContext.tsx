@@ -13,32 +13,39 @@ const STORAGE_KEY_NAME = 'snapshots_custom_logo_name';
 const CUSTOM_EVENT_NAME = 'snapshots_logo_updated';
 
 const LogoContext = createContext<LogoContextType>({
-  customLogoUrl: '/snapshots-logo.svg',
-  logoFileName: 'snapshots-logo.svg',
-  hasCustomLogo: true,
+  customLogoUrl: null,
+  logoFileName: null,
+  hasCustomLogo: false,
   saveCustomLogo: () => {},
   removeCustomLogo: () => {},
 });
 
 export const LogoProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [customLogoUrl, setCustomLogoUrl] = useState<string | null>('/snapshots-logo.svg');
-  const [logoFileName, setLogoFileName] = useState<string | null>('snapshots-logo.svg');
+  const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(null);
+  const [logoFileName, setLogoFileName] = useState<string | null>(null);
 
   useEffect(() => {
     const loadStoredLogo = () => {
       try {
         const storedData = localStorage.getItem(STORAGE_KEY_DATA);
         const storedName = localStorage.getItem(STORAGE_KEY_NAME);
-        if (storedData) {
+
+        // If it was the legacy default svg, clean it out so user can upload manual
+        if (storedData === '/snapshots-logo.svg' || storedData === null) {
+          localStorage.removeItem(STORAGE_KEY_DATA);
+          localStorage.removeItem(STORAGE_KEY_NAME);
+          setCustomLogoUrl(null);
+          setLogoFileName(null);
+        } else if (storedData && storedData.startsWith('data:')) {
           setCustomLogoUrl(storedData);
-          setLogoFileName(storedName || 'snapshots-logo.svg');
+          setLogoFileName(storedName || 'uploaded-logo.png');
         } else {
-          setCustomLogoUrl('/snapshots-logo.svg');
-          setLogoFileName('snapshots-logo.svg');
+          setCustomLogoUrl(null);
+          setLogoFileName(null);
         }
       } catch {
-        setCustomLogoUrl('/snapshots-logo.svg');
-        setLogoFileName('snapshots-logo.svg');
+        setCustomLogoUrl(null);
+        setLogoFileName(null);
       }
     };
 

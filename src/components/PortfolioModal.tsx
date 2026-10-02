@@ -96,10 +96,14 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ reel, onClose, o
       } catch {
         // Fallback to clipboard if share cancelled
       }
-    } else {
-      navigator.clipboard.writeText(shareUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+    } else if (navigator.clipboard?.writeText) {
+      navigator.clipboard
+        .writeText(shareUrl)
+        .then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        })
+        .catch(() => {});
     }
   };
 

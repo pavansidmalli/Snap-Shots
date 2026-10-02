@@ -69,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
       }`}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-3 sm:gap-4 min-h-[52px] sm:min-h-[72px] md:min-h-[85px]">
+        <div className="flex items-center justify-between gap-3 sm:gap-4 min-h-[46px] sm:min-h-[58px] md:min-h-[66px]">
           {/* Header Brand Logo Section */}
           <div
             className="inline-flex items-center justify-center group focus:outline-none rounded-md transition-transform duration-200 shrink-0"

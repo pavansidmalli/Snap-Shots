@@ -69,27 +69,20 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onClaimOffer }) => {
   };
 
   const handleCopyCode = () => {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(PROMO_CODE);
-      setHasCopied(true);
-      setTimeout(() => setHasCopied(false), 2500);
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard
+        .writeText(PROMO_CODE)
+        .then(() => {
+          setHasCopied(true);
+          setTimeout(() => setHasCopied(false), 2500);
+        })
+        .catch(() => {});
     }
   };
 
-  const handleWhatsAppChat = () => {
-    setIsWhatsAppPinging(false);
-    requestAnimationFrame(() => {
-      setIsWhatsAppPinging(true);
-      setTimeout(() => setIsWhatsAppPinging(false), 900);
-    });
-
-    handleDismiss();
-
-    const text = `Hi Snap Shots! I just saw the welcome offer code ${PROMO_CODE} (15% OFF) on your website and would like to inquire about booking a shoot in ${countryConfig.countryName}.`;
-    const cleanNum = siteConfig.business.whatsapp.replace(/[^0-9]/g, '');
-    const url = `https://wa.me/${cleanNum}?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
+  const whatsappText = `Hi Snap Shots! I just saw the welcome offer code ${PROMO_CODE} (15% OFF) on your website and would like to inquire about booking a shoot in ${countryConfig.countryName}.`;
+  const cleanNum = siteConfig.business.whatsapp.replace(/[^0-9]/g, '');
+  const whatsappUrl = `https://wa.me/${cleanNum}?text=${encodeURIComponent(whatsappText)}`;
 
   if (!isOpen) return null;
 
@@ -203,22 +196,18 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onClaimOffer }) => {
             <ArrowUpRight className="w-4 h-4 text-white" />
           </button>
 
-          {/* WhatsApp Secondary CTA with Ping Effect */}
-          <button
-            type="button"
-            onClick={handleWhatsAppChat}
+          {/* WhatsApp Secondary CTA */}
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={handleDismiss}
             className="relative w-full sm:w-auto h-11 px-5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-white hover:text-[#bd1616] border border-zinc-700 hover:border-[#bd1616] text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer shrink-0"
             id="welcome-popup-whatsapp-btn"
           >
-            {isWhatsAppPinging && (
-              <>
-                <span className="absolute inset-0 rounded-full bg-[#bd1616] animate-ping opacity-60 pointer-events-none" />
-                <span className="absolute -inset-1 rounded-full border border-[#bd1616] animate-ping opacity-40 pointer-events-none" />
-              </>
-            )}
             <MessageSquare className="w-4 h-4 text-[#bd1616] relative z-10" />
             <span className="relative z-10">WHATSAPP</span>
-          </button>
+          </a>
         </div>
 
         {/* Dismiss subtle option */}

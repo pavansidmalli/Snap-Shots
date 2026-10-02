@@ -1,5 +1,5 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { ArrowUpRight, Play, Sparkles, Star, ShieldCheck, CheckCircle2, MapPin } from 'lucide-react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { ArrowUpRight, Play, Sparkles, Star, ShieldCheck, CheckCircle2, MapPin, Instagram, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { siteConfig } from '../config/siteConfig';
 import { getResponsiveImageSrcSet } from '../utils/imageUtils';
@@ -10,12 +10,105 @@ interface HeroProps {
   onViewWorkClick: () => void;
 }
 
+interface HeroReel {
+  id: string;
+  shortcode: string;
+  url: string;
+  title: string;
+  tag: string;
+  tagColor: string;
+  handle: string;
+  views: string;
+  badge: string;
+}
+
+const HERO_REELS: HeroReel[] = [
+  {
+    id: 'reel-1',
+    shortcode: 'DdUSBbWJaJ9',
+    url: 'https://www.instagram.com/reel/DdUSBbWJaJ9/',
+    title: 'Special Moments & Candid Snaps',
+    tag: 'EVENT VIBES',
+    tagColor: 'bg-amber-400',
+    handle: '@getursnapshots',
+    views: '210K',
+    badge: 'Live Snaps',
+  },
+  {
+    id: 'reel-2',
+    shortcode: 'DbWch7rCSw_',
+    url: 'https://www.instagram.com/reel/DbWch7rCSw_/',
+    title: 'Cinematic Mood & Visual Story',
+    tag: 'CINEMATIC',
+    tagColor: 'bg-emerald-400',
+    handle: '@snapshots_by_abhi',
+    views: '260K',
+    badge: 'Visual Grade',
+  },
+  {
+    id: 'reel-3',
+    shortcode: 'DbWdisUCxA2',
+    url: 'https://www.instagram.com/reel/DbWdisUCxA2/',
+    title: 'Cinematic Nightlife & Gala',
+    tag: 'FEATURED 4K',
+    tagColor: 'bg-[#bd1616]',
+    handle: '@snapshots_by_abhi',
+    views: '240K',
+    badge: 'Trending Beats',
+  },
+  {
+    id: 'reel-4',
+    shortcode: 'DbQ0Hy2OT-h',
+    url: 'https://www.instagram.com/reel/DbQ0Hy2OT-h/',
+    title: 'Royal Celebration Aesthetics',
+    tag: 'WEDDING',
+    tagColor: 'bg-rose-400',
+    handle: '@snapshots_by_abhi',
+    views: '195K',
+    badge: '4K HDR',
+  },
+  {
+    id: 'reel-5',
+    shortcode: 'DdwIldARQSE',
+    url: 'https://www.instagram.com/reel/DdwIldARQSE/',
+    title: 'Celebration Rhythm & Pacing',
+    tag: 'HIGHLIGHTS',
+    tagColor: 'bg-cyan-400',
+    handle: '@getursnapshots',
+    views: '180K',
+    badge: 'Same-Day Edit',
+  },
+];
+
 export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
   const { startingPriceLabel } = useCountry();
   const heroRef = useRef<HTMLElement | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [isPlaying, setIsPlaying] = useState(true);
   const shouldReduceMotion = useReducedMotion();
+  const [activeIndex, setActiveIndex] = useState<number>(2);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  const nextReel = useCallback(() => {
+    setActiveIndex((prev) => (prev + 1) % HERO_REELS.length);
+  }, []);
+
+  const prevReel = useCallback(() => {
+    setActiveIndex((prev) => (prev - 1 + HERO_REELS.length) % HERO_REELS.length);
+  }, []);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX;
+    if (deltaX > 45) {
+      prevReel();
+    } else if (deltaX < -45) {
+      nextReel();
+    }
+    setTouchStartX(null);
+  };
 
   // Track scroll progress of the hero section relative to viewport for subtle parallax depth
   const { scrollYProgress } = useScroll({
@@ -37,30 +130,6 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
 
   // 4. Metrics & CTA buttons drift gently with the page
   const yStats = useTransform(scrollYProgress, [0, 1], [0, shouldReduceMotion ? 0 : 25]);
-
-  useEffect(() => {
-    // Intersection observer to pause hero video when scrolled out of view for performance
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (videoRef.current) {
-          if (entry.isIntersecting) {
-            videoRef.current.play().catch(() => {});
-            setIsPlaying(true);
-          } else {
-            videoRef.current.pause();
-            setIsPlaying(false);
-          }
-        }
-      },
-      { threshold: 0.2 }
-    );
-
-    if (videoRef.current) {
-      observer.observe(videoRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
 
   return (
     <section id="home" ref={heroRef} className="relative pt-24 pb-10 sm:pt-28 sm:pb-14 overflow-hidden bg-transparent">
@@ -140,155 +209,155 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
         {/* Floating Phones / 9:16 Reel Showcase Mockup with Foreground Depth Parallax */}
         <motion.div
           style={{ y: yReels, scale: scaleReels }}
-          className="mt-6 sm:mt-12 flex justify-center overflow-hidden sm:overflow-visible px-2 transform-gpu will-change-transform"
+          className="mt-6 sm:mt-12 flex flex-col items-center justify-center overflow-hidden sm:overflow-visible px-2 transform-gpu will-change-transform"
         >
-          <div className="relative h-[430px] min-[390px]:h-[470px] sm:h-[490px] md:h-[520px] w-full max-w-[760px] md:max-w-[920px] lg:max-w-[980px] flex items-center justify-center">
-            {/* Reel 1 (Left Phone - Visible on Desktop/Tablet only): Royal Palace Sangeet */}
-            <div className="hidden md:block absolute md:left-4 lg:left-12 xl:left-16 top-6 sm:top-4 z-10 md:w-[215px] lg:w-[235px] aspect-[9/16] rounded-[28px] lg:rounded-[36px] bg-zinc-950 p-2 lg:p-2.5 shadow-2xl shadow-black/50 border border-zinc-700/60 transform -rotate-6 transition-all duration-500 hover:rotate-0 hover:scale-105 hover:z-30 cursor-pointer group transform-gpu will-change-transform">
-              {/* Dynamic Island */}
-              <div className="absolute top-3 sm:top-3.5 left-1/2 -translate-x-1/2 w-12 sm:w-16 h-3 sm:h-3.5 bg-black rounded-full z-30 flex items-center justify-end px-1 sm:px-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              </div>
+          {/* 5-Video Phones Stage Container (CSS selector 1) */}
+          <div
+            className="relative h-[450px] min-[390px]:h-[485px] sm:h-[510px] md:h-[545px] w-full max-w-[760px] md:max-w-[960px] lg:max-w-[1150px] flex items-center justify-center select-none"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            {/* Ambient Radial Spotlight & Stage Glow */}
+            <div className="absolute inset-0 max-w-[550px] h-[380px] mx-auto my-auto -z-10 bg-radial from-[#bd1616]/35 via-[#bd1616]/12 to-transparent blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 w-3/4 max-w-[620px] h-[60px] bg-gradient-to-r from-transparent via-[#bd1616]/40 to-transparent blur-2xl pointer-events-none -z-10" />
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1/2 max-w-[380px] h-[1px] bg-gradient-to-r from-transparent via-[#bd1616]/70 to-transparent pointer-events-none" />
 
-              {/* Screen */}
-              <div className="relative w-full h-full rounded-[20px] sm:rounded-[30px] overflow-hidden bg-black">
-                <video
-                  src="/videos/wedding-reel.mp4"
-                  poster="https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=600&auto=format&fit=crop"
-                  preload="metadata"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  disablePictureInPicture
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform"
+            {/* Left Previous Button */}
+            <button
+              onClick={prevReel}
+              aria-label="Previous Reel"
+              className="absolute left-1 sm:left-3 md:left-6 lg:left-8 z-40 p-2.5 sm:p-3 rounded-full bg-black/80 hover:bg-[#bd1616] text-white border border-white/15 hover:border-[#bd1616] shadow-2xl backdrop-blur-md transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer group"
+            >
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-300 group-hover:text-white transition-colors" />
+            </button>
+
+            {/* Right Next Button */}
+            <button
+              onClick={nextReel}
+              aria-label="Next Reel"
+              className="absolute right-1 sm:right-3 md:right-6 lg:right-8 z-40 p-2.5 sm:p-3 rounded-full bg-black/80 hover:bg-[#bd1616] text-white border border-white/15 hover:border-[#bd1616] shadow-2xl backdrop-blur-md transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer group"
+            >
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-300 group-hover:text-white transition-colors" />
+            </button>
+
+            {/* Render 5 Phones with Smooth 3D Perspective Transformations */}
+            {HERO_REELS.map((reel, index) => {
+              // Calculate relative distance to active reel (-2, -1, 0, 1, 2)
+              let diff = index - activeIndex;
+              if (diff > 2) diff -= HERO_REELS.length;
+              if (diff < -2) diff += HERO_REELS.length;
+
+              const isCenter = diff === 0;
+              const isAdjacentLeft = diff === -1;
+              const isAdjacentRight = diff === 1;
+              const isOuterLeft = diff === -2;
+
+              if (Math.abs(diff) > 2) return null;
+
+              return (
+                <div
+                  key={reel.id}
+                  onClick={() => !isCenter && setActiveIndex(index)}
+                  className={`absolute transition-all duration-500 ease-out will-change-transform ${
+                    isCenter
+                      ? 'z-30 w-[245px] min-[390px]:w-[265px] sm:w-[280px] md:w-[285px] lg:w-[305px] aspect-[9/16] rounded-[32px] sm:rounded-[42px] bg-gradient-to-b from-zinc-700 via-zinc-900 to-black p-1.5 sm:p-2.5 shadow-[0_25px_65px_-10px_rgba(189,22,22,0.55),0_0_35px_rgba(189,22,22,0.25)] border-2 border-[#bd1616] ring-4 ring-[#bd1616]/25 scale-100 sm:scale-105 translate-x-0 rotate-0 opacity-100 animate-float cursor-default'
+                      : isAdjacentLeft
+                      ? 'z-20 w-[215px] sm:w-[235px] lg:w-[250px] aspect-[9/16] rounded-[28px] sm:rounded-[36px] bg-gradient-to-b from-zinc-800 to-zinc-950 p-1.5 sm:p-2 shadow-2xl border border-zinc-700/80 -translate-x-[115px] sm:-translate-x-[170px] md:-translate-x-[200px] lg:-translate-x-[255px] xl:-translate-x-[295px] -rotate-6 scale-90 sm:scale-95 opacity-80 hover:opacity-100 hover:scale-100 cursor-pointer hidden min-[420px]:block'
+                      : isAdjacentRight
+                      ? 'z-20 w-[215px] sm:w-[235px] lg:w-[250px] aspect-[9/16] rounded-[28px] sm:rounded-[36px] bg-gradient-to-b from-zinc-800 to-zinc-950 p-1.5 sm:p-2 shadow-2xl border border-zinc-700/80 translate-x-[115px] sm:translate-x-[170px] md:translate-x-[200px] lg:translate-x-[255px] xl:translate-x-[295px] rotate-6 scale-90 sm:scale-95 opacity-80 hover:opacity-100 hover:scale-100 cursor-pointer hidden min-[420px]:block'
+                      : isOuterLeft
+                      ? 'z-10 w-[195px] sm:w-[210px] lg:w-[225px] aspect-[9/16] rounded-[24px] sm:rounded-[32px] bg-zinc-950 p-1.5 shadow-xl border border-zinc-800/80 -translate-x-[230px] md:-translate-x-[340px] lg:-translate-x-[425px] xl:-translate-x-[495px] -rotate-12 scale-[0.8] sm:scale-[0.85] opacity-60 hover:opacity-90 hover:scale-[0.88] cursor-pointer hidden md:block'
+                      : 'z-10 w-[195px] sm:w-[210px] lg:w-[225px] aspect-[9/16] rounded-[24px] sm:rounded-[32px] bg-zinc-950 p-1.5 shadow-xl border border-zinc-800/80 translate-x-[230px] md:translate-x-[340px] lg:translate-x-[425px] xl:translate-x-[495px] rotate-12 scale-[0.8] sm:scale-[0.85] opacity-60 hover:opacity-90 hover:scale-[0.88] cursor-pointer hidden md:block'
+                  }`}
+                >
+                  {/* Dynamic Island / Camera Notch (Desktop & Tablet only - REMOVED on mobile for full clean edge-to-edge video preview) */}
+                  <div className="hidden sm:flex absolute top-3 sm:top-3.5 left-1/2 -translate-x-1/2 w-14 sm:w-16 h-3 sm:h-3.5 bg-black rounded-full z-30 items-center justify-end px-1 sm:px-2 shadow-inner border border-white/5">
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        isCenter ? 'bg-[#bd1616] animate-pulse' : 'bg-emerald-400'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Screen Container */}
+                  <div className="relative w-full h-full rounded-[24px] sm:rounded-[34px] overflow-hidden bg-black flex flex-col items-center justify-center">
+                    {/* Top glass reflection gradient */}
+                    <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white/[0.06] to-transparent pointer-events-none z-20" />
+
+                    {/* Top Info Bar */}
+                    <div className="absolute top-2.5 sm:top-3 left-2.5 sm:left-3 right-2.5 sm:right-3 flex items-center justify-between z-20 pointer-events-none">
+                      <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/75 backdrop-blur-md text-[9px] font-extrabold text-white border border-white/10 shadow-xs">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#bd1616] animate-ping" />
+                        <span>{reel.tag}</span>
+                      </span>
+                      <span className="px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-md text-[8px] font-mono text-white/80 border border-white/10 font-bold">
+                        4K HDR
+                      </span>
+                    </div>
+
+                    <iframe
+                      src={`https://www.instagram.com/reel/${reel.shortcode}/embed/?utm_source=ig_embed`}
+                      className="w-full h-full border-0 rounded-[22px] sm:rounded-[30px] bg-black"
+                      scrolling="no"
+                      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                      allowFullScreen
+                      title={reel.title}
+                    />
+
+                    {/* Direct Watch Overlay */}
+                    <div className="absolute bottom-2 left-2 right-2 z-30 pointer-events-auto">
+                      <a
+                        href={reel.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-full flex items-center justify-between gap-1 px-3 py-1.5 rounded-full bg-gradient-to-r from-black/95 via-zinc-950/95 to-black/95 hover:from-[#bd1616] hover:to-[#9e1212] active:from-[#750d0d] active:to-[#750d0d] backdrop-blur-md text-white text-[10px] font-bold shadow-2xl border border-white/20 hover:border-[#bd1616] transition-all hover:scale-[1.02] cursor-pointer"
+                        title={`Open ${reel.title} on Instagram`}
+                      >
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <Instagram className="w-3.5 h-3.5 text-[#ffc800] shrink-0" />
+                          <span className="truncate">{reel.handle}</span>
+                        </div>
+                        <div className="flex items-center gap-0.5 text-zinc-300 hover:text-white shrink-0">
+                          <span>Watch</span>
+                          <ArrowUpRight className="w-3 h-3 text-white" />
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Smooth Carousel Pagination & Reel Selection Tabs */}
+          <div className="mt-4 sm:mt-6 flex flex-col items-center gap-3 z-30">
+            {/* 5 Interactive Indicators */}
+            <div className="flex items-center justify-center gap-2">
+              {HERO_REELS.map((reel, idx) => (
+                <button
+                  key={reel.id}
+                  onClick={() => setActiveIndex(idx)}
+                  className={`transition-all duration-300 rounded-full cursor-pointer ${
+                    activeIndex === idx
+                      ? 'w-9 h-2.5 bg-[#bd1616] shadow-lg shadow-[#bd1616]/60'
+                      : 'w-2.5 h-2.5 bg-zinc-700 hover:bg-zinc-500'
+                  }`}
+                  aria-label={`Jump to ${reel.title}`}
+                  title={reel.title}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-black/35 pointer-events-none" />
-
-                {/* Top Overlay */}
-                <div className="absolute top-3.5 sm:top-5 left-2 sm:left-3 right-2 sm:right-3 flex items-center justify-between pointer-events-none z-20">
-                  <span className="flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[8px] sm:text-[10px] font-bold text-white border border-white/10">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#bd1616]" />
-                    WEDDING
-                  </span>
-                  <span className="text-[8px] sm:text-[10px] text-white/80 font-mono font-medium">4K HDR</span>
-                </div>
-
-                {/* Bottom Overlay */}
-                <div className="absolute bottom-3 sm:bottom-4 left-2 sm:left-3 right-2 sm:right-3 text-left pointer-events-none z-20">
-                  <div className="text-[9px] sm:text-[10px] font-extrabold text-[#ffc800] uppercase tracking-wider mb-0.5">
-                    Ceremonial Cut
-                  </div>
-                  <h3 className="text-white text-[10px] sm:text-xs font-bold leading-tight line-clamp-1 drop-shadow-md">
-                    Royal Palace Sangeet
-                  </h3>
-                  <div className="mt-1 sm:mt-1.5 flex items-center justify-between text-[8px] sm:text-[9px] text-white/80 border-t border-white/10 pt-1">
-                    <span>⚡ 3h Cut</span>
-                    <span className="text-white font-bold">192K</span>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
 
-            {/* Reel 2 (Center Phone - Featured Reel - Visible on Mobile & Desktop): Electric Nightlife Gala */}
-            <div className="relative z-20 w-[240px] min-[390px]:w-[260px] sm:w-[275px] md:w-[275px] lg:w-[295px] aspect-[9/16] rounded-[30px] sm:rounded-[40px] bg-zinc-950 p-2 sm:p-3 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] border-2 border-[#bd1616]/50 ring-4 ring-[#bd1616]/15 transition-all duration-300 animate-float hover:scale-105 group transform-gpu will-change-transform">
-              {/* Dynamic Island */}
-              <div className="absolute top-3.5 sm:top-4 left-1/2 -translate-x-1/2 w-14 sm:w-20 h-3 sm:h-4 bg-black rounded-full z-30 flex items-center justify-end px-1.5 sm:px-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#bd1616] animate-pulse" />
-              </div>
-
-              {/* Screen Container */}
-              <div className="relative w-full h-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-black">
-                <video
-                  ref={videoRef}
-                  src="/videos/hero-reel.mp4"
-                  poster="https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=800&auto=format&fit=crop"
-                  preload="metadata"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  disablePictureInPicture
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform"
-                />
-
-                {/* Video Overlay Vignette */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-black/40 pointer-events-none" />
-
-                {/* Top Reel Header Overlay */}
-                <div className="absolute top-4 sm:top-6 left-2.5 sm:left-3.5 right-2.5 sm:right-3.5 flex items-center justify-between pointer-events-none z-20">
-                  <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-white border border-white/10">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#bd1616] animate-ping" />
-                    LIVE EDIT
-                  </span>
-                  <span className="text-[9px] sm:text-[10px] text-white/80 font-mono font-medium">4K 60FPS</span>
-                </div>
-
-                {/* Bottom Reel Description Overlay */}
-                <div className="absolute bottom-3 sm:bottom-4 left-2.5 sm:left-3.5 right-2.5 sm:right-3.5 text-left pointer-events-none z-20">
-                  <div className="flex items-center gap-1 text-[#bd1616] text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider mb-0.5">
-                    <Sparkles className="w-3 h-3 text-[#bd1616]" />
-                    <span>Trending Audio Sync</span>
-                  </div>
-                  <h2 className="text-white text-xs sm:text-sm font-bold leading-tight drop-shadow-md">
-                    Electric Nightlife Gala
-                  </h2>
-                  <p className="text-zinc-300 text-[9px] sm:text-[10px] mt-0.5 drop-shadow-sm line-clamp-1">
-                    Shot on iPhone 16 Pro Max Cinematic Mode
-                  </p>
-                  <div className="mt-1.5 flex items-center justify-between text-[8px] sm:text-[9px] text-white/80 border-t border-white/10 pt-1.5">
-                    <span>⚡ Delivered in 2h 45m</span>
-                    <span className="text-white font-bold">280K views</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Reel 3 (Right Phone - Visible on Desktop/Tablet only): KINETIC Runway */}
-            <div className="hidden md:block absolute md:right-4 lg:right-12 xl:right-16 top-6 sm:top-4 z-10 md:w-[215px] lg:w-[235px] aspect-[9/16] rounded-[28px] lg:rounded-[36px] bg-zinc-950 p-2 lg:p-2.5 shadow-2xl shadow-black/50 border border-zinc-700/60 transform rotate-6 transition-all duration-500 hover:rotate-0 hover:scale-105 hover:z-30 cursor-pointer group transform-gpu will-change-transform">
-              {/* Dynamic Island */}
-              <div className="absolute top-3 sm:top-3.5 left-1/2 -translate-x-1/2 w-12 sm:w-16 h-3 sm:h-3.5 bg-black rounded-full z-30 flex items-center justify-end px-1 sm:px-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-              </div>
-
-              {/* Screen Container */}
-              <div className="relative w-full h-full rounded-[20px] sm:rounded-[30px] overflow-hidden bg-black">
-                <video
-                  src="/videos/brand-reel.mp4"
-                  poster="https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=600&auto=format&fit=crop"
-                  preload="metadata"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  disablePictureInPicture
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-black/35 pointer-events-none" />
-
-                {/* Top Overlay */}
-                <div className="absolute top-3.5 sm:top-5 left-2 sm:left-3 right-2 sm:right-3 flex items-center justify-between pointer-events-none z-20">
-                  <span className="flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[8px] sm:text-[10px] font-bold text-white border border-white/10">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                    EDITORIAL
-                  </span>
-                  <span className="text-[8px] sm:text-[10px] text-white/80 font-mono font-medium">Color Graded</span>
-                </div>
-
-                {/* Bottom Overlay */}
-                <div className="absolute bottom-3 sm:bottom-4 left-2 sm:left-3 right-2 sm:right-3 text-left pointer-events-none z-20">
-                  <div className="text-[9px] sm:text-[10px] font-extrabold text-cyan-400 uppercase tracking-wider mb-0.5">
-                    Fashion Runway
-                  </div>
-                  <h3 className="text-white text-[10px] sm:text-xs font-bold leading-tight line-clamp-1 drop-shadow-md">
-                    KINETIC Studio Drop
-                  </h3>
-                  <div className="mt-1 sm:mt-1.5 flex items-center justify-between text-[8px] sm:text-[9px] text-white/80 border-t border-white/10 pt-1">
-                    <span>⚡ Same-Day</span>
-                    <span className="text-white font-bold">215K</span>
-                  </div>
-                </div>
-              </div>
+            {/* Active Reel Tagline & Swipe Prompt */}
+            <div className="flex items-center gap-2 text-xs text-zinc-400">
+              <span className="px-2.5 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 font-bold text-[#ffc800] text-[11px] shadow-xs">
+                {HERO_REELS[activeIndex].tag}
+              </span>
+              <span className="text-zinc-200 font-semibold">
+                {HERO_REELS[activeIndex].title}
+              </span>
+              <span className="hidden sm:inline text-zinc-500">&bull; Tap any video to center</span>
             </div>
           </div>
         </motion.div>

@@ -20,6 +20,7 @@ import { CTA } from './components/CTA';
 import { FAQ } from './components/FAQ';
 import { Footer } from './components/Footer';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
+import { FloatingCall } from './components/FloatingCall';
 import { WelcomePopup } from './components/WelcomePopup';
 import { LogoProvider } from './context/LogoContext';
 import { CountryProvider } from './context/CountryContext';
@@ -186,8 +187,11 @@ export default function App() {
           <Footer />
         </FadeInSection>
 
-        {/* Floating WhatsApp Quick Action */}
+        {/* Floating WhatsApp Quick Action (Bottom-Right) */}
         <FloatingWhatsApp />
+
+        {/* Floating Phone Quick Action (Bottom-Left - Opposite of WhatsApp) */}
+        <FloatingCall />
 
         {/* Fullscreen Reel Modal */}
         <PortfolioModal
