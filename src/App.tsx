@@ -128,7 +128,11 @@ export default function App() {
         <main className="relative z-10">
           {/* 2. Hero Section with dynamic 9:16 phone reel, stats, & CTA */}
           <FadeInSection duration={0.8} yOffset={20}>
-            <Hero onBookClick={() => openBookingModal()} onViewWorkClick={scrollToWork} />
+            <Hero
+              onBookClick={() => openBookingModal()}
+              onViewWorkClick={scrollToWork}
+              onWatchReel={(reel) => setSelectedReel(reel)}
+            />
           </FadeInSection>
 
           {/* 3. Trusted Brand Logos Marquee Section */}

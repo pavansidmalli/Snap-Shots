@@ -163,33 +163,18 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({ reel, onSelect }) 
             isHovered ? 'opacity-100 scale-100' : 'opacity-90 scale-95'
           }`}
         >
-          {isInstagram ? (
-            <div className="flex flex-col items-center gap-2">
-              <a
-                href={targetInstagramUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white text-xs font-bold uppercase tracking-wider shadow-xl shadow-black/80 border border-[#9e1212] transition-all hover:scale-105 cursor-pointer group/btn"
-                title="Watch on Instagram (opens in new tab)"
-              >
-                <Instagram className="w-3.5 h-3.5 text-white group-hover/btn:scale-110 transition-transform" />
-                <span>WATCH ON INSTAGRAM</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-white" />
-              </a>
-              <span className="text-[10px] text-zinc-300/80 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-xs">
-                Click card to open player
-              </span>
-            </div>
-          ) : (
-            <div
-              className={`flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-[#bd1616] border border-[#9e1212] text-white shadow-xl transition-all duration-300 ${
-                isHovered ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
-              }`}
-            >
-              <Play className="w-5 h-5 fill-white ml-0.5" />
-            </div>
-          )}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect(reel);
+            }}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white text-xs font-bold uppercase tracking-wider shadow-2xl shadow-black/80 border border-[#9e1212] transition-all hover:scale-105 active:scale-95 cursor-pointer group/btn"
+            title="Watch video on website"
+          >
+            <Play className="w-3.5 h-3.5 fill-white text-white group-hover/btn:scale-110 transition-transform" />
+            <span>PLAY REEL</span>
+          </button>
         </div>
 
         {/* Live Video Scrub/Progress Bar when hovered for direct video */}
@@ -217,14 +202,10 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({ reel, onSelect }) 
 
           <div className="mt-2 pt-2 border-t border-white/10 flex items-center justify-between text-[10px] text-white/80">
             <span className="text-white/90 font-semibold flex items-center gap-1">
-              {isInstagram ? (
-                <span className="flex items-center gap-1 text-zinc-300">
-                  <Instagram className="w-3 h-3 text-[#bd1616]" />
-                  <span>Tap to expand player</span>
-                </span>
-              ) : (
-                <span>Click for full 4K screen</span>
-              )}
+              <span className="flex items-center gap-1.5 text-zinc-300">
+                <Play className="w-2.5 h-2.5 fill-[#bd1616] text-[#bd1616]" />
+                <span>Tap to play on website</span>
+              </span>
             </span>
             <span className="font-mono">{reel.duration}</span>
           </div>

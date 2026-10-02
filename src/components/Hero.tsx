@@ -4,10 +4,12 @@ import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion
 import { siteConfig } from '../config/siteConfig';
 import { getResponsiveImageSrcSet } from '../utils/imageUtils';
 import { useCountry } from '../context/CountryContext';
+import { ReelWorkItem } from '../types';
 
 interface HeroProps {
   onBookClick: () => void;
   onViewWorkClick: () => void;
+  onWatchReel?: (reel: ReelWorkItem) => void;
 }
 
 interface HeroReel {
@@ -80,12 +82,30 @@ const HERO_REELS: HeroReel[] = [
   },
 ];
 
-export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
+export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick, onWatchReel }) => {
   const { startingPriceLabel } = useCountry();
   const heroRef = useRef<HTMLElement | null>(null);
   const shouldReduceMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState<number>(2);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  const handlePlayReel = useCallback((reel: HeroReel) => {
+    if (onWatchReel) {
+      onWatchReel({
+        id: reel.id,
+        title: reel.title,
+        category: reel.tag,
+        videoUrl: reel.url,
+        posterUrl: '',
+        views: reel.views,
+        duration: '0:35',
+        client: reel.handle,
+        instagramUrl: reel.url,
+        isInstagram: true,
+        description: `${reel.title} - Captured in 4K HDR with dynamic motion by Snap Shots (${reel.handle}).`,
+      });
+    }
+  }, [onWatchReel]);
 
   const nextReel = useCallback(() => {
     setActiveIndex((prev) => (prev + 1) % HERO_REELS.length);
@@ -257,10 +277,10 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
               return (
                 <div
                   key={reel.id}
-                  onClick={() => !isCenter && setActiveIndex(index)}
+                  onClick={() => (!isCenter ? setActiveIndex(index) : handlePlayReel(reel))}
                   className={`absolute transition-all duration-500 ease-out will-change-transform ${
                     isCenter
-                      ? 'z-30 w-[245px] min-[390px]:w-[265px] sm:w-[280px] md:w-[285px] lg:w-[305px] aspect-[9/16] rounded-[32px] sm:rounded-[42px] bg-gradient-to-b from-zinc-700 via-zinc-900 to-black p-1.5 sm:p-2.5 shadow-[0_25px_65px_-10px_rgba(189,22,22,0.55),0_0_35px_rgba(189,22,22,0.25)] border-2 border-[#bd1616] ring-4 ring-[#bd1616]/25 scale-100 sm:scale-105 translate-x-0 rotate-0 opacity-100 animate-float cursor-default'
+                      ? 'z-30 w-[245px] min-[390px]:w-[265px] sm:w-[280px] md:w-[285px] lg:w-[305px] aspect-[9/16] rounded-[32px] sm:rounded-[42px] bg-gradient-to-b from-zinc-700 via-zinc-900 to-black p-1.5 sm:p-2.5 shadow-[0_25px_65px_-10px_rgba(189,22,22,0.55),0_0_35px_rgba(189,22,22,0.25)] border-2 border-[#bd1616] ring-4 ring-[#bd1616]/25 scale-100 sm:scale-105 translate-x-0 rotate-0 opacity-100 animate-float cursor-pointer group/centerphone'
                       : isAdjacentLeft
                       ? 'z-20 w-[215px] sm:w-[235px] lg:w-[250px] aspect-[9/16] rounded-[28px] sm:rounded-[36px] bg-gradient-to-b from-zinc-800 to-zinc-950 p-1.5 sm:p-2 shadow-2xl border border-zinc-700/80 -translate-x-[115px] sm:-translate-x-[170px] md:-translate-x-[200px] lg:-translate-x-[255px] xl:-translate-x-[295px] -rotate-6 scale-90 sm:scale-95 opacity-80 hover:opacity-100 hover:scale-100 cursor-pointer hidden min-[420px]:block'
                       : isAdjacentRight
@@ -304,25 +324,26 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
                       title={reel.title}
                     />
 
-                    {/* Direct Watch Overlay */}
+                    {/* Direct Watch Overlay (Plays Video In Website Popup - No Redirect) */}
                     <div className="absolute bottom-2 left-2 right-2 z-30 pointer-events-auto">
-                      <a
-                        href={reel.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePlayReel(reel);
+                        }}
                         className="w-full flex items-center justify-between gap-1 px-3 py-1.5 rounded-full bg-gradient-to-r from-black/95 via-zinc-950/95 to-black/95 hover:from-[#bd1616] hover:to-[#9e1212] active:from-[#750d0d] active:to-[#750d0d] backdrop-blur-md text-white text-[10px] font-bold shadow-2xl border border-white/20 hover:border-[#bd1616] transition-all hover:scale-[1.02] cursor-pointer"
-                        title={`Open ${reel.title} on Instagram`}
+                        title={`Watch ${reel.title} in website popup`}
                       >
                         <div className="flex items-center gap-1.5 min-w-0">
-                          <Instagram className="w-3.5 h-3.5 text-[#ffc800] shrink-0" />
+                          <Play className="w-3 h-3 text-[#ffc800] fill-[#ffc800] shrink-0" />
                           <span className="truncate">{reel.handle}</span>
                         </div>
-                        <div className="flex items-center gap-0.5 text-zinc-300 hover:text-white shrink-0">
-                          <span>Watch</span>
-                          <ArrowUpRight className="w-3 h-3 text-white" />
+                        <div className="flex items-center gap-1 text-zinc-300 hover:text-white shrink-0 font-bold">
+                          <span>Play on Site</span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#bd1616] animate-ping" />
                         </div>
-                      </a>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -406,21 +427,24 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick }) => {
             </button>
           </div>
 
-          {/* Trust Badges Bar */}
-          <div className="mt-10 pt-6 border-t border-zinc-800 flex flex-wrap items-center justify-center gap-y-2 gap-x-6 text-xs text-zinc-400">
-            <div className="flex items-center gap-1.5">
+          {/* Trust Badges Bar (Single In-Line Row) */}
+          <div className="mt-10 pt-6 border-t border-zinc-800/80 flex flex-nowrap items-center justify-start lg:justify-center gap-x-5 sm:gap-x-6 overflow-x-auto no-scrollbar whitespace-nowrap text-xs text-zinc-400 px-2 sm:px-0 py-1">
+            <div className="shrink-0 flex items-center gap-1.5 whitespace-nowrap">
               <CheckCircle2 className="w-3.5 h-3.5 text-[#bd1616]" />
               <span>Trained &amp; Certified Reel-Makers</span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <span className="text-zinc-700 hidden sm:inline select-none">&bull;</span>
+            <div className="shrink-0 flex items-center gap-1.5 whitespace-nowrap">
               <CheckCircle2 className="w-3.5 h-3.5 text-[#bd1616]" />
               <span>Same-Day Instant Delivery</span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <span className="text-zinc-700 hidden sm:inline select-none">&bull;</span>
+            <div className="shrink-0 flex items-center gap-1.5 whitespace-nowrap">
               <CheckCircle2 className="w-3.5 h-3.5 text-[#bd1616]" />
               <span>Full 4K Raw Footage Access</span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <span className="text-zinc-700 hidden sm:inline select-none">&bull;</span>
+            <div className="shrink-0 flex items-center gap-1.5 whitespace-nowrap">
               <CheckCircle2 className="w-3.5 h-3.5 text-[#bd1616]" />
               <span>Transparent Pricing from {startingPriceLabel}</span>
             </div>

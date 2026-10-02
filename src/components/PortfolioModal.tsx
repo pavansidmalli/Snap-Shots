@@ -29,8 +29,9 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ reel, onClose, o
   const [progress, setProgress] = useState(0);
   const [copied, setCopied] = useState(false);
 
-  const isInstagram = Boolean(reel?.isInstagram || reel?.instagramUrl);
-  const instagramShortcode = reel ? extractInstagramId(reel.instagramUrl || reel.videoUrl) : null;
+  const isInstagram = Boolean(reel?.isInstagram || reel?.instagramUrl || !reel?.videoUrl?.endsWith('.mp4'));
+  const rawShortcode = reel ? extractInstagramId(reel.instagramUrl || reel.videoUrl) : null;
+  const instagramShortcode = rawShortcode || 'DbWdisUCxA2';
   const isDirectVideo = Boolean(reel?.videoUrl && reel.videoUrl.endsWith('.mp4'));
 
   // Close modal on Escape key press
@@ -132,75 +133,7 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ reel, onClose, o
 
         {/* Media Column (9:16 vertical presentation) */}
         <div className="relative w-full md:w-[380px] lg:w-[410px] aspect-[9/16] max-h-[55vh] md:max-h-[85vh] bg-black flex-shrink-0 mx-auto flex items-center justify-center overflow-hidden">
-          {isInstagram ? (
-            instagramShortcode ? (
-              /* Official Instagram Embed (Requirement 11) */
-              <div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
-                <iframe
-                  src={`https://www.instagram.com/reel/${instagramShortcode}/embed/?utm_source=ig_embed`}
-                  className="w-full h-full border-0"
-                  scrolling="no"
-                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                  allowFullScreen
-                  title={reel.title}
-                />
-                {/* Floating Quick Action Overlay (Requirement 10) */}
-                <div className="absolute bottom-3 right-3 z-30 pointer-events-auto">
-                  <a
-                    href={instagramTargetUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#bd1616] hover:bg-[#9e1212] text-white text-[11px] font-bold shadow-lg shadow-black/80 transition-all border border-[#9e1212] cursor-pointer"
-                  >
-                    <Instagram className="w-3.5 h-3.5 text-white" />
-                    <span>OPEN ON INSTAGRAM</span>
-                    <ArrowUpRight className="w-3.5 h-3.5 text-white" />
-                  </a>
-                </div>
-              </div>
-            ) : (
-              /* Visually matching placeholder card if direct embedding not possible from URL alone (Requirement 12) */
-              <div className="relative w-full h-full bg-zinc-950 flex flex-col items-center justify-center p-6 text-center overflow-hidden">
-                <img
-                  src={reel.posterUrl}
-                  srcSet={getResponsiveImageSrcSet(reel.posterUrl, [360, 540, 720])}
-                  sizes="(max-width: 768px) 100vw, 400px"
-                  width={400}
-                  height={711}
-                  loading="lazy"
-                  decoding="async"
-                  alt={reel.title}
-                  className="absolute inset-0 w-full h-full object-cover opacity-35"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-[#bd1616]/20" />
-
-                <div className="relative z-20 flex flex-col items-center max-w-xs">
-                  <div className="h-16 w-16 rounded-full bg-[#bd1616] border border-[#9e1212] flex items-center justify-center text-white mb-4 shadow-xl">
-                    <Instagram className="w-8 h-8 text-white" />
-                  </div>
-                  <span className="px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[10px] font-bold text-[#bd1616] uppercase tracking-wider mb-2">
-                    {reel.category} Reel
-                  </span>
-                  <h4 className="text-white text-base sm:text-lg font-bold leading-tight mb-2">
-                    {reel.title}
-                  </h4>
-                  <p className="text-zinc-400 text-xs mb-6">
-                    Ready to watch on Instagram with complete audio, music tags, and original high-definition color grade.
-                  </p>
-                  <a
-                    href={instagramTargetUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full h-12 flex items-center justify-center gap-2 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-xs font-bold uppercase tracking-wider text-white shadow-xl shadow-black/80 transition-all hover:scale-105 border border-[#9e1212] cursor-pointer"
-                  >
-                    <Instagram className="w-4 h-4 text-white" />
-                    <span>WATCH ON INSTAGRAM</span>
-                    <ArrowUpRight className="w-4 h-4 text-white" />
-                  </a>
-                </div>
-              </div>
-            )
-          ) : isDirectVideo ? (
+          {isDirectVideo ? (
             /* Direct MP4 Video Player */
             <>
               <video
@@ -219,61 +152,54 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ reel, onClose, o
               {/* Video Controls Overlay */}
               <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/80 via-transparent to-black/40" />
 
-              {/* Top category info */}
-              <div className="absolute top-4 left-4 z-20 pointer-events-none">
-                <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-xs font-bold text-white border border-white/10">
-                  {reel.category}
-                </span>
+              {/* Center Play/Pause Indicator on direct video */}
+              <button
+                type="button"
+                onClick={togglePlay}
+                className="absolute inset-0 flex items-center justify-center z-10 cursor-pointer"
+                aria-label={isPlaying ? 'Pause' : 'Play'}
+              >
+                {!isPlaying && (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#bd1616]/90 text-white shadow-2xl backdrop-blur-md">
+                    <Play className="w-8 h-8 fill-white ml-1" />
+                  </div>
+                )}
+              </button>
+
+              {/* Bottom Video Controls */}
+              <div className="absolute bottom-4 left-4 right-4 z-20 flex items-center justify-between text-white">
+                <button
+                  type="button"
+                  onClick={togglePlay}
+                  className="p-2 rounded-full bg-black/60 hover:bg-black/80 transition-colors cursor-pointer"
+                >
+                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={toggleMute}
+                  className="p-2 rounded-full bg-black/60 hover:bg-black/80 transition-colors cursor-pointer"
+                >
+                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                </button>
               </div>
 
-              {/* Audio & Play Controls Bar */}
-              <div className="absolute bottom-4 left-4 right-4 z-30 flex items-center justify-between pointer-events-auto">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={togglePlay}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-[#bd1616] hover:bg-[#9e1212] text-white transition-colors cursor-pointer shadow-sm"
-                    aria-label={isPlaying ? 'Pause' : 'Play'}
-                  >
-                    {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5 fill-white" />}
-                  </button>
-
-                  <button
-                    onClick={toggleMute}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-[#bd1616] hover:bg-[#9e1212] text-white transition-colors cursor-pointer shadow-sm"
-                    aria-label={isMuted ? 'Unmute' : 'Mute'}
-                  >
-                    {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                  </button>
-                </div>
-
-                <span className="text-xs font-mono font-medium text-white/90 bg-black/50 px-2 py-1 rounded-md">
-                  {reel.duration}
-                </span>
-              </div>
-
-              {/* Progress Scrubber */}
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 z-30">
-                <div
-                  className="h-full bg-[#bd1616] transition-all duration-100"
-                  style={{ width: `${progress}%` }}
-                />
+              {/* Progress Bar */}
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 z-20">
+                <div className="h-full bg-[#bd1616]" style={{ width: `${progress}%` }} />
               </div>
             </>
           ) : (
-            /* Fallback Poster Card */
-            <div className="relative w-full h-full bg-zinc-950 flex flex-col items-center justify-center p-6 text-center">
-              <img
-                src={reel.posterUrl}
-                srcSet={getResponsiveImageSrcSet(reel.posterUrl, [360, 540, 720])}
-                sizes="(max-width: 768px) 100vw, 400px"
-                width={400}
-                height={711}
-                loading="lazy"
-                decoding="async"
-                alt={reel.title}
-                className="absolute inset-0 w-full h-full object-cover"
+            /* Embedded In-Website Reel Player - Plays cleanly inside website with NO redirect */
+            <div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
+              <iframe
+                src={`https://www.instagram.com/reel/${instagramShortcode}/embed/?utm_source=ig_embed`}
+                className="w-full h-full border-0 bg-black"
+                scrolling="no"
+                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                allowFullScreen
+                title={reel.title}
               />
-              <div className="absolute inset-0 bg-black/50" />
             </div>
           )}
         </div>
@@ -314,42 +240,23 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ reel, onClose, o
             </div>
           </div>
 
-          {/* Modal Actions (Requirements 9, 10, and Booking CTA) */}
+          {/* Modal Actions: In-Website Booking & Sharing (No Instagram Redirection) */}
           <div className="mt-8 pt-6 border-t border-zinc-800 flex flex-col sm:flex-row items-center gap-3">
-            {isInstagram && (
-              <a
-                href={instagramTargetUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:flex-1 h-12 flex items-center justify-center gap-2 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-black/40 transition-all hover:scale-[1.02] active:scale-[0.98] border border-[#9e1212] cursor-pointer"
-                id="modal-watch-on-instagram-btn"
-              >
-                <Instagram className="w-4 h-4 text-white" />
-                <span>WATCH ON INSTAGRAM</span>
-                <ArrowUpRight className="w-4 h-4 text-white" />
-              </a>
-            )}
-
             <button
               onClick={() => {
                 onClose();
                 onBookShoot(reel.category);
               }}
-              className={`w-full ${
-                isInstagram ? 'sm:w-auto px-5' : 'sm:flex-1'
-              } h-12 flex items-center justify-center gap-2 rounded-full ${
-                isInstagram
-                  ? 'bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-800 hover:border-[#bd1616] hover:text-[#bd1616]'
-                  : 'bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white shadow-lg shadow-[#bd1616]/30 border border-[#9e1212]'
-              } text-xs font-bold uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer`}
+              className="w-full sm:flex-1 h-12 flex items-center justify-center gap-2 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-xs font-bold uppercase tracking-wider text-white shadow-xl shadow-[#bd1616]/40 transition-all hover:scale-[1.02] active:scale-[0.98] border border-[#9e1212] cursor-pointer"
+              id="modal-book-shoot-btn"
             >
-              <span>BOOK SHOOT</span>
-              <ArrowUpRight className="w-4 h-4" />
+              <span>BOOK THIS SHOOT</span>
+              <ArrowUpRight className="w-4 h-4 text-white" />
             </button>
 
             <button
               onClick={handleShare}
-              className="w-full sm:w-auto h-12 px-5 flex items-center justify-center gap-2 rounded-full border border-white/20 bg-transparent hover:bg-white/10 text-xs font-semibold text-white transition-colors cursor-pointer"
+              className="w-full sm:w-auto h-12 px-6 flex items-center justify-center gap-2 rounded-full border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-xs font-semibold text-white transition-colors cursor-pointer"
               title="Copy share link"
             >
               {copied ? <Check className="w-4 h-4 text-[#bd1616]" /> : <Share2 className="w-4 h-4" />}
