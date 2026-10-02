@@ -68,15 +68,21 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
         isScrolled ? 'py-1 sm:py-1.5 bg-black/95 backdrop-blur-xl shadow-2xl shadow-black/60 border-b border-zinc-800/80' : 'py-1.5 sm:py-2 bg-black/85 backdrop-blur-md'
       }`}
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-3 sm:gap-4 min-h-[46px] sm:min-h-[58px] md:min-h-[66px]">
+      <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-2.5 sm:gap-4 min-h-[50px] sm:min-h-[60px] md:min-h-[68px]">
           {/* Header Brand Logo Section */}
-          <div
-            className="inline-flex items-center justify-center group focus:outline-none rounded-md transition-transform duration-200 shrink-0"
+          <a
+            href="#home"
+            onClick={(e) => {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="flex items-center shrink-0 min-w-[130px] min-[380px]:min-w-[150px] z-20 cursor-pointer focus:outline-none"
             id="header-brand-logo"
+            aria-label="Snap Shots Home"
           >
             <BrandLogo variant="header" allowUpload={false} />
-          </div>
+          </a>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-1 xl:gap-2 px-3 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-800 shadow-inner" id="desktop-nav">
