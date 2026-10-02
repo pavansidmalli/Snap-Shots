@@ -10,17 +10,17 @@ const configuredPortfolioReels: ReelWorkItem[] = instagramReels.map((item, idx) 
   id: `ig-reel-${idx + 1}`,
   title: item.title,
   category: item.category,
-  videoUrl: item.url,
+  videoUrl: item.videoUrl || item.url,
   instagramUrl: item.url,
-  isInstagram: true,
+  isInstagram: false,
   posterUrl: item.posterUrl || getDefaultPosterForCategory(item.category),
   client: item.client || 'Snap Shots Live Coverage',
   views: item.views || '95K+',
   duration: item.duration || '0:30',
-  eventDate: 'Instagram Reel',
+  eventDate: 'Snap Shots 4K Edit',
   description:
     item.description ||
-    'Captured on location by Snap Shots certified reel creators. Click to watch original reel on Instagram.',
+    'Captured on location by Snap Shots certified reel creators. Click to expand full 4K master playback.',
   aspectRatio: '9:16',
 }));
 

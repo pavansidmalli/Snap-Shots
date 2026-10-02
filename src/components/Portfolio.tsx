@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Instagram, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Instagram, ChevronLeft, ChevronRight, Play, Sparkles, Eye, Film } from 'lucide-react';
 import { siteConfig } from '../config/siteConfig';
-import { PortfolioCard } from './PortfolioCard';
 import { ReelWorkItem } from '../types';
+import { getResponsiveImageSrcSet } from '../utils/imageUtils';
 
 interface PortfolioProps {
   onSelectReel: (reel: ReelWorkItem) => void;
@@ -10,15 +10,9 @@ interface PortfolioProps {
 
 export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
   const [activeCategory, setActiveCategory] = useState<string>('All');
-  const [currentPage, setCurrentPage] = useState<number>(0);
-  const [viewMode, setViewMode] = useState<'scroll' | 'grid'>('scroll');
-  const [canScrollLeft, setCanScrollLeft] = useState<boolean>(false);
-  const [canScrollRight, setCanScrollRight] = useState<boolean>(true);
-
-  const scrollerRef = useRef<HTMLDivElement | null>(null);
-  const isDragging = useRef(false);
-  const startX = useRef(0);
-  const scrollLeftStart = useRef(0);
+  const [activeIndex, setActiveIndex] = useState<number>(0);
+  const [isHovered, setIsHovered] = useState<boolean>(false);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   const categories = [
     'All',
@@ -43,149 +37,106 @@ export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
       ? siteConfig.portfolioReels
       : siteConfig.portfolioReels.filter((reel) => matchesCategory(reel.category, activeCategory));
 
-  const updateScrollState = () => {
-    if (!scrollerRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = scrollerRef.current;
-    setCanScrollLeft(scrollLeft > 10);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+  const totalSlides = filteredReels.length;
 
-    const cardWidth = 320;
-    const index = Math.round(scrollLeft / cardWidth);
-    setCurrentPage(Math.min(filteredReels.length - 1, Math.max(0, index)));
-  };
+  const handleNext = useCallback(() => {
+    if (totalSlides === 0) return;
+    setActiveIndex((prev) => (prev + 1) % totalSlides);
+  }, [totalSlides]);
 
+  const handlePrev = useCallback(() => {
+    if (totalSlides === 0) return;
+    setActiveIndex((prev) => (prev - 1 + totalSlides) % totalSlides);
+  }, [totalSlides]);
+
+  // Auto-scroll effect: advances slides every 3.5 seconds when not hovered/touched
   useEffect(() => {
-    updateScrollState();
-    const el = scrollerRef.current;
-    if (el) {
-      el.addEventListener('scroll', updateScrollState, { passive: true });
-      window.addEventListener('resize', updateScrollState);
-    }
-    return () => {
-      if (el) el.removeEventListener('scroll', updateScrollState);
-      window.removeEventListener('resize', updateScrollState);
-    };
-  }, [filteredReels.length, viewMode]);
+    if (isHovered || totalSlides <= 1) return;
+    const interval = setInterval(() => {
+      handleNext();
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [isHovered, totalSlides, handleNext]);
 
+  // Reset active index if category changes
   const handleCategoryChange = (cat: string) => {
     setActiveCategory(cat);
-    setCurrentPage(0);
-    if (scrollerRef.current) {
-      scrollerRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+    setActiveIndex(0);
+  };
+
+  // Touch swipe support for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsHovered(true);
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    setIsHovered(false);
+    if (touchStartX === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX;
+    if (deltaX > 40) {
+      handlePrev();
+    } else if (deltaX < -40) {
+      handleNext();
     }
-  };
-
-  const handlePrev = () => {
-    if (scrollerRef.current && viewMode === 'scroll') {
-      const cardStep = Math.min(scrollerRef.current.clientWidth * 0.8, 340);
-      scrollerRef.current.scrollBy({ left: -cardStep, behavior: 'smooth' });
-    } else {
-      setCurrentPage((prev) => (prev === 0 ? Math.max(0, filteredReels.length - 1) : prev - 1));
-    }
-  };
-
-  const handleNext = () => {
-    if (scrollerRef.current && viewMode === 'scroll') {
-      const cardStep = Math.min(scrollerRef.current.clientWidth * 0.8, 340);
-      scrollerRef.current.scrollBy({ left: cardStep, behavior: 'smooth' });
-    } else {
-      setCurrentPage((prev) => (prev >= filteredReels.length - 1 ? 0 : prev + 1));
-    }
-  };
-
-  const scrollToIndex = (index: number) => {
-    if (scrollerRef.current && viewMode === 'scroll') {
-      const cardWidth = 320;
-      scrollerRef.current.scrollTo({ left: index * cardWidth, behavior: 'smooth' });
-    }
-    setCurrentPage(index);
-  };
-
-  // Drag to scroll
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!scrollerRef.current || viewMode !== 'scroll') return;
-    isDragging.current = true;
-    startX.current = e.pageX - scrollerRef.current.offsetLeft;
-    scrollLeftStart.current = scrollerRef.current.scrollLeft;
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging.current || !scrollerRef.current || viewMode !== 'scroll') return;
-    e.preventDefault();
-    const x = e.pageX - scrollerRef.current.offsetLeft;
-    const walk = (x - startX.current) * 1.5;
-    scrollerRef.current.scrollLeft = scrollLeftStart.current - walk;
-  };
-
-  const handleMouseUpOrLeave = () => {
-    isDragging.current = false;
+    setTouchStartX(null);
   };
 
   return (
-    <section id="work" className="bg-transparent py-10 sm:py-14 relative overflow-visible">
-      {/* Subtle Ambient Light Gradients (same structure as ReelOnGo) */}
+    <section id="work" className="bg-transparent py-12 sm:py-16 md:py-20 relative overflow-hidden select-none">
+      {/* Background Ambient Radial Glow */}
       <div
-        className="absolute pointer-events-none -top-40 left-1/2 -translate-x-1/2"
+        className="absolute pointer-events-none -top-32 left-1/2 -translate-x-1/2"
         style={{
-          width: '720px',
-          height: '360px',
-          opacity: 0.15,
-          borderRadius: '540px',
-          background: 'radial-gradient(circle, #bd1616 0%, #1a0000 50%, transparent 80%)',
-          filter: 'blur(100px)',
-          zIndex: 0,
-        }}
-      />
-      <div
-        className="absolute pointer-events-none top-1/2 -translate-y-1/2 -right-40"
-        style={{
-          width: '500px',
-          height: '400px',
-          opacity: 0.1,
-          borderRadius: '50%',
-          background: '#bd1616',
-          filter: 'blur(120px)',
+          width: '760px',
+          height: '420px',
+          opacity: 0.14,
+          borderRadius: '500px',
+          background: 'radial-gradient(circle, #bd1616 0%, #300000 60%, transparent 80%)',
+          filter: 'blur(110px)',
           zIndex: 0,
         }}
       />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto">
+        {/* Section Header (Faithful to Reference Screenshot) */}
+        <div className="text-center max-w-2xl mx-auto">
           <p className="uppercase text-[#bd1616] font-bold text-xs sm:text-sm tracking-widest">
             WORK THAT PERFORMS
           </p>
           <h2
-            className="mt-2 text-center text-white font-extrabold text-3xl sm:text-5xl tracking-tight leading-tight"
+            className="mt-2 text-center text-white font-black text-3xl sm:text-4xl md:text-5xl tracking-tight leading-tight"
             id="portfolio-title"
           >
             Real Events. Real Reels.
           </h2>
-          <div className="mt-3 text-center text-zinc-300 font-medium text-sm sm:text-base leading-relaxed flex items-center justify-center flex-wrap gap-2">
-            <span>Explore our recents from our Snap Shots reel-makers</span>
-            <a
-              href={siteConfig.business.instagram}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#bd1616]/15 border border-[#bd1616]/30 text-[#bd1616] text-xs font-semibold hover:bg-[#bd1616] hover:text-white transition-all duration-300 shadow-xs group"
+          <p className="mt-2 text-center text-zinc-400 font-normal text-sm sm:text-base leading-relaxed">
+            Explore our Recents from our Reel-Makers
+          </p>
+
+          {/* Centered Instagram Icon Badge (Matching Reference Screenshot) */}
+          <div className="mt-3.5 flex justify-center">
+            <div
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-900/90 border border-zinc-800 text-zinc-300 shadow-sm"
+              title="Snap Shots Official Reels"
             >
-              <Instagram className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
-              <span>Follow {siteConfig.business.instagramHandle}</span>
-            </a>
+              <Instagram className="w-4 h-4 text-[#ffc800]" />
+            </div>
           </div>
         </div>
 
-        {/* Category Filters and View Controls */}
-        <div className="mt-8 flex flex-col items-center gap-4">
-          <div className="flex items-center justify-start sm:justify-center overflow-x-auto no-scrollbar py-1 px-2 -mx-4 sm:mx-0 sm:px-0 sm:flex-wrap gap-2 w-full touch-pan-y sm:touch-auto">
+        {/* Category Filter Pills */}
+        <div className="mt-6 sm:mt-8 flex justify-center">
+          <div className="flex items-center justify-start sm:justify-center overflow-x-auto no-scrollbar py-1 px-2 -mx-4 sm:mx-0 sm:px-0 sm:flex-wrap gap-2 w-full touch-pan-y">
             {categories.map((cat) => (
               <button
                 key={cat}
+                type="button"
                 onClick={() => handleCategoryChange(cat)}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer shrink-0 ${
+                className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer shrink-0 ${
                   activeCategory === cat
-                    ? 'bg-[#bd1616] text-white shadow-md shadow-[#bd1616]/30 scale-105 font-bold'
-                    : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white border border-zinc-800'
+                    ? 'bg-[#bd1616] text-white shadow-md shadow-[#bd1616]/30 font-bold scale-105'
+                    : 'bg-zinc-900/90 text-zinc-400 hover:bg-zinc-800 hover:text-white border border-zinc-800'
                 }`}
               >
                 {cat}
@@ -194,101 +145,139 @@ export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
           </div>
         </div>
 
-        {/* 9:16 Vertical Reel Scroller / Grid Container */}
-        <div className="mt-8 relative max-w-6xl mx-auto">
-          {/* Edge Fade Overlays (Scroll Mode Only) */}
-          {viewMode === 'scroll' && canScrollLeft && (
-            <div className="hidden md:block absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-black via-black/80 to-transparent pointer-events-none z-20 transition-opacity" />
-          )}
-          {viewMode === 'scroll' && canScrollRight && (
-            <div className="hidden md:block absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-black via-black/80 to-transparent pointer-events-none z-20 transition-opacity" />
-          )}
+        {/* 3D-Feel Carousel / Image Slides Stage (Matching Reference Screenshot) */}
+        <div
+          className="mt-8 sm:mt-10 relative h-[440px] min-[390px]:h-[480px] sm:h-[530px] md:h-[560px] max-w-4xl mx-auto flex items-center justify-center overflow-hidden sm:overflow-visible"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          {filteredReels.map((reel, index) => {
+            // Compute relative offset (-2, -1, 0, 1, 2)
+            let diff = index - activeIndex;
+            if (diff > totalSlides / 2) diff -= totalSlides;
+            if (diff < -totalSlides / 2) diff += totalSlides;
 
-          <div
-            ref={scrollerRef}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUpOrLeave}
-            onMouseLeave={handleMouseUpOrLeave}
-            className={
-              viewMode === 'scroll'
-                ? 'flex gap-4 sm:gap-8 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar py-6 sm:py-8 px-2 sm:px-6 cursor-grab active:cursor-grabbing touch-pan-y sm:touch-auto'
-                : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 py-4'
+            const isCenter = diff === 0;
+            const isAdjacentLeft = diff === -1 || (activeIndex === 0 && index === totalSlides - 1);
+            const isAdjacentRight = diff === 1 || (activeIndex === totalSlides - 1 && index === 0);
+
+            // Hide distant slides beyond adjacent
+            if (Math.abs(diff) > 1 && !isAdjacentLeft && !isAdjacentRight) {
+              return null;
             }
-            id="portfolio-scroller-container"
-          >
-            {filteredReels.map((reel, idx) => (
+
+            return (
               <div
                 key={reel.id}
-                className={
-                  viewMode === 'scroll'
-                    ? 'w-[78vw] max-w-[280px] sm:w-[280px] md:w-[320px] shrink-0 snap-center sm:snap-start relative hover:z-30 transition-all'
-                    : 'w-full relative hover:z-30 transition-all'
-                }
+                onClick={() => {
+                  if (isCenter) {
+                    onSelectReel(reel);
+                  } else if (isAdjacentLeft) {
+                    handlePrev();
+                  } else if (isAdjacentRight) {
+                    handleNext();
+                  }
+                }}
+                className={`absolute transition-all duration-500 ease-out will-change-transform cursor-pointer ${
+                  isCenter
+                    ? 'z-30 w-[240px] min-[390px]:w-[265px] sm:w-[290px] md:w-[320px] aspect-[9/16] rounded-[26px] sm:rounded-[34px] overflow-hidden bg-zinc-950 shadow-[0_20px_50px_rgba(0,0,0,0.9),0_0_30px_rgba(189,22,22,0.3)] border-2 border-zinc-700/80 hover:border-[#bd1616] scale-100 translate-x-0 opacity-100 group'
+                    : isAdjacentLeft
+                    ? 'z-20 w-[210px] min-[390px]:w-[230px] sm:w-[250px] md:w-[280px] aspect-[9/16] rounded-[24px] sm:rounded-[30px] overflow-hidden bg-zinc-950 shadow-xl border border-zinc-800/80 -translate-x-[155px] min-[390px]:-translate-x-[175px] sm:-translate-x-[220px] md:-translate-x-[260px] scale-[0.88] opacity-75 hover:opacity-90'
+                    : 'z-20 w-[210px] min-[390px]:w-[230px] sm:w-[250px] md:w-[280px] aspect-[9/16] rounded-[24px] sm:rounded-[30px] overflow-hidden bg-zinc-950 shadow-xl border border-zinc-800/80 translate-x-[155px] min-[390px]:translate-x-[175px] sm:translate-x-[220px] md:translate-x-[260px] scale-[0.88] opacity-75 hover:opacity-90'
+                }`}
               >
-                <PortfolioCard reel={reel} index={idx} onSelect={onSelectReel} />
+                {/* 9:16 Vertical Image Poster */}
+                <img
+                  src={reel.posterUrl}
+                  srcSet={getResponsiveImageSrcSet(reel.posterUrl, [320, 480, 640, 800])}
+                  sizes="(max-width: 640px) 280px, 340px"
+                  alt={reel.title}
+                  loading={isCenter ? 'eager' : 'lazy'}
+                  decoding="async"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+
+                {/* Ambient Soft Top & Bottom Gradients */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/40 pointer-events-none" />
+
+                {/* Subtle Brand Watermark (matching screenshot's top watermark) */}
+                <div className="absolute top-3 right-3 z-20 pointer-events-none">
+                  <span className="text-[10px] font-black tracking-widest text-white/90 drop-shadow-md">
+                    SNAP SHOTS
+                  </span>
+                </div>
+
+                {/* Center Play Button (reveals prominently on center slide) */}
+                {isCenter && (
+                  <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#bd1616]/90 text-white shadow-2xl backdrop-blur-xs border border-white/20 group-hover:scale-110 transition-transform">
+                      <Play className="w-6 h-6 fill-white ml-0.5" />
+                    </div>
+                  </div>
+                )}
+
+                {/* Bottom Overlay Title & Views */}
+                <div className="absolute bottom-3 left-3 right-3 z-20 text-left pointer-events-none">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[9px] font-bold text-white border border-white/10 uppercase tracking-wider">
+                      {reel.category}
+                    </span>
+                    <span className="flex items-center gap-1 text-[10px] font-medium text-zinc-300 bg-black/50 px-2 py-0.5 rounded-full">
+                      <Eye className="w-3 h-3 text-[#bd1616]" />
+                      <span>{reel.views}</span>
+                    </span>
+                  </div>
+                  <h3 className="text-white text-xs sm:text-sm font-bold line-clamp-1 drop-shadow-md">
+                    {reel.title}
+                  </h3>
+                </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
-        {/* Bottom Carousel / Reel Pagination Controls (Reference Pattern) */}
-        <div className="mt-8 flex items-center justify-center gap-4">
+        {/* Carousel Navigation & Indicators (Identical to Reference Screenshot) */}
+        <div className="mt-6 sm:mt-8 flex items-center justify-center gap-4 sm:gap-6">
+          {/* Left Circular Arrow Button */}
           <button
+            type="button"
             onClick={handlePrev}
-            disabled={viewMode === 'scroll' && !canScrollLeft}
-            className={`flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full transition-all cursor-pointer shadow-md ${
-              viewMode === 'scroll' && !canScrollLeft
-                ? 'bg-zinc-900 border border-zinc-800 text-zinc-600 cursor-not-allowed'
-                : 'bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white hover:scale-105 active:scale-95'
-            }`}
-            aria-label="Previous Reel"
+            aria-label="Previous Slide"
+            className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-zinc-900 hover:bg-[#bd1616] text-white border border-zinc-800 hover:border-[#bd1616] shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
           >
-            <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
+            <ChevronLeft className="w-5 h-5 text-white" />
           </button>
 
-          <div className="flex items-center gap-2">
-            {filteredReels.map((_, i) => (
+          {/* Dots Pagination Indicators */}
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+            {filteredReels.map((_, idx) => (
               <button
-                key={i}
+                key={idx}
                 type="button"
-                onClick={() => scrollToIndex(i)}
-                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                  currentPage === i ? 'w-6 bg-[#bd1616]' : 'w-2 bg-zinc-800 hover:bg-zinc-700'
+                onClick={() => setActiveIndex(idx)}
+                className={`transition-all duration-300 rounded-full cursor-pointer ${
+                  activeIndex === idx
+                    ? 'w-7 sm:w-8 h-2 sm:h-2.5 bg-[#bd1616] shadow-md shadow-[#bd1616]/50'
+                    : 'w-2 sm:w-2.5 h-2 sm:h-2.5 bg-zinc-700 hover:bg-zinc-500'
                 }`}
-                aria-label={`Go to reel ${i + 1}`}
+                aria-label={`Go to slide ${idx + 1}`}
               />
             ))}
           </div>
 
+          {/* Right Circular Arrow Button */}
           <button
+            type="button"
             onClick={handleNext}
-            disabled={viewMode === 'scroll' && !canScrollRight}
-            className={`flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full transition-all cursor-pointer shadow-md ${
-              viewMode === 'scroll' && !canScrollRight
-                ? 'bg-zinc-900 border border-zinc-800 text-zinc-600 cursor-not-allowed'
-                : 'bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white hover:scale-105 active:scale-95'
-            }`}
-            aria-label="Next Reel"
+            aria-label="Next Slide"
+            className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-zinc-900 hover:bg-[#bd1616] text-white border border-zinc-800 hover:border-[#bd1616] shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
           >
-            <ChevronRight className="w-5 h-5 stroke-[2.5]" />
+            <ChevronRight className="w-5 h-5 text-white" />
           </button>
-        </div>
-
-        {/* Instant IG Prompt */}
-        <div className="mt-10 text-center">
-          <a
-            href={siteConfig.business.instagram}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-zinc-400 hover:text-[#bd1616] transition-colors"
-          >
-            <span>View 100+ more live event reels on Instagram</span>
-            <span className="text-[#bd1616]">&rarr;</span>
-          </a>
         </div>
       </div>
     </section>
   );
 };
-
