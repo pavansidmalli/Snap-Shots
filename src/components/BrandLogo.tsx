@@ -51,9 +51,9 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
             }}
             className={`${
               isHeader
-                ? 'h-18 sm:h-22 md:h-26 lg:h-32 w-auto max-w-[360px] sm:max-w-[460px] md:max-w-[560px]'
-                : 'h-16 sm:h-20 md:h-24 lg:h-28 w-auto max-w-[320px] sm:max-w-[420px] md:max-w-[500px]'
-            } object-contain object-center mx-auto block drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)] transition-all duration-200 group-hover:scale-[1.02] ${imageClassName}`}
+                ? 'h-9 xs:h-10 sm:h-16 md:h-22 lg:h-28 w-auto max-w-[130px] xs:max-w-[155px] sm:max-w-[340px] md:max-w-[480px]'
+                : 'h-8 sm:h-14 md:h-20 lg:h-26 w-auto max-w-[120px] sm:max-w-[300px] md:max-w-[420px]'
+            } object-contain object-center mx-auto block drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] transition-all duration-200 group-hover:scale-[1.02] ${imageClassName}`}
             loading={isHeader ? 'eager' : 'lazy'}
             decoding="async"
           />
