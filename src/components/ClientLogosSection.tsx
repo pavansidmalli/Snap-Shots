@@ -108,7 +108,7 @@ export const ClientLogosSection: React.FC = () => {
   ];
 
   return (
-    <section id="logos-section" className="py-12 sm:py-16 bg-black/60 border-y border-zinc-900/90 relative overflow-hidden">
+    <section id="logos-section" className="py-8 sm:py-10 bg-black/60 border-y border-zinc-900/90 relative overflow-hidden">
       {/* Background radial gradient glow */}
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[300px] rounded-full pointer-events-none opacity-20"

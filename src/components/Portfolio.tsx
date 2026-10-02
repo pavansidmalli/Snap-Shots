@@ -122,7 +122,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
   };
 
   return (
-    <section id="work" className="bg-transparent pt-24 pb-20 relative overflow-hidden">
+    <section id="work" className="bg-transparent py-10 sm:py-14 relative overflow-visible">
       {/* Subtle Ambient Light Gradients (same structure as ReelOnGo) */}
       <div
         className="absolute pointer-events-none -top-40 left-1/2 -translate-x-1/2"
@@ -177,7 +177,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
 
         {/* Category Filters and View Controls */}
         <div className="mt-8 flex flex-col items-center gap-4">
-          <div className="flex items-center justify-start sm:justify-center overflow-x-auto no-scrollbar py-1 px-2 -mx-4 sm:mx-0 sm:px-0 sm:flex-wrap gap-2 w-full touch-pan-x">
+          <div className="flex items-center justify-start sm:justify-center overflow-x-auto no-scrollbar py-1 px-2 -mx-4 sm:mx-0 sm:px-0 sm:flex-wrap gap-2 w-full touch-pan-y sm:touch-auto">
             {categories.map((cat) => (
               <button
                 key={cat}
@@ -212,7 +212,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
             onMouseLeave={handleMouseUpOrLeave}
             className={
               viewMode === 'scroll'
-                ? 'flex gap-4 sm:gap-8 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar py-6 sm:py-8 px-2 sm:px-6 cursor-grab active:cursor-grabbing touch-pan-x overscroll-x-contain'
+                ? 'flex gap-4 sm:gap-8 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar py-6 sm:py-8 px-2 sm:px-6 cursor-grab active:cursor-grabbing touch-pan-y sm:touch-auto'
                 : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 py-4'
             }
             id="portfolio-scroller-container"

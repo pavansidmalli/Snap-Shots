@@ -37,20 +37,40 @@ export function getPackagePriceString(
   const config = PRICING_CONFIG[countryCode] || PRICING_CONFIG[DEFAULT_COUNTRY_CODE];
   const normalizedId = packageId.toLowerCase().replace(/[-_]/g, '');
 
-  if (normalizedId.includes('quick') || normalizedId.includes('starter')) {
+  if (normalizedId.includes('hour') || normalizedId.includes('quick') || normalizedId.includes('starter')) {
     return formatCurrencyPrice(config.packages.quickShot, countryCode);
   }
-  if (normalizedId.includes('event')) {
+  if (normalizedId.includes('half') || normalizedId.includes('event')) {
     return formatCurrencyPrice(config.packages.eventReel, countryCode);
   }
-  if (normalizedId.includes('full') || normalizedId.includes('content')) {
+  if (normalizedId.includes('addon') || normalizedId.includes('extend') || normalizedId.includes('full') || normalizedId.includes('content')) {
     return formatCurrencyPrice(config.packages.fullContent, countryCode);
-  }
-  if (normalizedId.includes('elite') || normalizedId.includes('exclusive')) {
-    return formatCurrencyPrice(config.packages.eliteStarting, countryCode);
   }
 
   return formatCurrencyPrice(config.packages.quickShot, countryCode);
+}
+
+/**
+ * Returns the formatted original (cut/strikethrough) price for a package.
+ */
+export function getPackageOriginalPriceString(
+  packageId: string,
+  countryCode: SupportedCountryCode = DEFAULT_COUNTRY_CODE
+): string {
+  const config = PRICING_CONFIG[countryCode] || PRICING_CONFIG[DEFAULT_COUNTRY_CODE];
+  const normalizedId = packageId.toLowerCase().replace(/[-_]/g, '');
+
+  if (normalizedId.includes('hour') || normalizedId.includes('quick') || normalizedId.includes('starter')) {
+    return formatCurrencyPrice(config.packages.quickShotOriginal, countryCode);
+  }
+  if (normalizedId.includes('half') || normalizedId.includes('event')) {
+    return formatCurrencyPrice(config.packages.eventReelOriginal, countryCode);
+  }
+  if (normalizedId.includes('addon') || normalizedId.includes('extend') || normalizedId.includes('full') || normalizedId.includes('content')) {
+    return formatCurrencyPrice(config.packages.fullContentOriginal, countryCode);
+  }
+
+  return formatCurrencyPrice(config.packages.quickShotOriginal, countryCode);
 }
 
 /**
@@ -63,18 +83,38 @@ export function getPackagePriceNumber(
   const config = PRICING_CONFIG[countryCode] || PRICING_CONFIG[DEFAULT_COUNTRY_CODE];
   const normalizedId = packageId.toLowerCase().replace(/[-_]/g, '');
 
-  if (normalizedId.includes('quick') || normalizedId.includes('starter')) {
+  if (normalizedId.includes('hour') || normalizedId.includes('quick') || normalizedId.includes('starter')) {
     return config.packages.quickShot;
   }
-  if (normalizedId.includes('event')) {
+  if (normalizedId.includes('half') || normalizedId.includes('event')) {
     return config.packages.eventReel;
   }
-  if (normalizedId.includes('full') || normalizedId.includes('content')) {
+  if (normalizedId.includes('addon') || normalizedId.includes('extend') || normalizedId.includes('full') || normalizedId.includes('content')) {
     return config.packages.fullContent;
-  }
-  if (normalizedId.includes('elite') || normalizedId.includes('exclusive')) {
-    return config.packages.eliteStarting;
   }
 
   return config.packages.quickShot;
+}
+
+/**
+ * Returns raw original numeric price for a package.
+ */
+export function getPackageOriginalPriceNumber(
+  packageId: string,
+  countryCode: SupportedCountryCode = DEFAULT_COUNTRY_CODE
+): number {
+  const config = PRICING_CONFIG[countryCode] || PRICING_CONFIG[DEFAULT_COUNTRY_CODE];
+  const normalizedId = packageId.toLowerCase().replace(/[-_]/g, '');
+
+  if (normalizedId.includes('hour') || normalizedId.includes('quick') || normalizedId.includes('starter')) {
+    return config.packages.quickShotOriginal;
+  }
+  if (normalizedId.includes('half') || normalizedId.includes('event')) {
+    return config.packages.eventReelOriginal;
+  }
+  if (normalizedId.includes('addon') || normalizedId.includes('extend') || normalizedId.includes('full') || normalizedId.includes('content')) {
+    return config.packages.fullContentOriginal;
+  }
+
+  return config.packages.quickShotOriginal;
 }

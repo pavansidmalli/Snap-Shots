@@ -85,16 +85,25 @@ export const BookingForm: React.FC<BookingFormProps> = ({ selectedService, selec
 
   useEffect(() => {
     if (selectedPackage) {
+      if (selectedPackage === 'wedding-select' || selectedPackage === 'elite-select') {
+        setFormData((prev) => ({
+          ...prev,
+          service: 'Weddings & Celebrations',
+          duration: 'Full Day (6+ Hours)',
+          requirements: 'Interested in the Wedding & Select Package with multi-angle cinematic coverage.',
+        }));
+        return;
+      }
       const matched = siteConfig.packages.find((p) => p.id === selectedPackage);
       if (matched) {
         setFormData((prev) => ({
           ...prev,
           duration: matched.shootTime.includes('1 Hour')
             ? '1 Hour'
-            : matched.shootTime.includes('3 Hours')
+            : matched.shootTime.includes('3 Hours') || matched.shootTime.includes('3 hours')
             ? '2-3 Hours'
-            : 'Full Day (6+ Hours)',
-          requirements: `Interested in the ${matched.name} package (${matched.price}).`,
+            : 'Custom / Flexible',
+          requirements: `Interested in the ${matched.name} (${matched.price} + GST).`,
         }));
       }
     }
@@ -173,7 +182,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ selectedService, selec
   };
 
   return (
-    <section id="booking" className="bg-transparent py-24 relative overflow-hidden">
+    <section id="booking" className="bg-transparent py-10 sm:py-14 relative overflow-hidden">
       {/* Background ambient accents */}
       <div
         className="absolute pointer-events-none -top-24 right-0 w-[500px] h-[500px]"

@@ -58,7 +58,7 @@ export const WhyChooseUs: React.FC = () => {
   ];
 
   return (
-    <section className="bg-transparent py-24 relative overflow-hidden border-b border-zinc-900/80" id="why-choose-us">
+    <section className="bg-transparent py-10 sm:py-14 relative overflow-hidden border-b border-zinc-900/80" id="why-choose-us">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto">

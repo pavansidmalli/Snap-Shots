@@ -3,6 +3,8 @@ export interface PackageItem {
   name: string;
   price: string;
   priceNum: number;
+  originalPrice?: string;
+  originalPriceNum?: number;
   period?: string;
   tagline: string;
   description: string;
@@ -10,8 +12,8 @@ export interface PackageItem {
   isPopular?: boolean;
   shootTime: string;
   deliverables: string[];
-  features: string[];
-  idealFor: string;
+  features?: string[];
+  idealFor?: string;
 }
 
 export interface ServiceItem {

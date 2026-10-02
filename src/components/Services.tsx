@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowUpRight, Check, ChevronLeft, ChevronRight, LayoutGrid, SlidersHorizontal } from 'lucide-react';
+import { ArrowUpRight, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { siteConfig } from '../config/siteConfig';
 import { ServiceItem } from '../types';
 import { getResponsiveImageSrcSet } from '../utils/imageUtils';
@@ -101,7 +101,7 @@ export const Services: React.FC<ServicesProps> = ({ onBookService }) => {
   };
 
   return (
-    <section id="services" className="bg-transparent py-24 relative overflow-hidden">
+    <section id="services" className="bg-transparent py-10 sm:py-14 relative overflow-visible">
       {/* Background ambient accents */}
       <div
         className="absolute pointer-events-none -bottom-20 -left-20 w-[500px] h-[500px] rounded-full"
@@ -126,7 +126,7 @@ export const Services: React.FC<ServicesProps> = ({ onBookService }) => {
           </p>
 
           {/* Category tabs - Smooth swipe track on mobile, wrapped on desktop */}
-          <div className="mt-8 flex items-center justify-start sm:justify-center overflow-x-auto no-scrollbar py-1 px-2 -mx-4 sm:mx-0 sm:px-0 sm:flex-wrap gap-2 touch-pan-x">
+          <div className="mt-8 flex items-center justify-start sm:justify-center overflow-x-auto no-scrollbar py-1 px-2 -mx-4 sm:mx-0 sm:px-0 sm:flex-wrap gap-2 touch-pan-y sm:touch-auto">
             {categories.map((cat) => (
               <button
                 key={cat}
@@ -151,38 +151,7 @@ export const Services: React.FC<ServicesProps> = ({ onBookService }) => {
             </div>
 
             <div className="flex items-center gap-3">
-              {/* View Switcher: Scroll Reel vs Grid */}
-              <div className="hidden sm:flex items-center bg-zinc-900 p-1 rounded-full border border-zinc-800">
-                <button
-                  type="button"
-                  onClick={() => setViewMode('scroll')}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
-                    viewMode === 'scroll'
-                      ? 'bg-[#bd1616] text-white shadow-sm font-bold'
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                  title="Horizontal Scrolling Reel View"
-                >
-                  <SlidersHorizontal className="w-3.5 h-3.5" />
-                  <span>Scroll Effect</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('grid')}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
-                    viewMode === 'grid'
-                      ? 'bg-[#bd1616] text-white shadow-sm font-bold'
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                  title="Grid View"
-                >
-                  <LayoutGrid className="w-3.5 h-3.5" />
-                  <span>Grid</span>
-                </button>
-              </div>
-
               {/* Directional Scroll Arrows */}
-              {viewMode === 'scroll' && (
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -211,7 +180,6 @@ export const Services: React.FC<ServicesProps> = ({ onBookService }) => {
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
-              )}
             </div>
           </div>
         </div>
@@ -234,7 +202,7 @@ export const Services: React.FC<ServicesProps> = ({ onBookService }) => {
             onMouseLeave={handleMouseUpOrLeave}
             className={
               viewMode === 'scroll'
-                ? 'flex gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar py-4 px-2 sm:px-4 cursor-grab active:cursor-grabbing touch-pan-x overscroll-x-contain'
+                ? 'flex gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar py-4 px-2 sm:px-4 cursor-grab active:cursor-grabbing touch-pan-y sm:touch-auto'
                 : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8'
             }
             id="services-scroll-container"

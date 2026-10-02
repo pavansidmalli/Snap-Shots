@@ -8,7 +8,7 @@ export const Testimonials: React.FC = () => {
   return (
     <section
       id="testimonials"
-      className="py-24 relative overflow-hidden bg-transparent text-white"
+      className="py-10 sm:py-14 relative overflow-hidden bg-transparent text-white"
     >
       {/* Ambient background glow (in dark red tones) */}
       <div

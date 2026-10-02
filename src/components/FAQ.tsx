@@ -11,10 +11,10 @@ export const FAQ: React.FC = () => {
   };
 
   return (
-    <section id="faq" className="bg-transparent py-24 relative overflow-hidden border-t border-zinc-900/80">
+    <section id="faq" className="bg-transparent py-10 sm:py-14 relative overflow-hidden border-t border-zinc-900/80">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header (Matches ReelOnGo hierarchy) */}
-        <div className="text-center max-w-3xl mx-auto mb-14">
+        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
           <p className="uppercase text-[#bd1616] font-bold text-xs sm:text-sm tracking-widest">FAQS</p>
           <h2
             className="mt-2 text-center text-white font-extrabold text-3xl sm:text-5xl tracking-tight leading-tight"

@@ -13,16 +13,16 @@ const STORAGE_KEY_NAME = 'snapshots_custom_logo_name';
 const CUSTOM_EVENT_NAME = 'snapshots_logo_updated';
 
 const LogoContext = createContext<LogoContextType>({
-  customLogoUrl: null,
-  logoFileName: null,
-  hasCustomLogo: false,
+  customLogoUrl: '/snapshots-logo.svg',
+  logoFileName: 'snapshots-logo.svg',
+  hasCustomLogo: true,
   saveCustomLogo: () => {},
   removeCustomLogo: () => {},
 });
 
 export const LogoProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(null);
-  const [logoFileName, setLogoFileName] = useState<string | null>(null);
+  const [customLogoUrl, setCustomLogoUrl] = useState<string | null>('/snapshots-logo.svg');
+  const [logoFileName, setLogoFileName] = useState<string | null>('snapshots-logo.svg');
 
   useEffect(() => {
     const loadStoredLogo = () => {
@@ -31,14 +31,14 @@ export const LogoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const storedName = localStorage.getItem(STORAGE_KEY_NAME);
         if (storedData) {
           setCustomLogoUrl(storedData);
-          setLogoFileName(storedName || 'custom-logo.png');
+          setLogoFileName(storedName || 'snapshots-logo.svg');
         } else {
-          setCustomLogoUrl(null);
-          setLogoFileName(null);
+          setCustomLogoUrl('/snapshots-logo.svg');
+          setLogoFileName('snapshots-logo.svg');
         }
       } catch {
-        setCustomLogoUrl(null);
-        setLogoFileName(null);
+        setCustomLogoUrl('/snapshots-logo.svg');
+        setLogoFileName('snapshots-logo.svg');
       }
     };
 

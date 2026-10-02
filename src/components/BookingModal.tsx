@@ -15,6 +15,9 @@ import {
   AlertCircle,
   Sparkles,
   Tag,
+  ChevronLeft,
+  ChevronRight,
+  CalendarDays,
 } from 'lucide-react';
 import { siteConfig, bookingConfig } from '../config/siteConfig';
 import { BookingFormData } from '../types';
@@ -322,6 +325,129 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   // Get today's date formatted as YYYY-MM-DD for min date picker
   const todayStr = new Date().toISOString().split('T')[0];
+
+  // Interactive Calendar / Date Picker State
+  const [showCalendarView, setShowCalendarView] = useState<boolean>(false);
+  const [calendarMonth, setCalendarMonth] = useState<Date>(() => new Date());
+
+  // Quick date presets
+  const quickDates = useMemo(() => {
+    const now = new Date();
+    const formatDate = (d: Date) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+
+    const thisWeekend = new Date(now);
+    const dayOfWeek = now.getDay();
+    const daysUntilSaturday = (6 - dayOfWeek + 7) % 7 || 7;
+    thisWeekend.setDate(now.getDate() + daysUntilSaturday);
+
+    const nextWeek = new Date(now);
+    nextWeek.setDate(now.getDate() + 7);
+
+    return [
+      { label: 'Today', date: formatDate(now) },
+      { label: 'Tomorrow', date: formatDate(tomorrow) },
+      { label: 'This Weekend', date: formatDate(thisWeekend) },
+      { label: 'In 7 Days', date: formatDate(nextWeek) },
+    ];
+  }, []);
+
+  const selectCalendarDate = (dateStr: string) => {
+    setFormData((prev) => ({ ...prev, date: dateStr }));
+    if (errors.date) {
+      setErrors((prev) => ({ ...prev, date: undefined }));
+    }
+  };
+
+  const handlePrevMonth = () => {
+    setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+  };
+
+  const calendarDays = useMemo(() => {
+    const year = calendarMonth.getFullYear();
+    const month = calendarMonth.getMonth();
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const days: Array<{
+      dateStr: string;
+      dayNumber: number;
+      isCurrentMonth: boolean;
+      isPast: boolean;
+      isToday: boolean;
+      isSelected: boolean;
+    }> = [];
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonthNum = String(now.getMonth() + 1).padStart(2, '0');
+    const currentDayNum = String(now.getDate()).padStart(2, '0');
+    const localTodayStr = `${currentYear}-${currentMonthNum}-${currentDayNum}`;
+
+    // Blank cells before first day
+    for (let i = 0; i < firstDayIndex; i++) {
+      days.push({
+        dateStr: '',
+        dayNumber: 0,
+        isCurrentMonth: false,
+        isPast: true,
+        isToday: false,
+        isSelected: false,
+      });
+    }
+
+    // Days in current month
+    for (let d = 1; d <= daysInMonth; d++) {
+      const monthStr = String(month + 1).padStart(2, '0');
+      const dayStr = String(d).padStart(2, '0');
+      const dateStr = `${year}-${monthStr}-${dayStr}`;
+      const isPast = dateStr < localTodayStr;
+      const isToday = dateStr === localTodayStr;
+      const isSelected = formData.date === dateStr;
+
+      days.push({
+        dateStr,
+        dayNumber: d,
+        isCurrentMonth: true,
+        isPast,
+        isToday,
+        isSelected,
+      });
+    }
+
+    return days;
+  }, [calendarMonth, formData.date]);
+
+  const monthYearHeader = useMemo(() => {
+    return calendarMonth.toLocaleDateString('en-US', {
+      month: 'long',
+      year: 'numeric',
+    });
+  }, [calendarMonth]);
+
+  const formattedSelectedDate = useMemo(() => {
+    if (!formData.date) return null;
+    const parts = formData.date.split('-');
+    if (parts.length !== 3) return null;
+    const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    return d.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  }, [formData.date]);
 
   return (
     <div
@@ -670,62 +796,199 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 </div>
               </div>
 
-              {/* Row 3: Preferred Date & Preferred Time */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <label
-                    htmlFor="modal-date"
-                    className="block text-xs sm:text-sm font-semibold text-zinc-200 mb-1 sm:mb-1.5"
-                  >
-                    Preferred Date <span className="text-red-400">*</span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
-                      <Calendar className="w-4 h-4" />
+              {/* Row 3: Preferred Date (with Interactive Calendar View) & Preferred Time */}
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  {/* Preferred Date Selector */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1 sm:mb-1.5">
+                      <label
+                        htmlFor="modal-date"
+                        className="block text-xs sm:text-sm font-semibold text-zinc-200"
+                      >
+                        Preferred Date <span className="text-red-400">*</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setShowCalendarView(!showCalendarView)}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-[#ffc800] hover:text-[#ffd633] transition-colors cursor-pointer"
+                        id="toggle-calendar-view-btn"
+                      >
+                        <CalendarDays className="w-3.5 h-3.5" />
+                        <span>{showCalendarView ? 'Hide Calendar' : 'Calendar View'}</span>
+                      </button>
                     </div>
-                    <input
-                      type="date"
-                      id="modal-date"
-                      name="date"
-                      min={todayStr}
-                      value={formData.date}
-                      onChange={handleChange}
-                      className={`w-full h-11 sm:h-11 md:h-12 pl-9 pr-3 rounded-xl bg-zinc-950 border ${
-                        errors.date ? 'border-red-500 ring-1 ring-red-500' : 'border-zinc-800'
-                      } text-base sm:text-sm text-white focus:outline-none focus:border-[#bd1616] focus:ring-1 focus:ring-[#bd1616] transition-colors [color-scheme:dark]`}
-                    />
+
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                        <Calendar className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="date"
+                        id="modal-date"
+                        name="date"
+                        min={todayStr}
+                        value={formData.date}
+                        onChange={handleChange}
+                        className={`w-full h-11 sm:h-11 md:h-12 pl-9 pr-3 rounded-xl bg-zinc-950 border ${
+                          errors.date ? 'border-red-500 ring-1 ring-red-500' : 'border-zinc-800'
+                        } text-base sm:text-sm text-white focus:outline-none focus:border-[#bd1616] focus:ring-1 focus:ring-[#bd1616] transition-colors [color-scheme:dark]`}
+                      />
+                    </div>
+                    {errors.date && (
+                      <p className="text-[11px] sm:text-xs text-red-400 font-medium mt-1">{errors.date}</p>
+                    )}
                   </div>
-                  {errors.date && (
-                    <p className="text-[11px] sm:text-xs text-red-400 font-medium mt-1">{errors.date}</p>
-                  )}
+
+                  {/* Preferred Time Selector */}
+                  <div>
+                    <label
+                      htmlFor="modal-time"
+                      className="block text-xs sm:text-sm font-semibold text-zinc-200 mb-1 sm:mb-1.5"
+                    >
+                      Preferred Time <span className="text-red-400">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                        <Clock className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="time"
+                        id="modal-time"
+                        name="time"
+                        value={formData.time}
+                        onChange={handleChange}
+                        className={`w-full h-11 sm:h-11 md:h-12 pl-9 pr-3 rounded-xl bg-zinc-950 border ${
+                          errors.time ? 'border-red-500 ring-1 ring-red-500' : 'border-zinc-800'
+                        } text-base sm:text-sm text-white focus:outline-none focus:border-[#bd1616] focus:ring-1 focus:ring-[#bd1616] transition-colors [color-scheme:dark]`}
+                      />
+                    </div>
+                    {errors.time && (
+                      <p className="text-[11px] sm:text-xs text-red-400 font-medium mt-1">{errors.time}</p>
+                    )}
+                  </div>
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="modal-time"
-                    className="block text-xs sm:text-sm font-semibold text-zinc-200 mb-1 sm:mb-1.5"
-                  >
-                    Preferred Time <span className="text-red-400">*</span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
-                      <Clock className="w-4 h-4" />
-                    </div>
-                    <input
-                      type="time"
-                      id="modal-time"
-                      name="time"
-                      value={formData.time}
-                      onChange={handleChange}
-                      className={`w-full h-11 sm:h-11 md:h-12 pl-9 pr-3 rounded-xl bg-zinc-950 border ${
-                        errors.time ? 'border-red-500 ring-1 ring-red-500' : 'border-zinc-800'
-                      } text-base sm:text-sm text-white focus:outline-none focus:border-[#bd1616] focus:ring-1 focus:ring-[#bd1616] transition-colors [color-scheme:dark]`}
-                    />
-                  </div>
-                  {errors.time && (
-                    <p className="text-[11px] sm:text-xs text-red-400 font-medium mt-1">{errors.time}</p>
-                  )}
+                {/* Quick Date Selection Chips */}
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                  <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider shrink-0 mr-1">
+                    Quick Select:
+                  </span>
+                  {quickDates.map((item) => {
+                    const isSelected = formData.date === item.date;
+                    return (
+                      <button
+                        key={item.label}
+                        type="button"
+                        onClick={() => selectCalendarDate(item.date)}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all shrink-0 cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#bd1616] text-white font-bold ring-1 ring-white/20 shadow-xs'
+                            : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800'
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  })}
                 </div>
+
+                {/* Interactive Inline Calendar View */}
+                {showCalendarView && (
+                  <div
+                    className="p-3 sm:p-4 rounded-2xl bg-zinc-950 border border-zinc-800 shadow-xl space-y-3 animate-in fade-in zoom-in-95 duration-200"
+                    id="booking-interactive-calendar"
+                  >
+                    {/* Month / Year Navigation */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="w-4 h-4 text-[#bd1616]" />
+                        <h4 className="text-xs sm:text-sm font-bold text-white capitalize">
+                          {monthYearHeader}
+                        </h4>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={handlePrevMonth}
+                          className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                          aria-label="Previous month"
+                        >
+                          <ChevronLeft className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleNextMonth}
+                          className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                          aria-label="Next month"
+                        >
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Day of Week Headers */}
+                    <div className="grid grid-cols-7 gap-1 text-center">
+                      {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
+                        <span
+                          key={day}
+                          className="text-[10px] font-bold text-zinc-400 py-1"
+                        >
+                          {day}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Day Cells Grid */}
+                    <div className="grid grid-cols-7 gap-1">
+                      {calendarDays.map((cell, idx) => {
+                        if (!cell.isCurrentMonth) {
+                          return <div key={`empty-${idx}`} className="h-8" />;
+                        }
+
+                        return (
+                          <button
+                            key={cell.dateStr}
+                            type="button"
+                            disabled={cell.isPast}
+                            onClick={() => selectCalendarDate(cell.dateStr)}
+                            className={`h-8 rounded-lg text-xs font-semibold flex items-center justify-center relative transition-all ${
+                              cell.isPast
+                                ? 'text-zinc-600 cursor-not-allowed opacity-40'
+                                : cell.isSelected
+                                ? 'bg-[#bd1616] text-white font-bold shadow-md shadow-[#bd1616]/40 scale-105 cursor-pointer ring-2 ring-white/30'
+                                : cell.isToday
+                                ? 'bg-zinc-900 border border-amber-400/60 text-amber-300 hover:bg-zinc-800 cursor-pointer'
+                                : 'bg-zinc-900/60 hover:bg-zinc-800 text-zinc-200 cursor-pointer'
+                            }`}
+                          >
+                            <span>{cell.dayNumber}</span>
+                            {cell.isToday && !cell.isSelected && (
+                              <span className="absolute bottom-1 w-1 h-1 rounded-full bg-amber-400" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Selected Date Confirmation Tag */}
+                    {formattedSelectedDate ? (
+                      <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-300 flex-wrap gap-2">
+                        <span className="flex items-center gap-1.5 font-medium text-emerald-400">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Shoot Date: <strong className="text-white">{formattedSelectedDate}</strong></span>
+                        </span>
+                        <span className="text-[10px] text-zinc-400 font-mono">
+                          ⚡ Priority Slot Reserved
+                        </span>
+                      </div>
+                    ) : (
+                      <p className="text-[11px] text-zinc-400 italic text-center pt-1">
+                        Click any available date above to set your shoot schedule.
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Row 4: Shoot Duration & Location */}

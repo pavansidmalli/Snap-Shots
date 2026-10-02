@@ -11,9 +11,11 @@ export type SupportedCountryCode = 'IN' | 'US';
 
 export interface PackagePricing {
   quickShot: number;
+  quickShotOriginal: number;
   eventReel: number;
+  eventReelOriginal: number;
   fullContent: number;
-  eliteStarting: number;
+  fullContentOriginal: number;
 }
 
 export interface CountryPricingConfig {
@@ -46,10 +48,12 @@ export const PRICING_CONFIG: Record<SupportedCountryCode, CountryPricingConfig> 
     shortLabel: 'India (₹)',
     whatsappCountryName: 'India',
     packages: {
-      quickShot: 5000,       // ₹5,000
-      eventReel: 10000,      // ₹10,000
-      fullContent: 20000,    // ₹20,000
-      eliteStarting: 25000,  // ₹25,000
+      quickShot: 1499,          // Hourly Plan offer price: ₹1,499
+      quickShotOriginal: 1999,  // Hourly Plan original cut price: ₹1,999
+      eventReel: 4499,          // Half Day Plan offer price: ₹4,499
+      eventReelOriginal: 4999,  // Half Day Plan original cut price: ₹4,999
+      fullContent: 999,         // Add On's offer price: ₹999
+      fullContentOriginal: 1250,// Add On's original cut price: ₹1,250
     },
   },
 
@@ -64,10 +68,12 @@ export const PRICING_CONFIG: Record<SupportedCountryCode, CountryPricingConfig> 
     shortLabel: 'USA ($)',
     whatsappCountryName: 'USA',
     packages: {
-      quickShot: 150,        // $150
-      eventReel: 300,        // $300
-      fullContent: 600,      // $600
-      eliteStarting: 800,    // $800
+      quickShot: 149,
+      quickShotOriginal: 199,
+      eventReel: 399,
+      eventReelOriginal: 449,
+      fullContent: 99,
+      fullContentOriginal: 125,
     },
   },
 };

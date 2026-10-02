@@ -10,7 +10,7 @@ export const Process: React.FC<ProcessProps> = ({ onStartBooking }) => {
   const stepIcons = [Calendar, UserCheck, Camera, Download];
 
   return (
-    <section id="process" className="bg-transparent py-24 relative overflow-hidden">
+    <section id="process" className="bg-transparent py-10 sm:py-14 relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto">

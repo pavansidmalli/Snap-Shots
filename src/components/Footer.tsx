@@ -19,7 +19,7 @@ export const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="bg-black/80 backdrop-blur-md text-white pt-16 pb-24 sm:pb-12 border-t border-zinc-900/80 relative">
+    <footer className="bg-black/80 backdrop-blur-md text-white pt-12 pb-20 sm:pb-10 border-t border-zinc-900/80 relative">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8 pb-12 border-b border-zinc-900">
           {/* Brand Info */}
@@ -29,7 +29,7 @@ export const Footer: React.FC = () => {
                 className="inline-block mb-0.5"
                 id="footer-brand-logo"
               >
-                <BrandLogo variant="footer" allowUpload={true} />
+                <BrandLogo variant="footer" allowUpload={false} />
               </div>
               <span className="text-[10px] sm:text-[11px] font-medium tracking-[0.22em] lowercase text-zinc-400">
                 your moments our snaps

@@ -20,7 +20,7 @@ export const CTA: React.FC<CTAProps> = ({ onBookClick }) => {
   };
 
   return (
-    <section className="bg-transparent py-20 relative overflow-hidden" id="cta-section">
+    <section className="bg-transparent py-10 sm:py-14 relative overflow-hidden" id="cta-section">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="relative rounded-[28px] sm:rounded-[40px] bg-gradient-to-br from-black via-zinc-950 to-zinc-900 p-6 sm:p-14 lg:p-16 text-center text-white shadow-2xl border border-zinc-800 overflow-hidden">
           {/* Ambient red radial gradient */}

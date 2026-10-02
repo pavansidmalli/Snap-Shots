@@ -13,7 +13,9 @@ import {
 import {
   formatCurrencyPrice,
   getPackagePriceString,
+  getPackageOriginalPriceString,
   getPackagePriceNumber,
+  getPackageOriginalPriceNumber,
 } from '../utils/currencyFormatter';
 
 interface CountryContextType {
@@ -22,7 +24,9 @@ interface CountryContextType {
   setCountry: (code: SupportedCountryCode) => void;
   isDetecting: boolean;
   getPackagePrice: (packageId: string) => string;
+  getPackageOriginalPrice: (packageId: string) => string;
   getPackagePriceNum: (packageId: string) => number;
+  getPackageOriginalPriceNum: (packageId: string) => number;
   getEliteStartingPrice: () => string;
   formatPrice: (amount: number) => string;
   startingPriceLabel: string;
@@ -88,16 +92,24 @@ export const CountryProvider: React.FC<{ children: ReactNode }> = ({ children })
     return getPackagePriceString(packageId, country);
   };
 
+  const getPackageOriginalPrice = (packageId: string): string => {
+    return getPackageOriginalPriceString(packageId, country);
+  };
+
   const getPackagePriceNum = (packageId: string): number => {
     return getPackagePriceNumber(packageId, country);
   };
 
-  const getEliteStartingPrice = (): string => {
-    return formatCurrencyPrice(countryConfig.packages.eliteStarting, country);
+  const getPackageOriginalPriceNum = (packageId: string): number => {
+    return getPackageOriginalPriceNumber(packageId, country);
   };
 
   const formatPrice = (amount: number): string => {
     return formatCurrencyPrice(amount, country);
+  };
+
+  const getEliteStartingPrice = (): string => {
+    return formatCurrencyPrice(country === 'IN' ? 14999 : 800, country);
   };
 
   const value = useMemo(
@@ -107,7 +119,9 @@ export const CountryProvider: React.FC<{ children: ReactNode }> = ({ children })
       setCountry,
       isDetecting,
       getPackagePrice,
+      getPackageOriginalPrice,
       getPackagePriceNum,
+      getPackageOriginalPriceNum,
       getEliteStartingPrice,
       formatPrice,
       startingPriceLabel,
