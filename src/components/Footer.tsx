@@ -8,7 +8,6 @@ import {
   MapPin,
   ArrowUp,
   MessageSquare,
-  Shield,
   Clock,
   Sparkles,
   ArrowUpRight,
@@ -17,26 +16,10 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { siteConfig } from '../config/siteConfig';
 import { BrandLogo } from './BrandLogo';
-import { useLogo } from '../context/LogoContext';
 
 export const Footer: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAdmin, setIsAdmin } = useLogo();
-
-  const handleAdminToggle = () => {
-    if (isAdmin) {
-      setIsAdmin(false);
-    } else {
-      const pass = window.prompt('Enter Admin Passkey:');
-      if (pass === 'admin' || pass === 'snapshots' || pass === '1234') {
-        setIsAdmin(true);
-        alert('Admin Mode Activated. Logo upload controls are now accessible.');
-      } else if (pass !== null) {
-        alert('Incorrect passkey.');
-      }
-    }
-  };
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -373,17 +356,6 @@ export const Footer: React.FC = () => {
             >
               <span>Back to Top</span>
               <ArrowUp className="w-3.5 h-3.5" />
-            </button>
-            <span>&bull;</span>
-            <button
-              onClick={handleAdminToggle}
-              className={`flex items-center gap-1 transition-colors cursor-pointer ${
-                isAdmin ? 'text-emerald-400 font-bold' : 'text-zinc-500 hover:text-zinc-300'
-              }`}
-              title="Admin Portal Toggle"
-            >
-              <Shield className="w-3 h-3" />
-              <span>{isAdmin ? 'Admin Active' : 'Admin'}</span>
             </button>
           </div>
         </div>

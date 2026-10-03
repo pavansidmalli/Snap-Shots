@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { X, ArrowUpRight, Upload, Camera, Trash2, Check, MessageSquare, ShieldCheck, UserPlus, LogOut } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, ArrowUpRight, MessageSquare, UserPlus } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { siteConfig } from '../config/siteConfig';
 import { BrandLogo } from './BrandLogo';
-import { useLogo } from '../context/LogoContext';
 
 interface HeaderProps {
   onBookClick: () => void;
@@ -12,12 +11,9 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [uploadToast, setUploadToast] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { customLogoUrl, logoFileName, saveCustomLogo, removeCustomLogo, isAdmin, setIsAdmin } = useLogo();
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     let ticking = false;
@@ -41,34 +37,7 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Handle Logo File Upload (Admin only)
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file (PNG, JPG, SVG, or WebP).');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      if (dataUrl) {
-        saveCustomLogo(dataUrl, file.name);
-        setUploadToast(`Logo updated: ${file.name}`);
-        setTimeout(() => setUploadToast(null), 4000);
-      }
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-  };
-
-  const triggerUpload = () => {
-    fileInputRef.current?.click();
-  };
-
-  // Nav links matching the reference screenshot hierarchy
+  // Nav links matching the reference layout
   const navLinks = [
     { label: 'Pricing', path: '/#pricing', hash: 'pricing' },
     { label: 'Services', path: '/services', isPage: true },
@@ -113,34 +82,13 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
 
   return (
     <>
-      {/* Hidden File Input for Logo Upload (Admin accessible only) */}
-      {isAdmin && (
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/png,image/jpeg,image/svg+xml,image/webp"
-          onChange={handleLogoUpload}
-          className="hidden"
-          id="header-admin-logo-input"
-          aria-label="Upload logo file"
-        />
-      )}
-
-      {/* Floating Upload Success Toast Notification */}
-      {uploadToast && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-emerald-600 text-white text-xs font-bold shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-          <Check className="w-4 h-4 text-white" />
-          <span>{uploadToast}</span>
-        </div>
-      )}
-
       {/* Header Bar */}
       <header
         id="main-header"
         className="fixed top-3 sm:top-4 left-0 right-0 z-50 px-3 sm:px-6 pointer-events-none"
       >
         <div className="mx-auto max-w-5xl sm:max-w-6xl w-full">
-          {/* Floating Pill Container (Selected Element: Black Background, White Menu Button) */}
+          {/* Floating Pill Container (Black Background, White Menu Button) */}
           <div
             className={`w-full bg-black/95 text-white rounded-full px-4 sm:px-6 py-2 sm:py-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.65)] flex items-center justify-between border border-zinc-800/90 backdrop-blur-md pointer-events-auto transition-all duration-300 ${
               isScrolled ? 'shadow-[0_14px_45px_rgba(0,0,0,0.85)] border-zinc-700/80 scale-[0.99]' : ''
@@ -163,35 +111,6 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
               >
                 <BrandLogo variant="header" lightBackground={false} allowUpload={false} />
               </div>
-
-              {/* ADMIN ONLY: Logo Upload Trigger Button */}
-              {isAdmin && (
-                <div className="flex items-center gap-1.5 animate-in fade-in duration-200">
-                  <button
-                    type="button"
-                    onClick={triggerUpload}
-                    title="Admin: Upload custom logo"
-                    className="flex h-7 px-2.5 items-center gap-1 rounded-full bg-emerald-950/80 hover:bg-emerald-600 text-emerald-300 hover:text-white text-[10px] font-bold border border-emerald-700 transition-colors cursor-pointer"
-                    id="admin-upload-logo-badge"
-                  >
-                    <Camera className="w-3 h-3" />
-                    <span>Upload Logo</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsAdmin(false);
-                      setUploadToast('Exited Admin Mode');
-                      setTimeout(() => setUploadToast(null), 3000);
-                    }}
-                    title="Exit Admin Mode"
-                    className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-[10px] transition-colors cursor-pointer"
-                  >
-                    <LogOut className="w-3 h-3" />
-                  </button>
-                </div>
-              )}
             </div>
 
             {/* Desktop Navigation Links */}
@@ -249,7 +168,7 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
       </header>
 
       {/* ========================================================================= */}
-      {/* MOBILE MENU MODAL (EXACT REDESIGN MATCHING THE UPLOADED SCREENSHOT)      */}
+      {/* MOBILE MENU MODAL                                                         */}
       {/* ========================================================================= */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex items-start justify-center p-3.5 sm:p-5 pt-3 sm:pt-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
@@ -293,7 +212,7 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
               </button>
             </div>
 
-            {/* Navigation Links List (Stacked Vertically, Bold, Clean Typography) */}
+            {/* Navigation Links List */}
             <nav className="flex flex-col space-y-3.5 my-2">
               {navLinks.map((link) => (
                 <button
@@ -309,7 +228,7 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
 
             {/* Bottom Actions Cluster */}
             <div className="mt-8 pt-5 border-t border-zinc-100 flex flex-col gap-3">
-              {/* Primary Action Button: "Book Now ↗" (Solid Brand Red / Dark Pill) */}
+              {/* Primary Action Button: "Book Now ↗" */}
               <button
                 type="button"
                 onClick={() => {
@@ -323,7 +242,7 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
                 <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
               </button>
 
-              {/* Secondary Action Button: "Become a Creator" (White Outline Pill - For Public Visitors) */}
+              {/* Secondary Action Button: "Become a Creator" */}
               <button
                 type="button"
                 onClick={handleBecomeCreator}
@@ -333,52 +252,6 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
                 <UserPlus className="w-4 h-4 text-zinc-700" />
                 <span>Become a Creator</span>
               </button>
-
-              {/* ADMIN ONLY: Logo Upload & Reset Controls */}
-              {isAdmin && (
-                <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2.5 mt-1 animate-in fade-in duration-200">
-                  <div className="flex items-center justify-between text-xs font-bold text-emerald-800">
-                    <span className="flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                      Admin Logo Controls
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setIsAdmin(false)}
-                      className="text-zinc-500 hover:text-zinc-800 text-[11px] underline cursor-pointer"
-                    >
-                      Exit Admin
-                    </button>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={triggerUpload}
-                    className="w-full h-10 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors"
-                  >
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Upload New Logo File</span>
-                  </button>
-
-                  {customLogoUrl && (
-                    <div className="flex items-center justify-between pt-1 text-[11px] text-zinc-600">
-                      <span className="truncate max-w-[180px]">{logoFileName || 'Custom Logo Active'}</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          removeCustomLogo();
-                          setUploadToast('Reset to default logo');
-                          setTimeout(() => setUploadToast(null), 3000);
-                        }}
-                        className="text-[#bd1616] hover:underline font-bold flex items-center gap-1 cursor-pointer"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                        <span>Reset Logo</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
 
               {/* Direct WhatsApp Quick Chat Link */}
               <div className="pt-2 text-center">
