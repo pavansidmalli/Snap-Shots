@@ -76,18 +76,26 @@ function MainAppLayout() {
         return;
       }
 
+      // Avoid intercepting external links, whatsapp, phone, email
+      const href = clickable.getAttribute('href');
+      if (href && (href.startsWith('http') || href.startsWith('tel:') || href.startsWith('mailto:') || href.includes('wa.me'))) {
+        return;
+      }
+
       const text = (clickable.textContent || '').trim().toUpperCase();
       const isBookingTrigger =
-        text === 'BOOK A SHOOT' ||
-        text === 'BOOK NOW' ||
-        text === 'BOOK YOUR SHOOT' ||
-        text === 'BOOK' ||
-        text === 'BOOK THIS SERVICE' ||
-        text === 'BOOK SNAP SHOTS ELITE' ||
-        text.includes('START STEP 01: BOOK YOUR SESSION');
+        text.includes('BOOK A SHOOT') ||
+        text.includes('BOOK NOW') ||
+        text.includes('BOOK YOUR SHOOT') ||
+        text.includes('BOOK THIS SERVICE') ||
+        text.includes('BOOK SNAP SHOTS ELITE') ||
+        text.includes('START STEP 01') ||
+        clickable.id === 'header-book-btn' ||
+        clickable.id === 'footer-book-cta-btn' ||
+        clickable.id === 'menu-book-now-btn' ||
+        clickable.id === 'wedding-plan-book-btn';
 
       if (isBookingTrigger) {
-        e.preventDefault();
         openBookingModal();
       }
     };

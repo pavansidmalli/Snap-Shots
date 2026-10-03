@@ -138,7 +138,7 @@ export const VideoLightbox: React.FC<VideoLightboxProps> = ({ reel, onClose, onB
       aria-modal="true"
       aria-label={reel.title}
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 md:p-6 bg-black/90 backdrop-blur-2xl transition-opacity animate-in fade-in duration-300"
+      className="fixed inset-0 z-[9998] flex items-center justify-center p-2.5 sm:p-4 md:p-6 bg-black/90 backdrop-blur-2xl transition-opacity animate-in fade-in duration-300"
     >
       <div
         onClick={(e) => e.stopPropagation()}

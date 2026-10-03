@@ -251,8 +251,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     }
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -449,12 +447,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     });
   }, [formData.date]);
 
+  if (!isOpen) return null;
+
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="booking-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
     >
       {/* Darkened Semi-Transparent Backdrop Overlay */}
       <div
