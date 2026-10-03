@@ -4,18 +4,23 @@ interface LogoContextType {
   customLogoUrl: string | null;
   logoFileName: string | null;
   hasCustomLogo: boolean;
+  isAdmin: boolean;
+  setIsAdmin: (val: boolean) => void;
   saveCustomLogo: (dataUrl: string, fileName?: string) => void;
   removeCustomLogo: () => void;
 }
 
 const STORAGE_KEY_DATA = 'snapshots_custom_logo_data';
 const STORAGE_KEY_NAME = 'snapshots_custom_logo_name';
+const STORAGE_KEY_ADMIN = 'snapshots_is_admin';
 const CUSTOM_EVENT_NAME = 'snapshots_logo_updated';
 
 const LogoContext = createContext<LogoContextType>({
   customLogoUrl: null,
   logoFileName: null,
   hasCustomLogo: false,
+  isAdmin: false,
+  setIsAdmin: () => {},
   saveCustomLogo: () => {},
   removeCustomLogo: () => {},
 });
@@ -23,14 +28,33 @@ const LogoContext = createContext<LogoContextType>({
 export const LogoProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(null);
   const [logoFileName, setLogoFileName] = useState<string | null>(null);
+  const [isAdmin, setIsAdminState] = useState<boolean>(false);
 
   useEffect(() => {
+    // 1. Check Admin status from URL params (?admin=true) or LocalStorage
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const adminParam = urlParams.get('admin');
+      const storedAdmin = localStorage.getItem(STORAGE_KEY_ADMIN);
+
+      if (adminParam === 'true' || adminParam === '1') {
+        localStorage.setItem(STORAGE_KEY_ADMIN, 'true');
+        setIsAdminState(true);
+      } else if (storedAdmin === 'true') {
+        setIsAdminState(true);
+      } else {
+        setIsAdminState(false);
+      }
+    } catch {
+      setIsAdminState(false);
+    }
+
+    // 2. Load stored custom logo if any
     const loadStoredLogo = () => {
       try {
         const storedData = localStorage.getItem(STORAGE_KEY_DATA);
         const storedName = localStorage.getItem(STORAGE_KEY_NAME);
 
-        // If it was the legacy default svg, clean it out so user can upload manual
         if (storedData === '/snapshots-logo.svg' || storedData === null) {
           localStorage.removeItem(STORAGE_KEY_DATA);
           localStorage.removeItem(STORAGE_KEY_NAME);
@@ -55,6 +79,9 @@ export const LogoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (e.key === STORAGE_KEY_DATA || e.key === STORAGE_KEY_NAME) {
         loadStoredLogo();
       }
+      if (e.key === STORAGE_KEY_ADMIN) {
+        setIsAdminState(e.newValue === 'true');
+      }
     };
 
     const handleCustomEvent = () => {
@@ -70,16 +97,31 @@ export const LogoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, []);
 
-  const saveCustomLogo = (dataUrl: string, fileName: string = 'custom-logo.png') => {
-    // Always set active in React state first
-    setCustomLogoUrl(dataUrl);
-    setLogoFileName(fileName);
+  const setIsAdmin = (val: boolean) => {
+    setIsAdminState(val);
+    try {
+      if (val) {
+        localStorage.setItem(STORAGE_KEY_ADMIN, 'true');
+      } else {
+        localStorage.removeItem(STORAGE_KEY_ADMIN);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const saveCustomLogo = (dataUrl: string, fileName?: string) => {
     try {
       localStorage.setItem(STORAGE_KEY_DATA, dataUrl);
-      localStorage.setItem(STORAGE_KEY_NAME, fileName);
+      if (fileName) {
+        localStorage.setItem(STORAGE_KEY_NAME, fileName);
+      }
+      setCustomLogoUrl(dataUrl);
+      setLogoFileName(fileName || 'custom-logo');
       window.dispatchEvent(new Event(CUSTOM_EVENT_NAME));
-    } catch (err) {
-      console.warn('LocalStorage save failed, but logo is active in memory:', err);
+    } catch {
+      setCustomLogoUrl(dataUrl);
+      setLogoFileName(fileName || 'custom-logo');
     }
   };
 
@@ -90,8 +132,9 @@ export const LogoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setCustomLogoUrl(null);
       setLogoFileName(null);
       window.dispatchEvent(new Event(CUSTOM_EVENT_NAME));
-    } catch (err) {
-      console.error('Failed to remove logo:', err);
+    } catch {
+      setCustomLogoUrl(null);
+      setLogoFileName(null);
     }
   };
 
@@ -100,7 +143,9 @@ export const LogoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       value={{
         customLogoUrl,
         logoFileName,
-        hasCustomLogo: Boolean(customLogoUrl),
+        hasCustomLogo: !!customLogoUrl,
+        isAdmin,
+        setIsAdmin,
         saveCustomLogo,
         removeCustomLogo,
       }}
@@ -110,6 +155,4 @@ export const LogoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   );
 };
 
-export const useLogo = (): LogoContextType => {
-  return useContext(LogoContext);
-};
+export const useLogo = () => useContext(LogoContext);

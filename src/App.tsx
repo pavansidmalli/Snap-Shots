@@ -4,30 +4,36 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Header } from './components/Header';
-import { Hero } from './components/Hero';
-import { ClientLogosSection } from './components/ClientLogosSection';
-import { Services } from './components/Services';
-import { Portfolio } from './components/Portfolio';
-import { PortfolioModal } from './components/PortfolioModal';
-import { Pricing } from './components/Pricing';
-import { WhyChooseUs } from './components/WhyChooseUs';
-import { Process } from './components/Process';
-import { Testimonials } from './components/Testimonials';
-import { BookingForm } from './components/BookingForm';
-import { BookingModal } from './components/BookingModal';
-import { CTA } from './components/CTA';
-import { FAQ } from './components/FAQ';
 import { Footer } from './components/Footer';
+import { HomePage } from './pages/HomePage';
+import { ServicesPage } from './pages/ServicesPage';
+import { FaqsPage } from './pages/FaqsPage';
+import { ContactPage } from './pages/ContactPage';
+import { PortfolioModal } from './components/PortfolioModal';
+import { BookingModal } from './components/BookingModal';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { FloatingCall } from './components/FloatingCall';
 import { WelcomePopup } from './components/WelcomePopup';
 import { LogoProvider } from './context/LogoContext';
 import { CountryProvider } from './context/CountryContext';
-import { FadeInSection } from './components/FadeInSection';
-import { ReelWorkItem } from './types';
+import { ReelWorkItem, PackageItem } from './types';
 
-export default function App() {
+// Scroll restoration helper on route transition
+function ScrollToTop() {
+  const { pathname, hash } = useLocation();
+
+  useEffect(() => {
+    if (!hash) {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname, hash]);
+
+  return null;
+}
+
+function MainAppLayout() {
   const [selectedReel, setSelectedReel] = useState<ReelWorkItem | null>(null);
   const [selectedService, setSelectedService] = useState<string>('Event Reels');
   const [selectedPackage, setSelectedPackage] = useState<string>('event-reel');
@@ -39,13 +45,6 @@ export default function App() {
     if (pkgId) setSelectedPackage(pkgId);
     if (coupon !== undefined) setSelectedCoupon(coupon);
     setIsBookingModalOpen(true);
-  };
-
-  const scrollToWork = () => {
-    const el = document.getElementById('work');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
   };
 
   const handleSelectPackage = (pkgId: string) => {
@@ -61,22 +60,19 @@ export default function App() {
     openBookingModal(serviceTitle);
   };
 
-  // Universal delegate listener to ensure any "BOOK A SHOOT", "BOOK NOW", "BOOK YOUR SHOOT" button opens the popup
+  // Universal delegate listener to ensure any "BOOK A SHOOT" button triggers the modal
   useEffect(() => {
     const handleGlobalClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
 
-      // Find closest clickable button or link
       const clickable = target.closest('button, a');
       if (!clickable) return;
 
-      // Ignore buttons inside the modal itself or form submission buttons inside the form
       if (clickable.closest('#booking-modal-form-content') || clickable.closest('#booking-modal-success')) {
         return;
       }
       if (clickable.id === 'booking-submit-btn') {
-        // Allow the in-page form to submit its own handler
         return;
       }
 
@@ -101,124 +97,110 @@ export default function App() {
   }, []);
 
   return (
+    <div className="min-h-screen bg-gradient-to-b from-[#000000] via-[#1a0000] via-35% to-[#000000] text-white selection:bg-[#bd1616] selection:text-white relative overflow-x-hidden">
+      {/* Background Gradient Mesh with Black & Red */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0 overflow-hidden transform-gpu will-change-transform"
+        style={{ transform: 'translate3d(0, 0, 0)' }}
+        aria-hidden="true"
+      >
+        {/* Top Hero Radial Glow in Red & Black */}
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[1200px] h-[700px] bg-[radial-gradient(ellipse_at_center,rgba(189,22,22,0.18)_0%,rgba(117,13,13,0.08)_45%,transparent_75%)] blur-3xl" />
+
+        {/* Mid-Left Black & Red Ambient Glow */}
+        <div className="absolute top-[28%] -left-52 w-[850px] h-[850px] bg-[radial-gradient(ellipse_at_center,rgba(189,22,22,0.12)_0%,rgba(117,13,13,0.06)_50%,transparent_75%)] blur-3xl animate-pulse-soft" />
+
+        {/* Mid-Right Black & Red Ambient Glow */}
+        <div className="absolute top-[58%] -right-52 w-[900px] h-[900px] bg-[radial-gradient(ellipse_at_center,rgba(189,22,22,0.14)_0%,rgba(117,13,13,0.06)_50%,transparent_75%)] blur-3xl" />
+
+        {/* Bottom Black & Red Glow */}
+        <div className="absolute -bottom-36 left-1/2 -translate-x-1/2 w-[1100px] h-[700px] bg-[radial-gradient(ellipse_at_center,rgba(189,22,22,0.14)_0%,rgba(117,13,13,0.08)_45%,transparent_75%)] blur-3xl" />
+
+        {/* Subtle Vignette Texture */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.6)_100%)] pointer-events-none" />
+      </div>
+
+      <ScrollToTop />
+
+      {/* Sticky Navigation Header with Multi-Page Routing */}
+      <Header onBookClick={() => openBookingModal()} />
+
+      {/* Main Routed Content */}
+      <main className="relative z-10">
+        <Routes>
+          {/* Home Page: Clean Landing Page (Services & FAQs removed as requested) */}
+          <Route
+            path="/"
+            element={
+              <HomePage
+                onBookClick={(pkgId) => openBookingModal(undefined, pkgId)}
+                onSelectReel={(reel) => setSelectedReel(reel)}
+                onSelectPackage={handleSelectPackage}
+              />
+            }
+          />
+
+          {/* Separate Dedicated Services Page */}
+          <Route
+            path="/services"
+            element={<ServicesPage onBookService={handleSelectService} />}
+          />
+
+          {/* Separate Dedicated FAQs Page */}
+          <Route
+            path="/faqs"
+            element={<FaqsPage onOpenBooking={() => openBookingModal()} />}
+          />
+
+          {/* Separate Dedicated Contact Us Page */}
+          <Route path="/contact" element={<ContactPage />} />
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+
+      {/* Footer */}
+      <Footer />
+
+      {/* Floating WhatsApp Quick Action (Bottom-Right) */}
+      <FloatingWhatsApp />
+
+      {/* Floating Phone Quick Action (Bottom-Left) */}
+      <FloatingCall />
+
+      {/* Fullscreen Controlled Video Lightbox */}
+      <PortfolioModal
+        reel={selectedReel}
+        onClose={() => setSelectedReel(null)}
+        onBookShoot={handleModalBookShoot}
+      />
+
+      {/* Professional Centered Booking Popup / Modal */}
+      <BookingModal
+        isOpen={isBookingModalOpen}
+        onClose={() => {
+          setIsBookingModalOpen(false);
+          setSelectedCoupon('');
+        }}
+        initialService={selectedService}
+        initialPackage={selectedPackage}
+        initialCoupon={selectedCoupon}
+      />
+
+      {/* Timed Welcome Privilege Offer Popup */}
+      <WelcomePopup onClaimOffer={() => openBookingModal(undefined, undefined, 'SNAP15')} />
+    </div>
+  );
+}
+
+export default function App() {
+  return (
     <CountryProvider>
       <LogoProvider>
-        <div className="min-h-screen bg-gradient-to-b from-[#000000] via-[#1a0000] via-35% to-[#000000] text-white selection:bg-[#bd1616] selection:text-white relative overflow-x-hidden">
-        {/* Background Gradient Mesh with Black & Red */}
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden transform-gpu will-change-transform" style={{ transform: 'translate3d(0, 0, 0)' }} aria-hidden="true">
-          {/* Top Hero Radial Glow in Red & Black */}
-          <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[1200px] h-[700px] bg-[radial-gradient(ellipse_at_center,rgba(189,22,22,0.18)_0%,rgba(117,13,13,0.08)_45%,transparent_75%)] blur-3xl" />
-          
-          {/* Mid-Left Black & Red Ambient Glow */}
-          <div className="absolute top-[28%] -left-52 w-[850px] h-[850px] bg-[radial-gradient(ellipse_at_center,rgba(189,22,22,0.12)_0%,rgba(117,13,13,0.06)_50%,transparent_75%)] blur-3xl animate-pulse-soft" />
-          
-          {/* Mid-Right Black & Red Ambient Glow */}
-          <div className="absolute top-[58%] -right-52 w-[900px] h-[900px] bg-[radial-gradient(ellipse_at_center,rgba(189,22,22,0.14)_0%,rgba(117,13,13,0.06)_50%,transparent_75%)] blur-3xl" />
-          
-          {/* Bottom Black & Red Glow */}
-          <div className="absolute -bottom-36 left-1/2 -translate-x-1/2 w-[1100px] h-[700px] bg-[radial-gradient(ellipse_at_center,rgba(189,22,22,0.14)_0%,rgba(117,13,13,0.08)_45%,transparent_75%)] blur-3xl" />
-
-          {/* Subtle Vignette Texture */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.6)_100%)] pointer-events-none" />
-        </div>
-
-        {/* 1. Sticky Navigation Header */}
-        <Header onBookClick={() => openBookingModal()} />
-
-        <main className="relative z-10">
-          {/* 2. Hero Section with dynamic 9:16 phone reel, stats, & CTA */}
-          <FadeInSection duration={0.8} yOffset={20}>
-            <Hero
-              onBookClick={() => openBookingModal()}
-              onViewWorkClick={scrollToWork}
-              onWatchReel={(reel) => setSelectedReel(reel)}
-            />
-          </FadeInSection>
-
-          {/* 3. Trusted Brand Logos Marquee Section */}
-          <FadeInSection duration={0.6}>
-            <ClientLogosSection />
-          </FadeInSection>
-
-          {/* 4. Services Section - 9 categories tailored to Snap Shots */}
-          <FadeInSection>
-            <Services onBookService={handleSelectService} />
-          </FadeInSection>
-
-          {/* 4. Portfolio / Work That Performs - 9:16 vertical videos with autoplay & full reel modal */}
-          <FadeInSection>
-            <Portfolio onSelectReel={(reel) => setSelectedReel(reel)} />
-          </FadeInSection>
-
-          {/* 5. Pricing - Quick Shot (₹1,299), Event Reel (₹2,999), Full Content (₹4,999), and Snap Shots Elite */}
-          <FadeInSection>
-            <Pricing onSelectPackage={handleSelectPackage} />
-          </FadeInSection>
-
-          {/* 6. Why Choose Us - The Snap Shots Difference (Trained creators, ₹1,299 pricing, Same-Day delivery, 4K backup) */}
-          <FadeInSection>
-            <WhyChooseUs />
-          </FadeInSection>
-
-          {/* 7. Process - How Snap Shots Works (01 Request -> 02 Book -> 03 Shoot -> 04 Deliver) */}
-          <FadeInSection>
-            <Process onStartBooking={() => openBookingModal()} />
-          </FadeInSection>
-
-          {/* 8. Testimonials - Real client reviews from weddings, events, summits, & brands */}
-          <FadeInSection>
-            <Testimonials />
-          </FadeInSection>
-
-          {/* 9. FAQ - Frequently asked questions accordion */}
-          <FadeInSection>
-            <FAQ />
-          </FadeInSection>
-
-          {/* 10. Booking Form - Comprehensive appointment scheduler & WhatsApp sync */}
-          <FadeInSection>
-            <BookingForm selectedService={selectedService} selectedPackage={selectedPackage} />
-          </FadeInSection>
-
-          {/* 11. Final Call To Action - High conversion banner */}
-          <FadeInSection>
-            <CTA onBookClick={() => openBookingModal()} />
-          </FadeInSection>
-        </main>
-
-        {/* 12. Footer */}
-        <FadeInSection yOffset={16}>
-          <Footer />
-        </FadeInSection>
-
-        {/* Floating WhatsApp Quick Action (Bottom-Right) */}
-        <FloatingWhatsApp />
-
-        {/* Floating Phone Quick Action (Bottom-Left - Opposite of WhatsApp) */}
-        <FloatingCall />
-
-        {/* Fullscreen Reel Modal */}
-        <PortfolioModal
-          reel={selectedReel}
-          onClose={() => setSelectedReel(null)}
-          onBookShoot={handleModalBookShoot}
-        />
-
-        {/* Professional Centered Booking Popup / Modal */}
-        <BookingModal
-          isOpen={isBookingModalOpen}
-          onClose={() => {
-            setIsBookingModalOpen(false);
-            setSelectedCoupon('');
-          }}
-          initialService={selectedService}
-          initialPackage={selectedPackage}
-          initialCoupon={selectedCoupon}
-        />
-
-        {/* Timed Welcome Privilege Offer Popup after Website Load */}
-        <WelcomePopup onClaimOffer={() => openBookingModal(undefined, undefined, 'SNAP15')} />
-      </div>
+        <BrowserRouter>
+          <MainAppLayout />
+        </BrowserRouter>
       </LogoProvider>
     </CountryProvider>
   );

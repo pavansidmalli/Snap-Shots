@@ -381,6 +381,58 @@ export const siteConfig = {
       verified: true,
       date: 'August 2026',
     },
+    {
+      id: 'test-5',
+      name: 'Dr. Keerthi Rao',
+      role: 'Dermatologist & Clinic Owner',
+      event: 'Aesthetic Clinic Re-Branding',
+      rating: 5,
+      quote:
+        '“Our patient transformation reels gained over 350K views within a week! Patients walked in showing the reel and booking our premium treatments directly. Outstanding work.”',
+      location: 'Warangal',
+      avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&auto=format&fit=crop',
+      verified: true,
+      date: 'September 2026',
+    },
+    {
+      id: 'test-6',
+      name: 'Raj & Sneha Patel',
+      role: 'Sangeet & Reception Hosts',
+      event: 'Destination Wedding Gala',
+      rating: 5,
+      quote:
+        '“Having a dedicated reel maker rather than just traditional cameras was the best decision of our entire wedding! All our guests received cinematic clips to post that same night.”',
+      location: 'Dallas, TX',
+      avatarUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=200&auto=format&fit=crop',
+      verified: true,
+      date: 'September 2026',
+    },
+    {
+      id: 'test-7',
+      name: 'Aditya Kulkarni',
+      role: 'Fitness Coach & Athlete',
+      event: 'Personal Branding & Workout Reels',
+      rating: 5,
+      quote:
+        '“The lighting angles, 4K slow-mo gym clips, and bass-heavy audio sync gave me an entire month of elite high-converting content in a single 2-hour shoot.”',
+      location: 'Hyderabad',
+      avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=200&auto=format&fit=crop',
+      verified: true,
+      date: 'August 2026',
+    },
+    {
+      id: 'test-8',
+      name: 'Maya & Kabir Sen',
+      role: 'Anniversary Hosts',
+      event: 'Silver Jubilee Family Celebration',
+      rating: 5,
+      quote:
+        '“Captured intimate candid family memories so beautifully. Tears in our parents’ eyes when we played the recap on the projector just 3 hours after cake cutting!”',
+      location: 'New York, NY',
+      avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop',
+      verified: true,
+      date: 'July 2026',
+    },
   ] as TestimonialItem[],
 
   faqs: [

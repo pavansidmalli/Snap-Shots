@@ -88,6 +88,17 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick, onWatc
   const shouldReduceMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState<number>(2);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [isPaused, setIsPaused] = useState<boolean>(false);
+
+  // Auto-scroll hero video reels carousel smoothly
+  useEffect(() => {
+    if (isPaused) return;
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % HERO_REELS.length);
+    }, 4200);
+
+    return () => clearInterval(interval);
+  }, [isPaused]);
 
   const handlePlayReel = useCallback((reel: HeroReel) => {
     if (onWatchReel) {
@@ -152,7 +163,7 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick, onWatc
   const yStats = useTransform(scrollYProgress, [0, 1], [0, shouldReduceMotion ? 0 : 25]);
 
   return (
-    <section id="home" ref={heroRef} className="relative pt-24 pb-10 sm:pt-28 sm:pb-14 overflow-hidden bg-transparent">
+    <section id="home" ref={heroRef} className="relative pt-24 sm:pt-28 md:pt-32 pb-10 sm:pb-14 overflow-hidden bg-transparent">
       {/* Background Ambient Glows with Subtle Parallax Float */}
       <motion.div style={{ y: yBackgroundGlow }} className="pointer-events-none absolute inset-0 -z-10 overflow-hidden transform-gpu will-change-transform">
         <div
@@ -236,6 +247,8 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick, onWatc
             className="relative h-[450px] min-[390px]:h-[485px] sm:h-[510px] md:h-[545px] w-full max-w-[760px] md:max-w-[960px] lg:max-w-[1150px] flex items-center justify-center select-none"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
           >
             {/* Ambient Radial Spotlight & Stage Glow */}
             <div className="absolute inset-0 max-w-[550px] h-[380px] mx-auto my-auto -z-10 bg-radial from-[#bd1616]/35 via-[#bd1616]/12 to-transparent blur-3xl pointer-events-none" />

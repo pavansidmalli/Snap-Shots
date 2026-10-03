@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 140" width="540" height="140" fill="none">
+  <defs>
+    <!-- Brand Red & Orange Gradient -->
+    <linearGradient id="camGradDark" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#bd1616"/>
+      <stop offset="50%" stop-color="#e62020"/>
+      <stop offset="100%" stop-color="#ff7700"/>
+    </linearGradient>
+
+    <linearGradient id="shGradDark" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#bd1616"/>
+      <stop offset="100%" stop-color="#d61c1c"/>
+    </linearGradient>
+
+    <linearGradient id="tGradDark" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#bd1616"/>
+      <stop offset="100%" stop-color="#ff5500"/>
+    </linearGradient>
+  </defs>
+
+  <g>
+    <!-- 1. Letter 's' (Rich Black) -->
+    <text x="32" y="88" fill="#000000" font-family="'Plus Jakarta Sans', 'Inter', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="64" letter-spacing="-1">s</text>
+
+    <!-- 2. Letter 'n' (Rich Black) -->
+    <text x="76" y="88" fill="#000000" font-family="'Plus Jakarta Sans', 'Inter', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="64" letter-spacing="-1">n</text>
+
+    <!-- 3. Letter 'a' (Rich Black) with Rewind ◀◀ inside -->
+    <text x="130" y="88" fill="#000000" font-family="'Plus Jakarta Sans', 'Inter', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="64" letter-spacing="-1">a</text>
+    <!-- Rewind triangles inside 'a' counter -->
+    <path d="M158 68 L163 64 L163 72 Z" fill="#FFFFFF"/>
+    <path d="M152 68 L157 64 L157 72 Z" fill="#FFFFFF"/>
+
+    <!-- 4. Letter 'p' (Rich Black) with Fast-Forward ▶▶ inside -->
+    <text x="180" y="88" fill="#000000" font-family="'Plus Jakarta Sans', 'Inter', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="64" letter-spacing="-1">p</text>
+    <!-- Fast-forward triangles inside 'p' counter -->
+    <path d="M204 68 L199 64 L199 72 Z" fill="#FFFFFF"/>
+    <path d="M210 68 L205 64 L205 72 Z" fill="#FFFFFF"/>
+
+    <!-- 5. Letters 'sh' (Brand Red Gradient) -->
+    <text x="230" y="88" fill="url(#shGradDark)" font-family="'Plus Jakarta Sans', 'Inter', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="64" letter-spacing="-1">sh</text>
+
+    <!-- 6. Stylized Camera Body Frame & Top Red Button -->
+    <rect x="366" y="24" width="16" height="5" rx="2.5" fill="#bd1616"/>
+    
+    <!-- Camera upper & lower body bracket line -->
+    <path d="M326 42 C326 34, 334 32, 342 32 L392 32 C398 32, 404 36, 404 42" stroke="url(#camGradDark)" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+    
+    <!-- Camera bottom bracket extending under 'ots' -->
+    <path d="M315 62 L315 90 C315 98, 321 102, 329 102 L440 102 C446 102, 452 98, 452 94" stroke="url(#camGradDark)" stroke-width="7" stroke-linecap="round" fill="none"/>
+
+    <!-- 7. Letter 'o' as Camera Aperture Lens -->
+    <g transform="translate(364, 69)">
+      <circle cx="0" cy="0" r="28" fill="#000000" stroke="#bd1616" stroke-width="4.5"/>
+      <circle cx="0" cy="0" r="23" fill="#111111" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.3"/>
+      
+      <!-- Aperture Blades -->
+      <g stroke="#000000" stroke-width="1.8" fill="#FFFFFF">
+        <path d="M-19 -11 L0 -23 L-5 -11 Z"/>
+        <path d="M-3 -22 L16 -16 L4 -12 Z"/>
+        <path d="M14 -17 L22 1 L11 -2 Z"/>
+        <path d="M21 0 L17 19 L9 9 Z"/>
+        <path d="M18 17 L0 23 L6 11 Z"/>
+        <path d="M2 22 L-16 16 L-4 12 Z"/>
+        <path d="M-15 16 L-22 0 L-10 3 Z"/>
+        <path d="M-22 1 L-18 -18 L-9 -8 Z"/>
+      </g>
+
+      <!-- Center Inner Aperture Hole -->
+      <circle cx="0" cy="0" r="10.5" fill="#000000" stroke="#bd1616" stroke-width="1.5"/>
+
+      <!-- Red Play Triangle ▶ at Center -->
+      <polygon points="-3,-5 6,0 -3,5" fill="#bd1616"/>
+    </g>
+
+    <!-- 8. Letter 't' (Brand Red Gradient) -->
+    <text x="408" y="88" fill="url(#tGradDark)" font-family="'Plus Jakarta Sans', 'Inter', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="64" letter-spacing="-1">t</text>
+
+    <!-- 9. Trailing Letter 's' (Rich Black) -->
+    <text x="444" y="88" fill="#000000" font-family="'Plus Jakarta Sans', 'Inter', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="64" letter-spacing="-1">s</text>
+  </g>
+</svg>

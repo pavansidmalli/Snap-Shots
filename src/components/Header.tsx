@@ -1,25 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, X, ArrowUpRight, Instagram, Phone } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, ArrowUpRight, Upload, Camera, Trash2, Check, MessageSquare, ShieldCheck, UserPlus, LogOut } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { siteConfig } from '../config/siteConfig';
-import { CountrySelector } from './CountrySelector';
 import { BrandLogo } from './BrandLogo';
+import { useLogo } from '../context/LogoContext';
 
 interface HeaderProps {
   onBookClick: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isWhatsAppPinging, setIsWhatsAppPinging] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [uploadToast, setUploadToast] = useState<string | null>(null);
 
-  const handleWhatsAppClick = () => {
-    setIsWhatsAppPinging(false);
-    requestAnimationFrame(() => {
-      setIsWhatsAppPinging(true);
-      setTimeout(() => setIsWhatsAppPinging(false), 800);
-    });
-  };
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { customLogoUrl, logoFileName, saveCustomLogo, removeCustomLogo, isAdmin, setIsAdmin } = useLogo();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     let ticking = false;
@@ -43,173 +41,363 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Handle Logo File Upload (Admin only)
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file (PNG, JPG, SVG, or WebP).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (dataUrl) {
+        saveCustomLogo(dataUrl, file.name);
+        setUploadToast(`Logo updated: ${file.name}`);
+        setTimeout(() => setUploadToast(null), 4000);
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const triggerUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Nav links matching the reference screenshot hierarchy
   const navLinks = [
-    { label: 'Home', href: '#home' },
-    { label: 'Services', href: '#services' },
-    { label: 'Our Work', href: '#work' },
-    { label: 'Packages', href: '#pricing' },
-    { label: 'How It Works', href: '#process' },
-    { label: 'Reviews', href: '#testimonials' },
-    { label: 'FAQ', href: '#faq' },
+    { label: 'Pricing', path: '/#pricing', hash: 'pricing' },
+    { label: 'Services', path: '/services', isPage: true },
+    { label: 'Process', path: '/#process', hash: 'process' },
+    { label: 'Testimonials', path: '/#testimonials', hash: 'testimonials' },
+    { label: 'FAQs', path: '/faqs', isPage: true },
+    { label: 'Our Work', path: '/#work', hash: 'work' },
+    { label: 'Contact Us', path: '/contact', isPage: true },
   ];
 
-  const handleLinkClick = (href: string) => {
+  const handleNavClick = (link: typeof navLinks[0]) => {
     setMobileMenuOpen(false);
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+
+    if (link.isPage) {
+      if (location.pathname === link.path) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        navigate(link.path);
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+    } else if (link.hash) {
+      if (location.pathname === '/') {
+        const el = document.getElementById(link.hash);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        navigate('/');
+        setTimeout(() => {
+          const el = document.getElementById(link.hash!);
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 120);
+      }
     }
   };
 
+  const handleBecomeCreator = () => {
+    setMobileMenuOpen(false);
+    const message = encodeURIComponent(
+      'Hi Snap Shots, I am a certified videographer / reel-maker and would like to join the creator network.'
+    );
+    window.open(`https://wa.me/${siteConfig.business.whatsapp.replace(/[^0-9]/g, '')}?text=${message}`, '_blank');
+  };
+
   return (
-    <header
-      id="main-header"
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'py-1 sm:py-1.5 bg-black/95 backdrop-blur-xl shadow-2xl shadow-black/60 border-b border-zinc-800/80' : 'py-1.5 sm:py-2 bg-black/85 backdrop-blur-md'
-      }`}
-    >
-      <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-2.5 sm:gap-4 min-h-[50px] sm:min-h-[60px] md:min-h-[68px]">
-          {/* Header Brand Logo Section */}
-          <a
-            href="#home"
-            onClick={(e) => {
-              e.preventDefault();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className="flex items-center shrink-0 min-w-[130px] min-[380px]:min-w-[150px] z-20 cursor-pointer focus:outline-none"
-            id="header-brand-logo"
-            aria-label="Snap Shots Home"
-          >
-            <BrandLogo variant="header" allowUpload={false} />
-          </a>
+    <>
+      {/* Hidden File Input for Logo Upload (Admin accessible only) */}
+      {isAdmin && (
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/png,image/jpeg,image/svg+xml,image/webp"
+          onChange={handleLogoUpload}
+          className="hidden"
+          id="header-admin-logo-input"
+          aria-label="Upload logo file"
+        />
+      )}
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-2 px-3 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-800 shadow-inner" id="desktop-nav">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleLinkClick(link.href);
-                }}
-                className="px-3.5 py-1.5 text-xs font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-full transition-all duration-200"
-              >
-                {link.label}
-              </a>
-            ))}
-          </nav>
-
-          {/* Desktop Actions */}
-          <div className="hidden lg:flex items-center gap-2.5 shrink-0">
-            <a
-              href={`https://wa.me/${siteConfig.business.whatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(siteConfig.business.whatsappMessage)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={handleWhatsAppClick}
-              aria-label="WhatsApp Us"
-              className="relative flex h-9 w-9 items-center justify-center rounded-full border border-zinc-800 bg-zinc-900/80 text-zinc-300 hover:text-white hover:border-[#bd1616] hover:bg-[#bd1616] active:scale-90 transition-all duration-200 cursor-pointer"
-              id="header-whatsapp-btn"
-            >
-              {isWhatsAppPinging && (
-                <span className="absolute inset-0 rounded-full bg-[#bd1616] animate-ping opacity-75 pointer-events-none" />
-              )}
-              <Phone className="w-4 h-4 relative z-10" />
-            </a>
-            <button
-              onClick={onBookClick}
-              id="header-book-btn"
-              className="group relative flex h-10 items-center justify-center gap-2 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] px-6 text-xs font-bold text-white uppercase tracking-wider shadow-md hover:shadow-lg hover:shadow-[#bd1616]/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-            >
-              <span>BOOK A SHOOT</span>
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
-                <ArrowUpRight className="w-3.5 h-3.5 text-white" />
-              </span>
-            </button>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="flex items-center gap-1.5 sm:gap-2 lg:hidden">
-            <button
-              onClick={onBookClick}
-              className="flex h-9 items-center justify-center rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] px-3.5 text-xs font-bold text-white uppercase tracking-wider shadow-sm active:scale-95 transition-transform cursor-pointer"
-              id="mobile-quick-book-btn"
-            >
-              BOOK
-            </button>
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-900 border border-zinc-800 text-white hover:text-white hover:bg-zinc-800 shadow-sm active:scale-95 transition-all cursor-pointer"
-              aria-label={mobileMenuOpen ? 'Close Menu' : 'Open Menu'}
-              id="mobile-menu-toggle"
-            >
-              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-            </button>
-          </div>
+      {/* Floating Upload Success Toast Notification */}
+      {uploadToast && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-emerald-600 text-white text-xs font-bold shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+          <Check className="w-4 h-4 text-white" />
+          <span>{uploadToast}</span>
         </div>
+      )}
 
-        {/* Mobile Dropdown Menu */}
-        {mobileMenuOpen && (
-          <>
-            {/* Backdrop overlay to close when tapped outside */}
-            <div
-              className="fixed inset-0 top-0 bg-black/75 backdrop-blur-xs z-30 lg:hidden"
-              onClick={() => setMobileMenuOpen(false)}
-              aria-hidden="true"
-            />
-            <div
-              className="relative z-40 lg:hidden mt-2 pt-3 pb-5 px-4 rounded-2xl bg-zinc-950 border border-zinc-800 shadow-2xl space-y-3 animate-in fade-in slide-in-from-top-2 duration-200"
-              id="mobile-nav-dropdown"
-            >
-              <nav className="flex flex-col space-y-1">
-                {navLinks.map((link) => (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleLinkClick(link.href);
+      {/* Header Bar */}
+      <header
+        id="main-header"
+        className="fixed top-3 sm:top-4 left-0 right-0 z-50 px-3 sm:px-6 pointer-events-none"
+      >
+        <div className="mx-auto max-w-5xl sm:max-w-6xl w-full">
+          {/* Floating Pill Container (Exact Style from Reference Screenshot) */}
+          <div
+            className={`w-full bg-white text-zinc-900 rounded-full px-4 sm:px-6 py-2 sm:py-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.35)] flex items-center justify-between border border-zinc-200/90 pointer-events-auto transition-all duration-300 ${
+              isScrolled ? 'shadow-[0_12px_40px_rgba(0,0,0,0.5)] scale-[0.99]' : ''
+            }`}
+          >
+            {/* Header Brand Logo (Left) */}
+            <div className="flex items-center gap-2">
+              <div
+                onClick={() => {
+                  if (location.pathname === '/') {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  } else {
+                    navigate('/');
+                    window.scrollTo({ top: 0, behavior: 'instant' });
+                  }
+                }}
+                className="flex items-center shrink-0 min-w-[125px] sm:min-w-[155px] cursor-pointer focus:outline-none"
+                id="header-brand-logo"
+                aria-label="Snap Shots Home"
+              >
+                <BrandLogo variant="header" lightBackground={true} allowUpload={false} />
+              </div>
+
+              {/* ADMIN ONLY: Logo Upload Trigger Button */}
+              {isAdmin && (
+                <div className="flex items-center gap-1.5 animate-in fade-in duration-200">
+                  <button
+                    type="button"
+                    onClick={triggerUpload}
+                    title="Admin: Upload custom logo"
+                    className="flex h-7 px-2.5 items-center gap-1 rounded-full bg-emerald-50 hover:bg-emerald-600 text-emerald-800 hover:text-white text-[10px] font-bold border border-emerald-300 transition-colors cursor-pointer"
+                    id="admin-upload-logo-badge"
+                  >
+                    <Camera className="w-3 h-3" />
+                    <span>Upload Logo</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAdmin(false);
+                      setUploadToast('Exited Admin Mode');
+                      setTimeout(() => setUploadToast(null), 3000);
                     }}
-                    className="flex items-center h-11 px-3.5 text-sm font-semibold text-zinc-300 hover:text-white hover:bg-zinc-900 rounded-xl transition-colors active:bg-zinc-800"
+                    title="Exit Admin Mode"
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 hover:text-zinc-800 text-[10px] transition-colors cursor-pointer"
+                  >
+                    <LogOut className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Desktop Navigation Links */}
+            <nav
+              className="hidden lg:flex items-center gap-1 xl:gap-1.5 px-2.5 py-1 rounded-full bg-zinc-100 border border-zinc-200"
+              id="desktop-nav"
+            >
+              {navLinks.map((link) => {
+                const isActive = link.isPage && location.pathname === link.path;
+
+                return (
+                  <button
+                    key={link.label}
+                    type="button"
+                    onClick={() => handleNavClick(link)}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-full transition-all duration-200 cursor-pointer ${
+                      isActive
+                        ? 'bg-[#bd1616] text-white shadow-xs'
+                        : 'text-zinc-700 hover:text-black hover:bg-white'
+                    }`}
                   >
                     {link.label}
-                  </a>
-                ))}
-              </nav>
-              <div className="pt-3 border-t border-zinc-800 flex flex-col gap-2.5">
-                {/* Mobile Drawer Country Switcher */}
-                <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800/80 text-xs">
-                  <span className="text-zinc-300 font-semibold">Region &amp; Currency</span>
-                  <CountrySelector id="mobile-drawer-country-selector" />
-                </div>
+                  </button>
+                );
+              })}
+            </nav>
 
+            {/* Right Action Cluster */}
+            <div className="flex items-center gap-2.5 shrink-0">
+              {/* Desktop "BOOK A SHOOT" Action Button (Brand Red #bd1616) */}
+              <button
+                onClick={onBookClick}
+                className="hidden sm:inline-flex h-9 sm:h-10 px-4 sm:px-5 items-center justify-center gap-2 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-xs font-bold text-white uppercase tracking-wider shadow-md shadow-[#bd1616]/30 hover:shadow-lg hover:shadow-[#bd1616]/40 transition-all duration-200 active:scale-95 border border-[#9e1212] cursor-pointer"
+                id="header-book-btn"
+              >
+                <span>BOOK A SHOOT</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Circular Dark Menu Toggle Button with 2 Bold Horizontal Bars (=) */}
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-[#1b0a0a] hover:bg-[#bd1616] active:bg-[#750d0d] text-white shadow-md transition-all duration-200 active:scale-95 cursor-pointer shrink-0"
+                aria-label="Open Menu"
+                id="header-menu-toggle-btn"
+              >
+                <div className="flex flex-col gap-1.5 items-center justify-center" aria-hidden="true">
+                  <span className="w-4 h-[2.5px] bg-white rounded-full block" />
+                  <span className="w-4 h-[2.5px] bg-white rounded-full block" />
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* ========================================================================= */}
+      {/* MOBILE MENU MODAL (EXACT REDESIGN MATCHING THE UPLOADED SCREENSHOT)      */}
+      {/* ========================================================================= */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center p-3.5 sm:p-5 pt-3 sm:pt-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+          {/* Backdrop Click to Close */}
+          <div
+            className="fixed inset-0 -z-10"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
+
+          {/* White Rounded Card (Exact Replica of Reference Screenshot) */}
+          <div
+            className="relative w-full max-w-md sm:max-w-lg bg-white text-zinc-900 rounded-[32px] sm:rounded-[36px] shadow-2xl p-6 sm:p-8 border border-zinc-100 animate-in zoom-in-95 duration-200 flex flex-col justify-between"
+            id="reference-mobile-menu-card"
+          >
+            {/* Top Bar: Brand Logo on Left & Dark Circular 'X' on Right */}
+            <div className="flex items-center justify-between mb-6 pb-2">
+              <div
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  if (location.pathname === '/') {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  } else {
+                    navigate('/');
+                    window.scrollTo({ top: 0, behavior: 'instant' });
+                  }
+                }}
+                className="cursor-pointer"
+              >
+                <BrandLogo variant="header" lightBackground={true} allowUpload={false} />
+              </div>
+
+              {/* Dark Circular Close Button with White X (Matching Screenshot) */}
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-[#1b0a0a] hover:bg-[#bd1616] text-white shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
+                aria-label="Close Menu"
+              >
+                <X className="w-5 h-5 text-white stroke-[2.5]" />
+              </button>
+            </div>
+
+            {/* Navigation Links List (Stacked Vertically, Bold, Clean Typography) */}
+            <nav className="flex flex-col space-y-3.5 my-2">
+              {navLinks.map((link) => (
                 <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onBookClick();
-                  }}
-                  className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-xs font-bold text-white uppercase tracking-wider shadow-md active:scale-98 cursor-pointer"
-                  id="mobile-menu-book-cta"
+                  key={link.label}
+                  type="button"
+                  onClick={() => handleNavClick(link)}
+                  className="text-left text-zinc-900 hover:text-[#bd1616] font-bold text-lg sm:text-xl transition-colors py-1 cursor-pointer"
                 >
-                  <span>BOOK A SHOOT</span>
-                  <ArrowUpRight className="w-4 h-4 text-white" />
+                  {link.label}
                 </button>
+              ))}
+            </nav>
+
+            {/* Bottom Actions Cluster */}
+            <div className="mt-8 pt-5 border-t border-zinc-100 flex flex-col gap-3">
+              {/* Primary Action Button: "Book Now ↗" (Solid Brand Red / Dark Pill) */}
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onBookClick();
+                }}
+                className="w-full h-14 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white font-extrabold text-base flex items-center justify-center gap-2 shadow-lg shadow-[#bd1616]/30 active:scale-98 transition-all cursor-pointer border border-[#9e1212]"
+                id="menu-book-now-btn"
+              >
+                <span>Book Now</span>
+                <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
+              </button>
+
+              {/* Secondary Action Button: "Become a Creator" (White Outline Pill - For Public Visitors) */}
+              <button
+                type="button"
+                onClick={handleBecomeCreator}
+                className="w-full h-14 rounded-full bg-white hover:bg-zinc-50 active:bg-zinc-100 border-2 border-zinc-200 hover:border-zinc-300 text-zinc-900 font-extrabold text-base flex items-center justify-center gap-2 shadow-sm active:scale-98 transition-all cursor-pointer"
+                id="menu-become-creator-btn"
+              >
+                <UserPlus className="w-4 h-4 text-zinc-700" />
+                <span>Become a Creator</span>
+              </button>
+
+              {/* ADMIN ONLY: Logo Upload & Reset Controls */}
+              {isAdmin && (
+                <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2.5 mt-1 animate-in fade-in duration-200">
+                  <div className="flex items-center justify-between text-xs font-bold text-emerald-800">
+                    <span className="flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                      Admin Logo Controls
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsAdmin(false)}
+                      className="text-zinc-500 hover:text-zinc-800 text-[11px] underline cursor-pointer"
+                    >
+                      Exit Admin
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={triggerUpload}
+                    className="w-full h-10 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Upload New Logo File</span>
+                  </button>
+
+                  {customLogoUrl && (
+                    <div className="flex items-center justify-between pt-1 text-[11px] text-zinc-600">
+                      <span className="truncate max-w-[180px]">{logoFileName || 'Custom Logo Active'}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          removeCustomLogo();
+                          setUploadToast('Reset to default logo');
+                          setTimeout(() => setUploadToast(null), 3000);
+                        }}
+                        className="text-[#bd1616] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Reset Logo</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Direct WhatsApp Quick Chat Link */}
+              <div className="pt-2 text-center">
                 <a
-                  href={siteConfig.business.instagram}
+                  href={`https://wa.me/${siteConfig.business.whatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                    siteConfig.business.whatsappMessage
+                  )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 h-10 text-xs font-semibold text-zinc-400 hover:text-white"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-800 transition-colors"
                 >
-                  <Instagram className="w-4 h-4 text-[#bd1616]" />
-                  <span>Follow {siteConfig.business.instagramHandle}</span>
+                  <MessageSquare className="w-3.5 h-3.5 text-[#ffc800]" />
+                  <span>Need help? Chat with our team on WhatsApp</span>
                 </a>
               </div>
             </div>
-          </>
-        )}
-      </div>
-    </header>
+          </div>
+        </div>
+      )}
+    </>
   );
 };

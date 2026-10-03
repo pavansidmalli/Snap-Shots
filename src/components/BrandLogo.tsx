@@ -7,6 +7,7 @@ interface BrandLogoProps {
   imageClassName?: string;
   variant?: 'header' | 'footer' | 'default';
   allowUpload?: boolean;
+  lightBackground?: boolean;
 }
 
 export const BrandLogo: React.FC<BrandLogoProps> = ({
@@ -14,6 +15,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   imageClassName = '',
   variant = 'header',
   allowUpload = true,
+  lightBackground = false,
 }) => {
   const { customLogoUrl, saveCustomLogo, removeCustomLogo } = useLogo();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -22,14 +24,13 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   const isHeader = variant === 'header';
-  const displayLogoUrl = customLogoUrl || '/snapshots-logo.svg';
+  const displayLogoUrl = customLogoUrl || (lightBackground ? '/snapshots-logo-dark.svg' : '/snapshots-logo.svg');
   const [imgLoadError, setImgLoadError] = useState(false);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate image format
     if (!file.type.startsWith('image/')) {
       setUploadError('Please choose a PNG, JPG, SVG, or WebP image');
       setTimeout(() => setUploadError(null), 3500);
@@ -55,7 +56,6 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     };
     reader.readAsDataURL(file);
 
-    // Reset input so re-uploading the same file still triggers onChange
     e.target.value = '';
   };
 
@@ -81,7 +81,11 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         <div className="relative flex items-center justify-start shrink-0">
           {imgLoadError ? (
             <div className="flex items-center gap-1.5 py-0.5 select-none">
-              <span className="text-lg xs:text-xl sm:text-2xl font-black tracking-tight text-white flex items-center">
+              <span
+                className={`text-lg xs:text-xl sm:text-2xl font-black tracking-tight ${
+                  lightBackground ? 'text-black' : 'text-white'
+                } flex items-center`}
+              >
                 <span>SNAP</span>
                 <span className="text-[#bd1616]">SHOTS</span>
               </span>
@@ -132,13 +136,13 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         )}
       </div>
 
-      {/* Manual Upload Button (Desktop only if upload allowed and no custom logo) */}
+      {/* Manual Upload Button (Accessible on mobile and desktop) */}
       {allowUpload && !customLogoUrl && (
         <button
           type="button"
           onClick={handleTriggerUpload}
           disabled={isUploading}
-          className={`ml-2 hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all duration-200 cursor-pointer shadow-md border ${
+          className={`ml-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all duration-200 cursor-pointer shadow-md border ${
             uploadSuccess
               ? 'bg-emerald-600 border-emerald-500 text-white'
               : 'bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] border-[#9e1212] text-white hover:scale-105 active:scale-95'
