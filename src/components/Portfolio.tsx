@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Instagram, ChevronLeft, ChevronRight, Play, Sparkles, Eye, Film } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { ChevronLeft, ChevronRight, Play, Eye } from 'lucide-react';
 import { siteConfig } from '../config/siteConfig';
 import { ReelWorkItem } from '../types';
 import { getResponsiveImageSrcSet } from '../utils/imageUtils';
@@ -9,34 +9,11 @@ interface PortfolioProps {
 }
 
 export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
-  const [activeCategory, setActiveCategory] = useState<string>('All');
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [isHovered, setIsHovered] = useState<boolean>(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
-  const categories = [
-    'All',
-    'Wedding Reels',
-    'Event Reels',
-    'Corporate Reels',
-    'Birthday Reels',
-    'Product Reels',
-    'Brand Content',
-  ];
-
-  const matchesCategory = (reelCat: string, activeCat: string) => {
-    if (activeCat === 'All') return true;
-    if (reelCat === activeCat) return true;
-    const cleanReel = reelCat.toLowerCase().replace(/reels?|content/g, '').trim();
-    const cleanActive = activeCat.toLowerCase().replace(/reels?|content/g, '').trim();
-    return cleanReel === cleanActive;
-  };
-
-  const filteredReels =
-    activeCategory === 'All'
-      ? siteConfig.portfolioReels
-      : siteConfig.portfolioReels.filter((reel) => matchesCategory(reel.category, activeCategory));
-
+  const filteredReels = siteConfig.portfolioReels;
   const totalSlides = filteredReels.length;
 
   const handleNext = useCallback(() => {
@@ -57,12 +34,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
     }, 3500);
     return () => clearInterval(interval);
   }, [isHovered, totalSlides, handleNext]);
-
-  // Reset active index if category changes
-  const handleCategoryChange = (cat: string) => {
-    setActiveCategory(cat);
-    setActiveIndex(0);
-  };
 
   // Touch swipe support for mobile
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -99,7 +70,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
       />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header (Faithful to Reference Screenshot) */}
+        {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto">
           <p className="uppercase text-[#bd1616] font-bold text-xs sm:text-sm tracking-widest">
             WORK THAT PERFORMS
@@ -113,36 +84,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
           <p className="mt-2 text-center text-zinc-400 font-normal text-sm sm:text-base leading-relaxed">
             Explore our Recents from our Reel-Makers
           </p>
-
-          {/* Centered Instagram Icon Badge (Matching Reference Screenshot) */}
-          <div className="mt-3.5 flex justify-center">
-            <div
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-900/90 border border-zinc-800 text-zinc-300 shadow-sm"
-              title="Snap Shots Official Reels"
-            >
-              <Instagram className="w-4 h-4 text-[#ffc800]" />
-            </div>
-          </div>
-        </div>
-
-        {/* Category Filter Pills */}
-        <div className="mt-6 sm:mt-8 flex justify-center">
-          <div className="flex items-center justify-start sm:justify-center overflow-x-auto no-scrollbar py-1 px-2 -mx-4 sm:mx-0 sm:px-0 sm:flex-wrap gap-2 w-full touch-pan-y">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => handleCategoryChange(cat)}
-                className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer shrink-0 ${
-                  activeCategory === cat
-                    ? 'bg-[#bd1616] text-white shadow-md shadow-[#bd1616]/30 font-bold scale-105'
-                    : 'bg-zinc-900/90 text-zinc-400 hover:bg-zinc-800 hover:text-white border border-zinc-800'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* 3D-Feel Carousel / Image Slides Stage (Matching Reference Screenshot) */}

@@ -49,23 +49,26 @@ export const LogoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setIsAdminState(false);
     }
 
-    // 2. Load stored custom logo if any
+    // 2. Load stored custom logo if any (reset any stale/invalid uploads to restore exact live logo)
     const loadStoredLogo = () => {
       try {
         const storedData = localStorage.getItem(STORAGE_KEY_DATA);
         const storedName = localStorage.getItem(STORAGE_KEY_NAME);
 
-        if (storedData === '/snapshots-logo.svg' || storedData === null) {
+        // Always prioritize the official brand logo from the live website
+        if (
+          !storedData ||
+          storedData === '/snapshots-logo.svg' ||
+          storedData === '/snapshots-logo-dark.svg' ||
+          !storedData.startsWith('data:image/')
+        ) {
           localStorage.removeItem(STORAGE_KEY_DATA);
           localStorage.removeItem(STORAGE_KEY_NAME);
           setCustomLogoUrl(null);
           setLogoFileName(null);
-        } else if (storedData && storedData.startsWith('data:')) {
+        } else {
           setCustomLogoUrl(storedData);
           setLogoFileName(storedName || 'uploaded-logo.png');
-        } else {
-          setCustomLogoUrl(null);
-          setLogoFileName(null);
         }
       } catch {
         setCustomLogoUrl(null);

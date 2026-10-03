@@ -140,10 +140,10 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
         className="fixed top-3 sm:top-4 left-0 right-0 z-50 px-3 sm:px-6 pointer-events-none"
       >
         <div className="mx-auto max-w-5xl sm:max-w-6xl w-full">
-          {/* Floating Pill Container (Exact Style from Reference Screenshot) */}
+          {/* Floating Pill Container (Selected Element: Black Background, White Menu Button) */}
           <div
-            className={`w-full bg-white text-zinc-900 rounded-full px-4 sm:px-6 py-2 sm:py-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.35)] flex items-center justify-between border border-zinc-200/90 pointer-events-auto transition-all duration-300 ${
-              isScrolled ? 'shadow-[0_12px_40px_rgba(0,0,0,0.5)] scale-[0.99]' : ''
+            className={`w-full bg-black/95 text-white rounded-full px-4 sm:px-6 py-2 sm:py-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.65)] flex items-center justify-between border border-zinc-800/90 backdrop-blur-md pointer-events-auto transition-all duration-300 ${
+              isScrolled ? 'shadow-[0_14px_45px_rgba(0,0,0,0.85)] border-zinc-700/80 scale-[0.99]' : ''
             }`}
           >
             {/* Header Brand Logo (Left) */}
@@ -161,7 +161,7 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
                 id="header-brand-logo"
                 aria-label="Snap Shots Home"
               >
-                <BrandLogo variant="header" lightBackground={true} allowUpload={false} />
+                <BrandLogo variant="header" lightBackground={false} allowUpload={false} />
               </div>
 
               {/* ADMIN ONLY: Logo Upload Trigger Button */}
@@ -171,7 +171,7 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
                     type="button"
                     onClick={triggerUpload}
                     title="Admin: Upload custom logo"
-                    className="flex h-7 px-2.5 items-center gap-1 rounded-full bg-emerald-50 hover:bg-emerald-600 text-emerald-800 hover:text-white text-[10px] font-bold border border-emerald-300 transition-colors cursor-pointer"
+                    className="flex h-7 px-2.5 items-center gap-1 rounded-full bg-emerald-950/80 hover:bg-emerald-600 text-emerald-300 hover:text-white text-[10px] font-bold border border-emerald-700 transition-colors cursor-pointer"
                     id="admin-upload-logo-badge"
                   >
                     <Camera className="w-3 h-3" />
@@ -186,7 +186,7 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
                       setTimeout(() => setUploadToast(null), 3000);
                     }}
                     title="Exit Admin Mode"
-                    className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 hover:text-zinc-800 text-[10px] transition-colors cursor-pointer"
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-[10px] transition-colors cursor-pointer"
                   >
                     <LogOut className="w-3 h-3" />
                   </button>
@@ -196,7 +196,7 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
 
             {/* Desktop Navigation Links */}
             <nav
-              className="hidden lg:flex items-center gap-1 xl:gap-1.5 px-2.5 py-1 rounded-full bg-zinc-100 border border-zinc-200"
+              className="hidden lg:flex items-center gap-1 xl:gap-1.5 px-2.5 py-1 rounded-full bg-zinc-900/90 border border-zinc-800"
               id="desktop-nav"
             >
               {navLinks.map((link) => {
@@ -210,7 +210,7 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
                     className={`px-3 py-1.5 text-xs font-bold rounded-full transition-all duration-200 cursor-pointer ${
                       isActive
                         ? 'bg-[#bd1616] text-white shadow-xs'
-                        : 'text-zinc-700 hover:text-black hover:bg-white'
+                        : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
                     }`}
                   >
                     {link.label}
@@ -231,16 +231,16 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
                 <ArrowUpRight className="w-3.5 h-3.5" />
               </button>
 
-              {/* Circular Dark Menu Toggle Button with 2 Bold Horizontal Bars (=) */}
+              {/* Circular White Menu Toggle Button with 2 Bold Black Horizontal Bars (=) */}
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-[#1b0a0a] hover:bg-[#bd1616] active:bg-[#750d0d] text-white shadow-md transition-all duration-200 active:scale-95 cursor-pointer shrink-0"
+                className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white hover:bg-zinc-100 active:bg-zinc-200 text-black shadow-md border border-zinc-200 transition-all duration-200 active:scale-95 cursor-pointer shrink-0"
                 aria-label="Open Menu"
                 id="header-menu-toggle-btn"
               >
                 <div className="flex flex-col gap-1.5 items-center justify-center" aria-hidden="true">
-                  <span className="w-4 h-[2.5px] bg-white rounded-full block" />
-                  <span className="w-4 h-[2.5px] bg-white rounded-full block" />
+                  <span className="w-4 h-[2.5px] bg-black rounded-full block" />
+                  <span className="w-4 h-[2.5px] bg-black rounded-full block" />
                 </div>
               </button>
             </div>

@@ -95,14 +95,16 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
               src={displayLogoUrl}
               alt="Snap Shots"
               width={160}
-              height={42}
+              height={40}
               loading="eager"
               decoding="sync"
               className={`${
                 isHeader
-                  ? 'w-[130px] min-[380px]:w-[150px] sm:w-[175px] md:w-[200px] h-auto max-h-[42px] min-h-[32px] aspect-[540/140]'
-                  : 'w-[125px] sm:w-[150px] md:w-[170px] h-auto max-h-[40px] aspect-[540/140]'
-              } object-contain object-left block filter drop-shadow-[0_0_2px_rgba(255,255,255,0.7)] drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] transition-all duration-200 ${imageClassName}`}
+                  ? 'w-[130px] min-[380px]:w-[150px] sm:w-[175px] md:w-[195px] h-auto max-h-[42px] min-h-[32px] aspect-[520/120]'
+                  : 'w-[125px] sm:w-[150px] md:w-[170px] h-auto max-h-[40px] aspect-[520/120]'
+              } object-contain object-left block transition-all duration-200 ${
+                lightBackground ? '' : 'filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]'
+              } ${imageClassName}`}
               onError={() => {
                 setImgLoadError(true);
               }}

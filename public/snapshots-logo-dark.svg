@@ -1,82 +1,75 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 140" width="540" height="140" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120" width="520" height="120" fill="none">
   <defs>
-    <!-- Brand Red & Orange Gradient -->
-    <linearGradient id="camGradDark" x1="0%" y1="0%" x2="100%" y2="0%">
+    <!-- Vibrant Brand Red to Orange Gradient for Camera Outline -->
+    <linearGradient id="camGradDark" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#bd1616"/>
-      <stop offset="50%" stop-color="#e62020"/>
-      <stop offset="100%" stop-color="#ff7700"/>
+      <stop offset="60%" stop-color="#e82020"/>
+      <stop offset="100%" stop-color="#ff6a00"/>
     </linearGradient>
 
-    <linearGradient id="shGradDark" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#bd1616"/>
-      <stop offset="100%" stop-color="#d61c1c"/>
-    </linearGradient>
+    <!-- Warm Under-Camera Ambient Glow -->
+    <filter id="underGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+    </filter>
 
-    <linearGradient id="tGradDark" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#bd1616"/>
-      <stop offset="100%" stop-color="#ff5500"/>
+    <!-- Lens Bezel Gradient -->
+    <linearGradient id="lensRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff4400"/>
+      <stop offset="100%" stop-color="#bd1616"/>
     </linearGradient>
   </defs>
 
   <g>
-    <!-- 1. Letter 's' (Rich Black) -->
-    <text x="32" y="88" fill="#000000" font-family="'Plus Jakarta Sans', 'Inter', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="64" letter-spacing="-1">s</text>
+    <!-- 1. Word 's n a p' (Bold Spaced Pure Black) -->
+    <!-- s -->
+    <text x="26" y="86" fill="#000000" font-family="'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" font-size="62">s</text>
+    <!-- n -->
+    <text x="82" y="86" fill="#000000" font-family="'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" font-size="62">n</text>
+    <!-- a -->
+    <text x="144" y="86" fill="#000000" font-family="'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" font-size="62">a</text>
+    <!-- p -->
+    <text x="204" y="86" fill="#000000" font-family="'Plus Jakarta Sans', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="62">p</text>
 
-    <!-- 2. Letter 'n' (Rich Black) -->
-    <text x="76" y="88" fill="#000000" font-family="'Plus Jakarta Sans', 'Inter', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="64" letter-spacing="-1">n</text>
+    <!-- 2. Letters 'sh' (Signature Brand Red) -->
+    <text x="266" y="86" fill="#bd1616" font-family="'Plus Jakarta Sans', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="62">sh</text>
 
-    <!-- 3. Letter 'a' (Rich Black) with Rewind ◀◀ inside -->
-    <text x="130" y="88" fill="#000000" font-family="'Plus Jakarta Sans', 'Inter', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="64" letter-spacing="-1">a</text>
-    <!-- Rewind triangles inside 'a' counter -->
-    <path d="M158 68 L163 64 L163 72 Z" fill="#FFFFFF"/>
-    <path d="M152 68 L157 64 L157 72 Z" fill="#FFFFFF"/>
+    <!-- 3. Camera Icon (Exact Match to Live Website Screenshot) -->
+    <!-- Warm orange/red glow under the camera base -->
+    <ellipse cx="366" cy="94" rx="42" ry="9" fill="#ff5500" opacity="0.55" filter="url(#underGlow)"/>
+    <ellipse cx="366" cy="92" rx="34" ry="7" fill="#bd1616" opacity="0.65" filter="url(#underGlow)"/>
 
-    <!-- 4. Letter 'p' (Rich Black) with Fast-Forward ▶▶ inside -->
-    <text x="180" y="88" fill="#000000" font-family="'Plus Jakarta Sans', 'Inter', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="64" letter-spacing="-1">p</text>
-    <!-- Fast-forward triangles inside 'p' counter -->
-    <path d="M204 68 L199 64 L199 72 Z" fill="#FFFFFF"/>
-    <path d="M210 68 L205 64 L205 72 Z" fill="#FFFFFF"/>
+    <!-- Camera Top Shutter Button & Flash Notch -->
+    <rect x="344" y="24" width="16" height="6" rx="3" fill="#bd1616"/>
+    <rect x="368" y="26" width="20" height="4.5" rx="2.25" fill="#ff6a00"/>
 
-    <!-- 5. Letters 'sh' (Brand Red Gradient) -->
-    <text x="230" y="88" fill="url(#shGradDark)" font-family="'Plus Jakarta Sans', 'Inter', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="64" letter-spacing="-1">sh</text>
+    <!-- Camera Main Body Outer Rounded Rect -->
+    <rect x="330" y="32" width="72" height="56" rx="13" stroke="url(#camGradDark)" stroke-width="5" fill="#ffffff" fill-opacity="0.05"/>
 
-    <!-- 6. Stylized Camera Body Frame & Top Red Button -->
-    <rect x="366" y="24" width="16" height="5" rx="2.5" fill="#bd1616"/>
-    
-    <!-- Camera upper & lower body bracket line -->
-    <path d="M326 42 C326 34, 334 32, 342 32 L392 32 C398 32, 404 36, 404 42" stroke="url(#camGradDark)" stroke-width="6.5" stroke-linecap="round" fill="none"/>
-    
-    <!-- Camera bottom bracket extending under 'ots' -->
-    <path d="M315 62 L315 90 C315 98, 321 102, 329 102 L440 102 C446 102, 452 98, 452 94" stroke="url(#camGradDark)" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <!-- Camera Lens Outer Ring Bezel -->
+    <circle cx="366" cy="60" r="22.5" fill="#0a0a0a" stroke="url(#lensRing)" stroke-width="3.5"/>
+    <circle cx="366" cy="60" r="18" fill="#111111" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.35"/>
 
-    <!-- 7. Letter 'o' as Camera Aperture Lens -->
-    <g transform="translate(364, 69)">
-      <circle cx="0" cy="0" r="28" fill="#000000" stroke="#bd1616" stroke-width="4.5"/>
-      <circle cx="0" cy="0" r="23" fill="#111111" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.3"/>
-      
-      <!-- Aperture Blades -->
-      <g stroke="#000000" stroke-width="1.8" fill="#FFFFFF">
-        <path d="M-19 -11 L0 -23 L-5 -11 Z"/>
-        <path d="M-3 -22 L16 -16 L4 -12 Z"/>
-        <path d="M14 -17 L22 1 L11 -2 Z"/>
-        <path d="M21 0 L17 19 L9 9 Z"/>
-        <path d="M18 17 L0 23 L6 11 Z"/>
-        <path d="M2 22 L-16 16 L-4 12 Z"/>
-        <path d="M-15 16 L-22 0 L-10 3 Z"/>
-        <path d="M-22 1 L-18 -18 L-9 -8 Z"/>
-      </g>
-
-      <!-- Center Inner Aperture Hole -->
-      <circle cx="0" cy="0" r="10.5" fill="#000000" stroke="#bd1616" stroke-width="1.5"/>
-
-      <!-- Red Play Triangle ▶ at Center -->
-      <polygon points="-3,-5 6,0 -3,5" fill="#bd1616"/>
+    <!-- 8-Blade Aperture Iris Wheel (Star Aperture) -->
+    <g transform="translate(366, 60)" fill="#ffffff" stroke="#000000" stroke-width="1.4">
+      <path d="M-15 -9 L0 -19 L-4 -9 Z"/>
+      <path d="M-2 -18 L13 -13 L3 -9 Z"/>
+      <path d="M11 -14 L18 1 L9 -1 Z"/>
+      <path d="M17 0 L14 15 L7 7 Z"/>
+      <path d="M14 14 L0 19 L5 9 Z"/>
+      <path d="M2 18 L-13 13 L-3 9 Z"/>
+      <path d="M-11 14 L-18 0 L-8 2 Z"/>
+      <path d="M-18 1 L-14 -15 L-7 -7 Z"/>
     </g>
 
-    <!-- 8. Letter 't' (Brand Red Gradient) -->
-    <text x="408" y="88" fill="url(#tGradDark)" font-family="'Plus Jakarta Sans', 'Inter', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="64" letter-spacing="-1">t</text>
+    <!-- Center Hub of Aperture Lens -->
+    <circle cx="366" cy="60" r="8.5" fill="#0a0a0a" stroke="#bd1616" stroke-width="1.6"/>
+    <!-- Red Inner Star / Center Play Dot -->
+    <polygon points="364,56 370,60 364,64" fill="#bd1616"/>
 
-    <!-- 9. Trailing Letter 's' (Rich Black) -->
-    <text x="444" y="88" fill="#000000" font-family="'Plus Jakarta Sans', 'Inter', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="64" letter-spacing="-1">s</text>
+    <!-- 4. Letter 't' (Signature Brand Red) -->
+    <text x="418" y="86" fill="#bd1616" font-family="'Plus Jakarta Sans', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="62">t</text>
+
+    <!-- 5. Letter 's' (Pure Black) -->
+    <text x="450" y="86" fill="#000000" font-family="'Plus Jakarta Sans', 'Montserrat', system-ui, sans-serif" font-weight="900" font-size="62">s</text>
   </g>
 </svg>
