@@ -84,12 +84,19 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
             }
           }}
           alt="Snap Shots"
-          width={160}
-          height={36}
-          style={{ aspectRatio: '1382/310', minWidth: '120px' }}
+          width={variant === 'footer' ? 260 : 160}
+          height={variant === 'footer' ? 58 : 36}
+          style={{
+            aspectRatio: '1382/310',
+            minWidth: variant === 'footer' ? '180px' : '120px',
+          }}
           loading="eager"
           decoding="sync"
-          className={`h-8 sm:h-9 md:h-10 w-auto max-h-[44px] object-contain object-left block transition-all duration-200 ${
+          className={`${
+            variant === 'footer'
+              ? 'h-12 sm:h-14 md:h-16 max-h-[64px]'
+              : 'h-8 sm:h-9 md:h-10 max-h-[44px]'
+          } w-auto object-contain object-left block transition-all duration-200 ${
             lightBackground ? '' : 'filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]'
           } ${imageClassName}`}
         />
