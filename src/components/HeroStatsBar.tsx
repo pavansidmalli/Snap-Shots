@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import { siteConfig } from '../config/siteConfig';
 import { useCountry } from '../context/CountryContext';
@@ -6,11 +6,6 @@ import { AnimatedStatCounter } from './AnimatedStatCounter';
 
 export const HeroStatsBar: React.FC = () => {
   const { startingPriceLabel } = useCountry();
-  const [replayKey, setReplayKey] = useState<number>(0);
-
-  const handleReplay = () => {
-    setReplayKey((prev) => prev + 1);
-  };
 
   return (
     <section id="metrics" className="relative py-10 sm:py-14 bg-transparent overflow-hidden">
@@ -20,7 +15,6 @@ export const HeroStatsBar: React.FC = () => {
           <div
             className="grid w-full max-w-3xl grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 px-1"
             id="hero-stats"
-            onClick={handleReplay}
           >
             {siteConfig.stats.map((stat, idx) => (
               <div
@@ -30,7 +24,6 @@ export const HeroStatsBar: React.FC = () => {
                 <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
                   <AnimatedStatCounter
                     value={stat.value}
-                    triggerKey={replayKey}
                     duration={1800}
                     className="bg-gradient-to-r from-white via-zinc-200 to-red-300 bg-clip-text text-transparent inline-block font-extrabold"
                   />

@@ -15,8 +15,8 @@ export const AnimatedStatCounter: React.FC<AnimatedStatCounterProps> = ({
   triggerKey = 0,
 }) => {
   const containerRef = useRef<HTMLSpanElement | null>(null);
-  // Detects when the number enters the user's viewport
-  const isInView = useInView(containerRef, { amount: 0.15 });
+  // Detects when the number enters the user's viewport (animates once, stays stable)
+  const isInView = useInView(containerRef, { amount: 0.15, once: true });
 
   // Parse raw value string: e.g. "5,000+" -> target: 5000, prefix: "", suffix: "+", decimals: 0
   // "4.9★" -> target: 4.9, prefix: "", suffix: "★", decimals: 1
