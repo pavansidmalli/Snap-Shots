@@ -105,11 +105,11 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
                     window.scrollTo({ top: 0, behavior: 'instant' });
                   }
                 }}
-                className="flex items-center shrink-0 min-w-[125px] sm:min-w-[155px] cursor-pointer focus:outline-none"
+                className="flex items-center shrink-0 min-w-[145px] sm:min-w-[175px] md:min-w-[200px] cursor-pointer focus:outline-none"
                 id="header-brand-logo"
                 aria-label="Snap Shots Home"
               >
-                <BrandLogo variant="header" lightBackground={false} allowUpload={false} />
+                <BrandLogo variant="header" lightBackground={false} allowUpload={true} />
               </div>
             </div>
 
@@ -150,10 +150,10 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
                 <ArrowUpRight className="w-3.5 h-3.5" />
               </button>
 
-              {/* Circular White Menu Toggle Button with 2 Bold Black Horizontal Bars (=) */}
+              {/* Circular White Menu Toggle Button with 2 Bold Black Horizontal Bars (=) - Mobile/Tablet only */}
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white hover:bg-zinc-100 active:bg-zinc-200 text-black shadow-md border border-zinc-200 transition-all duration-200 active:scale-95 cursor-pointer shrink-0"
+                className="flex lg:hidden h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white hover:bg-zinc-100 active:bg-zinc-200 text-black shadow-md border border-zinc-200 transition-all duration-200 active:scale-95 cursor-pointer shrink-0"
                 aria-label="Open Menu"
                 id="header-menu-toggle-btn"
               >
@@ -198,7 +198,7 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
                 }}
                 className="cursor-pointer"
               >
-                <BrandLogo variant="header" lightBackground={true} allowUpload={false} />
+                <BrandLogo variant="header" lightBackground={true} allowUpload={true} />
               </div>
 
               {/* Dark Circular Close Button with White X (Matching Screenshot) */}
