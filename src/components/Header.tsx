@@ -106,11 +106,17 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
                     window.scrollTo({ top: 0, behavior: 'instant' });
                   }
                 }}
-                className="flex items-center shrink-0 min-w-[145px] sm:min-w-[175px] md:min-w-[200px] cursor-pointer focus:outline-none"
+                className="flex items-center shrink-0 min-w-[130px] sm:min-w-[160px] md:min-w-[180px] cursor-pointer focus:outline-none"
                 id="header-brand-logo"
                 aria-label="Snap Shots Home"
               >
-                <BrandLogo variant="header" lightBackground={false} allowUpload={true} />
+                <img
+                  src="/assets/logo.png"
+                  alt="Snap Shots"
+                  className="h-8 sm:h-9 md:h-10 w-auto max-h-[44px] object-contain block transition-all duration-200"
+                  loading="eager"
+                  decoding="sync"
+                />
               </div>
             </div>
 

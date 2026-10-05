@@ -16,7 +16,7 @@ interface FloatingWhatsAppProps {
 }
 
 // Authentic WhatsApp Phone-in-Bubble SVG Icon
-export const WhatsAppIcon: React.FC<{ className?: string }> = ({ className = 'w-6 h-6' }) => (
+export const WhatsAppIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
   <svg
     viewBox="0 0 24 24"
     fill="currentColor"
@@ -88,7 +88,7 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = () => {
     setUnreadBadge(0);
   }, []);
 
-  // Universal helper to redirect to WhatsApp with user text matching exact parameters
+  // Universal helper to redirect to WhatsApp with user text
   const redirectToWhatsApp = useCallback((text: string) => {
     const cleanPhone = siteConfig.business.whatsapp.replace(/[^0-9]/g, '') || '919014319818';
     const whatsappUrl = `https://api.whatsapp.com/send/?phone=${cleanPhone}&text=${encodeURIComponent(text)}&type=phone_number&app_absent=0`;
@@ -141,40 +141,40 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = () => {
 
   return (
     <div
-      className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end gap-2.5 pb-[env(safe-area-inset-bottom,0px)]"
+      className="fixed bottom-3 right-3 sm:bottom-4 sm:right-4 z-50 flex flex-col items-end gap-2 pb-[env(safe-area-inset-bottom,0px)]"
       id="floating-whatsapp-container"
     >
-      {/* WhatsApp In-Site Chat Popup Box - Compact Exact Size (~290-310px width, ~335-355px height) */}
+      {/* WhatsApp In-Site Chat Popup Box - Decreased Height */}
       {isOpen && (
         <div
           role="dialog"
           aria-label="WhatsApp live chat widget"
-          className="w-[calc(100vw-32px)] max-w-[290px] sm:max-w-[310px] h-[335px] sm:h-[355px] rounded-2xl overflow-hidden shadow-[0_16px_45px_rgba(0,0,0,0.55)] border border-black/10 bg-[#e5ddd5] flex flex-col animate-in fade-in zoom-in-95 duration-200"
+          className="w-[calc(100vw-32px)] max-w-[240px] sm:max-w-[255px] h-[210px] sm:h-[225px] rounded-xl overflow-hidden shadow-[0_12px_36px_rgba(0,0,0,0.5)] border border-black/10 bg-[#e5ddd5] flex flex-col animate-in fade-in zoom-in-95 duration-200"
           style={{
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
           }}
         >
           {/* Header - Compact Dark Teal Green (#075E54) with "Snap Shots" */}
-          <div className="bg-[#075E54] px-3.5 py-2.5 text-white flex items-center justify-between shrink-0 shadow-sm">
-            <div className="flex items-center gap-2.5">
+          <div className="bg-[#075E54] px-2.5 py-1.5 text-white flex items-center justify-between shrink-0 shadow-sm">
+            <div className="flex items-center gap-1.5">
               {/* Profile Avatar with Online Green Dot */}
               <div className="relative">
-                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center p-0.5 shadow-xs">
+                <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center p-0.5 shadow-xs">
                   {/* Brand Icon for Snap Shots */}
-                  <div className="w-6.5 h-6.5 rounded-full bg-[#bd1616] flex items-center justify-center text-white font-black text-[11px] tracking-tight">
+                  <div className="w-5 h-5 rounded-full bg-[#bd1616] flex items-center justify-center text-white font-black text-[9px] tracking-tight">
                     SS
                   </div>
                 </div>
                 {/* Active Online Green Dot */}
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#25D366] border-2 border-[#075E54]" />
+                <span className="absolute bottom-0 right-0 w-1.5 h-1.5 rounded-full bg-[#25D366] border border-[#075E54]" />
               </div>
 
               {/* Title & Subtitle */}
               <div>
-                <h3 className="font-bold text-[14.5px] leading-tight text-white tracking-tight">
+                <h3 className="font-bold text-[12px] leading-tight text-white tracking-tight">
                   Snap Shots
                 </h3>
-                <p className="text-[11px] text-emerald-100 font-normal leading-tight mt-0.5 opacity-90">
+                <p className="text-[9.5px] text-emerald-100 font-normal leading-tight opacity-90">
                   Instant Content Creation
                 </p>
               </div>
@@ -185,15 +185,15 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = () => {
               type="button"
               onClick={toggleChat}
               aria-label="Close Chat"
-              className="text-emerald-100 hover:text-white hover:bg-white/10 rounded-full p-1 transition-colors cursor-pointer"
+              className="text-emerald-100 hover:text-white hover:bg-white/10 rounded-full p-0.5 transition-colors cursor-pointer"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
 
           {/* Chat Messages Body - Compact WhatsApp Wallpaper */}
           <div
-            className="flex-1 overflow-y-auto p-3 space-y-2 relative"
+            className="flex-1 overflow-y-auto p-2 space-y-1 relative"
             style={{
               backgroundColor: '#e5ddd5',
               backgroundImage: `radial-gradient(circle, #000000 0.75px, transparent 0.75px)`,
@@ -209,7 +209,7 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = () => {
               >
                 {/* WhatsApp Speech Bubble */}
                 <div
-                  className={`max-w-[88%] rounded-xl p-2.5 shadow-xs relative text-left ${
+                  className={`max-w-[90%] rounded-lg p-1.5 shadow-xs relative text-left ${
                     msg.sender === 'user'
                       ? 'bg-[#d9fdd3] text-[#111b21] rounded-tr-none'
                       : 'bg-white text-[#111b21] rounded-tl-none'
@@ -218,20 +218,20 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = () => {
                   {/* Subtle WhatsApp Tail on top-left of bot bubble */}
                   {msg.sender === 'bot' && (
                     <span
-                      className="absolute -left-1.5 top-0 w-0 h-0 border-t-6 border-t-white border-l-6 border-l-transparent"
+                      className="absolute -left-1 top-0 w-0 h-0 border-t-4 border-t-white border-l-4 border-l-transparent"
                       aria-hidden="true"
                     />
                   )}
 
                   {/* Sender Name in Bubble: Snap Shots */}
                   {msg.name && (
-                    <div className="text-[12px] font-bold text-[#111b21] mb-0.5">
+                    <div className="text-[10px] font-bold text-[#111b21] mb-0.5">
                       {msg.name}
                     </div>
                   )}
 
                   {/* Message Body */}
-                  <div className="text-[13px] leading-snug whitespace-pre-line text-[#111b21] font-normal">
+                  <div className="text-[11.5px] leading-snug whitespace-pre-line text-[#111b21] font-normal">
                     {msg.text}
                   </div>
 
@@ -241,17 +241,17 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = () => {
                       href={msg.customUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-block mt-1 text-[11px] text-[#075E54] font-bold underline"
+                      className="inline-block mt-0.5 text-[9.5px] text-[#075E54] font-bold underline"
                     >
                       Click here to open WhatsApp ↗
                     </a>
                   )}
 
                   {/* Time and Status Checkmarks */}
-                  <div className="flex items-center justify-end gap-1 mt-0.5 text-[10px] text-[#8696a0]">
+                  <div className="flex items-center justify-end gap-1 mt-0.5 text-[8.5px] text-[#8696a0]">
                     <span>{msg.time}</span>
                     {msg.sender === 'user' && (
-                      <CheckCheck className="w-3.5 h-3.5 text-[#53bdeb]" />
+                      <CheckCheck className="w-3 h-3 text-[#53bdeb]" />
                     )}
                   </div>
                 </div>
@@ -261,8 +261,8 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Footer Input Area - Compact Pure White Background */}
-          <div className="p-2.5 bg-white flex items-center gap-1.5 shrink-0">
+          {/* Footer Input Area - Compact White Background */}
+          <div className="p-1.5 bg-white flex items-center gap-1 shrink-0">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -276,7 +276,7 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = () => {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Type a message.."
-                className="w-full bg-transparent text-[13px] text-[#111b21] placeholder:text-[#8696a0] focus:outline-none px-2"
+                className="w-full bg-transparent text-[11.5px] text-[#111b21] placeholder:text-[#8696a0] focus:outline-none px-1"
               />
             </form>
 
@@ -286,36 +286,36 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = () => {
               onClick={() => handleSendMessage()}
               disabled={!inputValue.trim()}
               aria-label="Send Message to WhatsApp"
-              className={`w-8.5 h-8.5 rounded-full flex items-center justify-center shrink-0 transition-all cursor-pointer ${
+              className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-all cursor-pointer ${
                 inputValue.trim()
-                  ? 'bg-[#25D366] text-white hover:bg-[#20ba5a] shadow-md hover:scale-105 active:scale-95'
+                  ? 'bg-[#25D366] text-white hover:bg-[#20ba5a] shadow-sm hover:scale-105 active:scale-95'
                   : 'bg-[#25D366]/60 text-white cursor-pointer hover:bg-[#25D366]'
               }`}
             >
-              <Send className="w-3.5 h-3.5 ml-0.5 fill-white text-white" />
+              <Send className="w-2.5 h-2.5 ml-0.5 fill-white text-white" />
             </button>
           </div>
         </div>
       )}
 
-      {/* Floating Action Button - Authentic WhatsApp Icon & Compact Size */}
+      {/* Floating Action Button - Decreased Compact Dimensions */}
       <a
         href="#whatsapp-chat"
         role="button"
         onClick={toggleChat}
         aria-label="Open WhatsApp Chat"
-        className="relative flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-[#25D366] hover:bg-[#20ba5a] active:bg-[#1caa52] text-white shadow-[0_6px_25px_rgba(37,211,102,0.45)] hover:shadow-[0_8px_30px_rgba(37,211,102,0.6)] hover:scale-110 active:scale-95 transition-all duration-300 ring-2 ring-white/20 cursor-pointer"
+        className="relative flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-[#25D366] hover:bg-[#20ba5a] active:bg-[#1caa52] text-white shadow-[0_4px_18px_rgba(37,211,102,0.4)] hover:shadow-[0_6px_22px_rgba(37,211,102,0.55)] hover:scale-110 active:scale-95 transition-all duration-300 ring-2 ring-white/20 cursor-pointer"
         id="floating-whatsapp-btn"
       >
         {/* Unread Message Notification Badge */}
         {!isOpen && unreadBadge > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#bd1616] text-[10px] font-bold text-white shadow-md animate-pulse">
+          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#bd1616] text-[9px] font-bold text-white shadow-md animate-pulse">
             {unreadBadge}
           </span>
         )}
 
         {/* Floating WhatsApp Icon */}
-        <WhatsAppIcon className="w-6 h-6 sm:w-7 sm:h-7 text-white relative z-10 drop-shadow-sm" />
+        <WhatsAppIcon className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-white relative z-10 drop-shadow-sm" />
       </a>
     </div>
   );

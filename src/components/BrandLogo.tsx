@@ -22,7 +22,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   const [justUpdated, setJustUpdated] = useState(false);
 
   const isHeader = variant === 'header';
-  const defaultLogo = lightBackground ? '/snapshots-logo-dark.svg' : '/snapshots-logo.svg';
+  const defaultLogo = '/assets/logo.png';
   const displayLogoUrl = customLogoUrl || defaultLogo;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,11 +79,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           height={42}
           loading="eager"
           decoding="sync"
-          className={`${
-            isHeader
-              ? 'w-[155px] min-[380px]:w-[175px] sm:w-[200px] md:w-[220px] h-auto max-h-[44px] min-h-[30px] aspect-[660/135]'
-              : 'w-[150px] sm:w-[175px] md:w-[200px] h-auto max-h-[42px] aspect-[660/135]'
-          } object-contain object-left block transition-all duration-200 ${
+          className={`h-8 sm:h-9 md:h-10 w-auto max-h-[44px] object-contain object-left block transition-all duration-200 ${
             lightBackground ? '' : 'filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]'
           } ${imageClassName}`}
         />
