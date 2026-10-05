@@ -41,7 +41,7 @@ export const Pricing: React.FC<PricingProps> = ({ onSelectPackage }) => {
             className="mt-2 text-center text-white font-extrabold text-3xl sm:text-5xl tracking-tight leading-tight"
             id="pricing-title"
           >
-            Instantly.
+            Pick Your Plan
           </h2>
           <p className="mt-3 text-center text-zinc-300 font-normal text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
             From a quick hour shoot to a full wedding package - we&apos;ve got you covered.

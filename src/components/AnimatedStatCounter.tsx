@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { useInView } from 'framer-motion';
 
 interface AnimatedStatCounterProps {
   value: string;
@@ -9,16 +10,17 @@ interface AnimatedStatCounterProps {
 
 export const AnimatedStatCounter: React.FC<AnimatedStatCounterProps> = ({
   value,
-  duration = 1800,
+  duration = 2000,
   className = '',
   triggerKey = 0,
 }) => {
   const containerRef = useRef<HTMLSpanElement | null>(null);
-  const [isInView, setIsInView] = useState<boolean>(false);
-  const [hasAnimated, setHasAnimated] = useState<boolean>(false);
+  // Detects when the number enters the user's viewport
+  const isInView = useInView(containerRef, { amount: 0.15 });
 
   // Parse raw value string: e.g. "5,000+" -> target: 5000, prefix: "", suffix: "+", decimals: 0
   // "4.9★" -> target: 4.9, prefix: "", suffix: "★", decimals: 1
+  // "24h" -> target: 24, prefix: "", suffix: "h", decimals: 0
   const parsed = React.useMemo(() => {
     const match = value.match(/^([^0-9.]*)([0-9,]+(?:\.[0-9]+)?)(.*)$/);
     if (!match) {
@@ -35,30 +37,15 @@ export const AnimatedStatCounter: React.FC<AnimatedStatCounterProps> = ({
     return { prefix, target, suffix, decimals, hasCommas };
   }, [value]);
 
-  const [currentNum, setCurrentNum] = useState<number>(0);
+  const [displayNum, setDisplayNum] = useState<number>(0);
 
-  // Viewport intersection observer to start count when visible
+  // Animate count-up whenever visible in viewport or triggered
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
+    if (!isInView) {
+      setDisplayNum(0);
+      return;
+    }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsInView(true);
-            setHasAnimated(true);
-          }
-        });
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -20px 0px' }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  const runAnimation = useCallback(() => {
     let startTime: number | null = null;
     let animationFrameId: number;
 
@@ -66,52 +53,44 @@ export const AnimatedStatCounter: React.FC<AnimatedStatCounterProps> = ({
     const endVal = parsed.target;
     const diff = endVal - startVal;
 
-    setCurrentNum(0);
+    setDisplayNum(0);
 
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
       const elapsed = timestamp - startTime;
       const progress = Math.min(elapsed / duration, 1);
 
-      // Smooth cubic ease-out: 1 - (1 - progress)^3
+      // Smooth ease-out cubic for realistic, satisfying counting up
       const easeOut = 1 - Math.pow(1 - progress, 3);
       const val = startVal + diff * easeOut;
 
-      setCurrentNum(val);
+      setDisplayNum(val);
 
       if (progress < 1) {
         animationFrameId = requestAnimationFrame(animate);
       } else {
-        setCurrentNum(endVal);
+        setDisplayNum(endVal);
       }
     };
 
-    animationFrameId = requestAnimationFrame(animate);
+    // Tiny 100ms delay so user catches the animation starting from 0
+    const timer = setTimeout(() => {
+      animationFrameId = requestAnimationFrame(animate);
+    }, 100);
+
     return () => {
+      clearTimeout(timer);
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
-  }, [parsed.target, duration]);
-
-  useEffect(() => {
-    if (!isInView) return;
-    const cleanup = runAnimation();
-    return () => {
-      if (cleanup) cleanup();
-    };
-  }, [isInView, triggerKey, runAnimation]);
+  }, [isInView, triggerKey, parsed.target, duration]);
 
   // Format display string
   const formatDisplay = () => {
-    if (!isInView && !hasAnimated) {
-      // Initial render starts explicitly at 0
-      return `${parsed.prefix}${parsed.decimals > 0 ? (0).toFixed(parsed.decimals) : '0'}${parsed.suffix}`;
-    }
-
     if (parsed.decimals > 0) {
-      return `${parsed.prefix}${currentNum.toFixed(parsed.decimals)}${parsed.suffix}`;
+      return `${parsed.prefix}${displayNum.toFixed(parsed.decimals)}${parsed.suffix}`;
     }
 
-    const rounded = Math.round(currentNum);
+    const rounded = Math.round(displayNum);
     const formattedNum = parsed.hasCommas ? rounded.toLocaleString('en-US') : rounded.toString();
     return `${parsed.prefix}${formattedNum}${parsed.suffix}`;
   };

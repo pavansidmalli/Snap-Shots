@@ -56,9 +56,9 @@ export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
   return (
     <div id="work" className="bg-transparent pt-4 sm:pt-6 pb-6 sm:pb-8 relative overflow-hidden select-none">
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* 3D-Feel Carousel / Image Slides Stage (Matching Reference Screenshot) */}
+        {/* 3D-Feel Carousel / Image Slides Stage (5 visible slides with equal-sized side cards) */}
         <div
-          className="relative h-[440px] min-[390px]:h-[480px] sm:h-[530px] md:h-[560px] max-w-4xl mx-auto flex items-center justify-center overflow-hidden sm:overflow-visible"
+          className="relative h-[440px] min-[390px]:h-[480px] sm:h-[530px] md:h-[560px] max-w-5xl lg:max-w-6xl mx-auto flex items-center justify-center overflow-hidden sm:overflow-visible"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
           onTouchStart={handleTouchStart}
@@ -71,11 +71,13 @@ export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
             if (diff < -totalSlides / 2) diff += totalSlides;
 
             const isCenter = diff === 0;
-            const isAdjacentLeft = diff === -1 || (activeIndex === 0 && index === totalSlides - 1);
-            const isAdjacentRight = diff === 1 || (activeIndex === totalSlides - 1 && index === 0);
+            const isAdjacentLeft = diff === -1;
+            const isAdjacentRight = diff === 1;
+            const isFarLeft = diff === -2;
+            const isFarRight = diff === 2;
 
-            // Hide distant slides beyond adjacent
-            if (Math.abs(diff) > 1 && !isAdjacentLeft && !isAdjacentRight) {
+            // Show 5 slides: center + 2 equal-sized divs on left + 2 equal-sized divs on right
+            if (Math.abs(diff) > 2) {
               return null;
             }
 
@@ -89,14 +91,22 @@ export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
                     handlePrev();
                   } else if (isAdjacentRight) {
                     handleNext();
+                  } else if (isFarLeft) {
+                    setActiveIndex((prev) => (prev - 2 + totalSlides) % totalSlides);
+                  } else if (isFarRight) {
+                    setActiveIndex((prev) => (prev + 2) % totalSlides);
                   }
                 }}
                 className={`absolute transition-all duration-500 ease-out will-change-transform cursor-pointer ${
                   isCenter
                     ? 'z-30 w-[240px] min-[390px]:w-[265px] sm:w-[290px] md:w-[320px] aspect-[9/16] rounded-[26px] sm:rounded-[34px] overflow-hidden bg-zinc-950 shadow-[0_20px_50px_rgba(0,0,0,0.9),0_0_30px_rgba(189,22,22,0.3)] border-2 border-zinc-700/80 hover:border-[#bd1616] scale-100 translate-x-0 opacity-100 group'
                     : isAdjacentLeft
-                    ? 'z-20 w-[210px] min-[390px]:w-[230px] sm:w-[250px] md:w-[280px] aspect-[9/16] rounded-[24px] sm:rounded-[30px] overflow-hidden bg-zinc-950 shadow-xl border border-zinc-800/80 -translate-x-[155px] min-[390px]:-translate-x-[175px] sm:-translate-x-[220px] md:-translate-x-[260px] scale-[0.88] opacity-75 hover:opacity-90'
-                    : 'z-20 w-[210px] min-[390px]:w-[230px] sm:w-[250px] md:w-[280px] aspect-[9/16] rounded-[24px] sm:rounded-[30px] overflow-hidden bg-zinc-950 shadow-xl border border-zinc-800/80 translate-x-[155px] min-[390px]:translate-x-[175px] sm:translate-x-[220px] md:translate-x-[260px] scale-[0.88] opacity-75 hover:opacity-90'
+                    ? 'z-20 w-[205px] min-[390px]:w-[225px] sm:w-[245px] md:w-[275px] aspect-[9/16] rounded-[22px] sm:rounded-[28px] overflow-hidden bg-zinc-950 shadow-xl border border-zinc-800/80 -translate-x-[140px] min-[390px]:-translate-x-[160px] sm:-translate-x-[200px] md:-translate-x-[240px] scale-[0.88] opacity-80 hover:opacity-95'
+                    : isAdjacentRight
+                    ? 'z-20 w-[205px] min-[390px]:w-[225px] sm:w-[245px] md:w-[275px] aspect-[9/16] rounded-[22px] sm:rounded-[28px] overflow-hidden bg-zinc-950 shadow-xl border border-zinc-800/80 translate-x-[140px] min-[390px]:translate-x-[160px] sm:translate-x-[200px] md:translate-x-[240px] scale-[0.88] opacity-80 hover:opacity-95'
+                    : isFarLeft
+                    ? 'z-10 w-[175px] min-[390px]:w-[190px] sm:w-[210px] md:w-[235px] aspect-[9/16] rounded-[18px] sm:rounded-[24px] overflow-hidden bg-zinc-950 shadow-lg border border-zinc-800/60 -translate-x-[250px] min-[390px]:-translate-x-[280px] sm:-translate-x-[360px] md:-translate-x-[430px] scale-[0.76] opacity-50 hover:opacity-75'
+                    : 'z-10 w-[175px] min-[390px]:w-[190px] sm:w-[210px] md:w-[235px] aspect-[9/16] rounded-[18px] sm:rounded-[24px] overflow-hidden bg-zinc-950 shadow-lg border border-zinc-800/60 translate-x-[250px] min-[390px]:translate-x-[280px] sm:translate-x-[360px] md:translate-x-[430px] scale-[0.76] opacity-50 hover:opacity-75'
                 }`}
               >
                 {/* 9:16 Vertical Image Poster */}

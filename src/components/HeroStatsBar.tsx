@@ -6,30 +6,33 @@ import { AnimatedStatCounter } from './AnimatedStatCounter';
 
 export const HeroStatsBar: React.FC = () => {
   const { startingPriceLabel } = useCountry();
-  const [triggerKeys, setTriggerKeys] = useState<{ [key: number]: number }>({});
+  const [replayKey, setReplayKey] = useState<number>(0);
 
-  const handleCardHover = (idx: number) => {
-    setTriggerKeys((prev) => ({ ...prev, [idx]: (prev[idx] || 0) + 1 }));
+  const handleReplay = () => {
+    setReplayKey((prev) => prev + 1);
   };
 
   return (
     <section id="metrics" className="relative py-10 sm:py-14 bg-transparent overflow-hidden">
       <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        {/* Key Metrics Bar (Responsive 3-metric display with smooth counter animation starting from 0) */}
+        {/* Key Metrics Bar (Counts up dynamically when scrolled into view) */}
         <div className="flex justify-center">
-          <div className="grid w-full max-w-3xl grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 px-1" id="hero-stats">
+          <div
+            className="grid w-full max-w-3xl grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 px-1"
+            id="hero-stats"
+            onClick={handleReplay}
+          >
             {siteConfig.stats.map((stat, idx) => (
               <div
                 key={idx}
-                onMouseEnter={() => handleCardHover(idx)}
-                className="flex flex-col items-center justify-center bg-zinc-900/90 hover:bg-zinc-900 text-center py-4 sm:py-6 px-4 rounded-2xl border border-zinc-800 shadow-xs hover:shadow-md transition-all duration-300 group cursor-default"
+                className="flex flex-col items-center justify-center bg-zinc-900/90 text-center py-4 sm:py-6 px-4 rounded-2xl border border-zinc-800 shadow-xs cursor-default select-none"
               >
                 <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
                   <AnimatedStatCounter
                     value={stat.value}
-                    triggerKey={triggerKeys[idx] || 0}
-                    duration={1600}
-                    className="bg-gradient-to-r from-white via-zinc-200 to-red-300 bg-clip-text text-transparent inline-block group-hover:scale-105 transition-transform"
+                    triggerKey={replayKey}
+                    duration={1800}
+                    className="bg-gradient-to-r from-white via-zinc-200 to-red-300 bg-clip-text text-transparent inline-block font-extrabold"
                   />
                 </div>
                 <div className="text-xs sm:text-sm font-medium text-zinc-400 mt-1">{stat.label}</div>
