@@ -54,41 +54,11 @@ export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
   };
 
   return (
-    <section id="work" className="bg-transparent py-12 sm:py-16 md:py-20 relative overflow-hidden select-none">
-      {/* Background Ambient Radial Glow */}
-      <div
-        className="absolute pointer-events-none -top-32 left-1/2 -translate-x-1/2"
-        style={{
-          width: '760px',
-          height: '420px',
-          opacity: 0.14,
-          borderRadius: '500px',
-          background: 'radial-gradient(circle, #bd1616 0%, #300000 60%, transparent 80%)',
-          filter: 'blur(110px)',
-          zIndex: 0,
-        }}
-      />
-
+    <div id="work" className="bg-transparent pt-4 sm:pt-6 pb-6 sm:pb-8 relative overflow-hidden select-none">
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto">
-          <p className="uppercase text-[#bd1616] font-bold text-xs sm:text-sm tracking-widest">
-            WORK THAT PERFORMS
-          </p>
-          <h2
-            className="mt-2 text-center text-white font-black text-3xl sm:text-4xl md:text-5xl tracking-tight leading-tight"
-            id="portfolio-title"
-          >
-            Real Events. Real Reels.
-          </h2>
-          <p className="mt-2 text-center text-zinc-400 font-normal text-sm sm:text-base leading-relaxed">
-            Explore our Recents from our Reel-Makers
-          </p>
-        </div>
-
         {/* 3D-Feel Carousel / Image Slides Stage (Matching Reference Screenshot) */}
         <div
-          className="mt-8 sm:mt-10 relative h-[440px] min-[390px]:h-[480px] sm:h-[530px] md:h-[560px] max-w-4xl mx-auto flex items-center justify-center overflow-hidden sm:overflow-visible"
+          className="relative h-[440px] min-[390px]:h-[480px] sm:h-[530px] md:h-[560px] max-w-4xl mx-auto flex items-center justify-center overflow-hidden sm:overflow-visible"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
           onTouchStart={handleTouchStart}
@@ -219,6 +189,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({ onSelectReel }) => {
           </button>
         </div>
       </div>
-    </section>
+    </div>
   );
 };

@@ -14,7 +14,6 @@ import { ContactPage } from './pages/ContactPage';
 import { PortfolioModal } from './components/PortfolioModal';
 import { BookingModal } from './components/BookingModal';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
-import { FloatingCall } from './components/FloatingCall';
 import { WelcomePopup } from './components/WelcomePopup';
 import { LogoProvider } from './context/LogoContext';
 import { CountryProvider } from './context/CountryContext';
@@ -78,7 +77,15 @@ function MainAppLayout() {
 
       // Avoid intercepting external links, whatsapp, phone, email
       const href = clickable.getAttribute('href');
-      if (href && (href.startsWith('http') || href.startsWith('tel:') || href.startsWith('mailto:') || href.includes('wa.me'))) {
+      if (
+        href &&
+        (href.startsWith('http') ||
+          href.startsWith('tel:') ||
+          href.startsWith('mailto:') ||
+          href.includes('wa.me') ||
+          href.includes('whatsapp.com') ||
+          href.includes('api.whatsapp.com'))
+      ) {
         return;
       }
 
@@ -171,11 +178,8 @@ function MainAppLayout() {
       {/* Footer */}
       <Footer />
 
-      {/* Floating WhatsApp Quick Action (Bottom-Right) */}
-      <FloatingWhatsApp />
-
-      {/* Floating Phone Quick Action (Bottom-Left) */}
-      <FloatingCall />
+      {/* Interactive In-Site WhatsApp Widget (Bottom-Right) */}
+      <FloatingWhatsApp onOpenBooking={() => openBookingModal()} />
 
       {/* Fullscreen Controlled Video Lightbox */}
       <PortfolioModal

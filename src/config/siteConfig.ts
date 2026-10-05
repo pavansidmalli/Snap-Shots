@@ -98,9 +98,6 @@ export const siteConfig = {
     { value: '5,000+', label: 'Reels Delivered' },
     { value: '1,200+', label: 'Shoots Completed' },
     { value: '4.9★', label: 'Average Rating' },
-    { value: '3 Hours', label: 'Fastest Delivery' },
-    { value: '100%', label: 'On-Time Rate' },
-    { value: '50M+', label: 'Views Generated' },
   ],
 
   trustBadges: [

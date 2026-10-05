@@ -1,7 +1,6 @@
 import React from 'react';
 import { Hero } from '../components/Hero';
-import { ClientLogosSection } from '../components/ClientLogosSection';
-import { Portfolio } from '../components/Portfolio';
+import { HeroStatsBar } from '../components/HeroStatsBar';
 import { Pricing } from '../components/Pricing';
 import { WhyChooseUs } from '../components/WhyChooseUs';
 import { Process } from '../components/Process';
@@ -28,7 +27,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   return (
     <div className="relative">
-      {/* 1. Hero Section with dynamic 9:16 phone reel & metrics */}
+      {/* 1. Combined Hero & Portfolio Section with Single Continuous Background */}
       <FadeInSection duration={0.8} yOffset={20}>
         <Hero
           onBookClick={() => onBookClick()}
@@ -37,14 +36,9 @@ export const HomePage: React.FC<HomePageProps> = ({
         />
       </FadeInSection>
 
-      {/* 2. Trusted Brand Logos Marquee */}
-      <FadeInSection duration={0.6}>
-        <ClientLogosSection />
-      </FadeInSection>
-
-      {/* 3. Portfolio / Work That Performs - Auto-scrolling image slides carousel */}
+      {/* 2. 5000+ Reels Delivered & Core Metrics Bar */}
       <FadeInSection>
-        <Portfolio onSelectReel={onSelectReel} />
+        <HeroStatsBar />
       </FadeInSection>
 
       {/* 4. Pricing Packages (Hourly, Half Day, Full Day, Custom) */}
