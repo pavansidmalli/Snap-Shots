@@ -37,9 +37,28 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = () => {
   const [hasAutoOpened, setHasAutoOpened] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [unreadBadge, setUnreadBadge] = useState(1);
+  const [isTyping, setIsTyping] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const chatInputRef = useRef<HTMLInputElement | null>(null);
+  const autoReplyTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const firstUserMessageSentRef = useRef<boolean>(false);
+  const hasReceivedReplyRef = useRef<boolean>(false);
+  const latestWhatsappUrlRef = useRef<string>('');
+  const isOpenRef = useRef<boolean>(isOpen);
+
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (autoReplyTimerRef.current) clearTimeout(autoReplyTimerRef.current);
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+    };
+  }, []);
 
   // Exact theme, sender name "Snap Shots", message and time matching reference template
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -70,7 +89,7 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = () => {
     if (isOpen) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isOpen]);
+  }, [messages, isOpen, isTyping]);
 
   // Focus input when opened on desktop
   useEffect(() => {
@@ -121,22 +140,49 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = () => {
 
     setInputValue('');
 
-    // Trigger immediate redirect to WhatsApp with user's message
+    // Trigger redirect to WhatsApp with user's message
     const targetUrl = redirectToWhatsApp(text);
+    latestWhatsappUrlRef.current = targetUrl;
 
-    // Update in-site chat stream so user sees their message and has fallback link
-    setMessages((prev) => [
-      ...prev,
-      userMsg,
-      {
-        id: `bot-${Date.now()}`,
-        sender: 'bot',
-        name: 'Snap Shots',
-        text: 'Opening WhatsApp...',
-        time: getFormattedTime(),
-        customUrl: targetUrl,
-      },
-    ]);
+    // Append user message to in-site chat stream
+    setMessages((prev) => [...prev, userMsg]);
+
+    // Send automated "We'll be with you shortly!" if no reply within 10s of first message
+    if (!firstUserMessageSentRef.current) {
+      firstUserMessageSentRef.current = true;
+
+      // Subtle WhatsApp typing indicator at 8.5s before response
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+      typingTimerRef.current = setTimeout(() => {
+        if (!hasReceivedReplyRef.current) {
+          setIsTyping(true);
+        }
+      }, 8500);
+
+      if (autoReplyTimerRef.current) clearTimeout(autoReplyTimerRef.current);
+      autoReplyTimerRef.current = setTimeout(() => {
+        setIsTyping(false);
+        if (!hasReceivedReplyRef.current) {
+          hasReceivedReplyRef.current = true;
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `bot-shortly-${Date.now()}`,
+              sender: 'bot',
+              name: 'Snap Shots',
+              text: "We'll be with you shortly!",
+              time: getFormattedTime(),
+              customUrl: latestWhatsappUrlRef.current || undefined,
+            },
+          ]);
+
+          // Notify user if chat is currently closed
+          if (!isOpenRef.current) {
+            setUnreadBadge((prev) => (prev > 0 ? prev + 1 : 1));
+          }
+        }
+      }, 10000);
+    }
   };
 
   return (
@@ -257,6 +303,27 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = () => {
                 </div>
               </div>
             ))}
+
+            {/* WhatsApp Typing Bubble Indicator */}
+            {isTyping && (
+              <div className="flex flex-col items-start animate-in fade-in duration-150">
+                <div className="bg-white text-[#111b21] rounded-lg rounded-tl-none p-1.5 shadow-xs relative text-left">
+                  <span
+                    className="absolute -left-1 top-0 w-0 h-0 border-t-4 border-t-white border-l-4 border-l-transparent"
+                    aria-hidden="true"
+                  />
+                  <div className="flex items-center gap-1.5 text-[10px] text-[#8696a0]">
+                    <span className="font-bold text-[#111b21]">Snap Shots</span>
+                    <span className="text-[#075E54] italic">typing</span>
+                    <span className="inline-flex gap-0.5 ml-0.5">
+                      <span className="w-1 h-1 bg-[#8696a0] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1 h-1 bg-[#8696a0] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1 h-1 bg-[#8696a0] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div ref={messagesEndRef} />
           </div>
