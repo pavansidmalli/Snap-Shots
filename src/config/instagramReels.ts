@@ -18,6 +18,17 @@ export interface InstagramReelItem {
 
 export const instagramReels: InstagramReelItem[] = [
   {
+    title: "Lord Ganesha Grand Utsav & Divine Celebrations",
+    category: "Events & Festivals",
+    url: "https://www.instagram.com/reel/SnapShotsGaneshaUtsav/",
+    posterUrl: "/assets/ganesha-utsav-reel-poster.jpg",
+    videoUrl: "/assets/ganesha-utsav-reel.mp4",
+    client: "Snap Shots Utsav Coverage",
+    views: "520K",
+    duration: "0:17",
+    description: "Cinematic black & white fine art coverage of Lord Ganesha Utsav with dramatic spotlight illumination, incense mist, and sacred devotional rhythm.",
+  },
+  {
     title: "Haldi Vibes & Traditional Rituals",
     category: "Wedding",
     url: "https://www.instagram.com/reel/DbWch7rCSw_/",
@@ -43,12 +54,12 @@ export const instagramReels: InstagramReelItem[] = [
     title: "Pastel Outdoor Celebration & Decor",
     category: "Event",
     url: "https://www.instagram.com/reel/DdUSBbWJaJ9/",
-    posterUrl: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=800&auto=format&fit=crop",
-    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-cocktails-on-the-counter-of-a-bar-42777-large.mp4",
-    client: "Snap Shots Events",
-    views: "210K",
-    duration: "0:35",
-    description: "Whimsical pastel outdoor setting with retro aesthetic details and live guest interactions.",
+    posterUrl: "/assets/ganesha-utsav-reel-poster.jpg",
+    videoUrl: "/assets/ganesha-utsav-reel.mp4",
+    client: "Snap Shots Utsav Coverage",
+    views: "480K",
+    duration: "0:17",
+    description: "Lord Ganesha Grand Utsav in cinematic black & white 4K master grade with dramatic overhead spotlight and incense mist.",
   },
   {
     title: "Sundowner Rhythm & Nightlife Energy",

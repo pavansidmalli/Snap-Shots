@@ -11,7 +11,7 @@ import { ReelWorkItem, PackageItem } from '../types';
 
 interface HomePageProps {
   onBookClick: (pkgId?: string) => void;
-  onSelectReel: (reel: ReelWorkItem) => void;
+  onSelectReel?: (reel: ReelWorkItem) => void;
   onSelectPackage: (pkgId: string) => void;
 }
 

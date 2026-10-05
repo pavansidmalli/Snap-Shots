@@ -11,13 +11,12 @@ import { HomePage } from './pages/HomePage';
 import { ServicesPage } from './pages/ServicesPage';
 import { FaqsPage } from './pages/FaqsPage';
 import { ContactPage } from './pages/ContactPage';
-import { PortfolioModal } from './components/PortfolioModal';
 import { BookingModal } from './components/BookingModal';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { WelcomePopup } from './components/WelcomePopup';
 import { LogoProvider } from './context/LogoContext';
 import { CountryProvider } from './context/CountryContext';
-import { ReelWorkItem, PackageItem } from './types';
+import { PackageItem } from './types';
 
 // Scroll restoration helper on route transition
 function ScrollToTop() {
@@ -33,7 +32,6 @@ function ScrollToTop() {
 }
 
 function MainAppLayout() {
-  const [selectedReel, setSelectedReel] = useState<ReelWorkItem | null>(null);
   const [selectedService, setSelectedService] = useState<string>('Event Reels');
   const [selectedPackage, setSelectedPackage] = useState<string>('event-reel');
   const [selectedCoupon, setSelectedCoupon] = useState<string>('');
@@ -51,11 +49,6 @@ function MainAppLayout() {
   };
 
   const handleSelectService = (serviceTitle: string) => {
-    openBookingModal(serviceTitle);
-  };
-
-  const handleModalBookShoot = (serviceTitle: string) => {
-    setSelectedReel(null);
     openBookingModal(serviceTitle);
   };
 
@@ -149,7 +142,6 @@ function MainAppLayout() {
             element={
               <HomePage
                 onBookClick={(pkgId) => openBookingModal(undefined, pkgId)}
-                onSelectReel={(reel) => setSelectedReel(reel)}
                 onSelectPackage={handleSelectPackage}
               />
             }
@@ -180,13 +172,6 @@ function MainAppLayout() {
 
       {/* Interactive In-Site WhatsApp Widget (Bottom-Right) */}
       <FloatingWhatsApp onOpenBooking={() => openBookingModal()} />
-
-      {/* Fullscreen Controlled Video Lightbox */}
-      <PortfolioModal
-        reel={selectedReel}
-        onClose={() => setSelectedReel(null)}
-        onBookShoot={handleModalBookShoot}
-      />
 
       {/* Professional Centered Booking Popup / Modal */}
       <BookingModal

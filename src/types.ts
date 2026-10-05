@@ -41,6 +41,7 @@ export interface ReelWorkItem {
   aspectRatio?: string;
   instagramUrl?: string;
   isInstagram?: boolean;
+  isCustomUpload?: boolean;
 }
 
 export interface TestimonialItem {

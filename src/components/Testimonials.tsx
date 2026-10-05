@@ -80,7 +80,7 @@ export const Testimonials: React.FC = () => {
       id="testimonials"
       className="py-14 sm:py-20 relative overflow-hidden bg-transparent text-white border-t border-zinc-900/80"
     >
-      {/* Dynamic Keyframes for Left & Right Marquee Scrolling */}
+      {/* Dynamic Keyframes for Left & Right Marquee Scrolling and Heartbeat */}
       <style>{`
         @keyframes scrollMarqueeLeft {
           0% { transform: translate3d(0, 0, 0); }
@@ -89,6 +89,14 @@ export const Testimonials: React.FC = () => {
         @keyframes scrollMarqueeRight {
           0% { transform: translate3d(-33.333%, 0, 0); }
           100% { transform: translate3d(0, 0, 0); }
+        }
+        @keyframes heartbeat {
+          0% { transform: scale(1); }
+          14% { transform: scale(1.26); }
+          28% { transform: scale(1); }
+          42% { transform: scale(1.26); }
+          70% { transform: scale(1); }
+          100% { transform: scale(1); }
         }
         .animate-scroll-left {
           display: flex;
@@ -103,6 +111,12 @@ export const Testimonials: React.FC = () => {
           width: max-content;
           will-change: transform;
           animation: scrollMarqueeRight 36s linear infinite;
+        }
+        .animate-heartbeat {
+          animation: heartbeat 1.4s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+          transform-origin: center;
+          display: inline-block;
+          will-change: transform;
         }
         .animate-scroll-left:hover,
         .animate-scroll-right:hover {
@@ -124,7 +138,7 @@ export const Testimonials: React.FC = () => {
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#bd1616]/15 border border-[#bd1616]/30 mb-3 shadow-xs">
-            <Heart className="w-3.5 h-3.5 text-[#bd1616] fill-[#bd1616]" />
+            <Heart className="w-3.5 h-3.5 text-[#bd1616] fill-[#bd1616] animate-heartbeat shrink-0" />
             <span className="text-xs font-bold uppercase tracking-wider text-[#bd1616]">
               WALL OF LOVE &amp; REVIEWS
             </span>

@@ -59,7 +59,15 @@ export const VideoLightbox: React.FC<VideoLightboxProps> = ({ reel, onClose, onB
   if (!reel) return null;
 
   // Determine effective video source
-  const hasDirectVideo = Boolean(reel.videoUrl && reel.videoUrl.endsWith('.mp4'));
+  const hasDirectVideo = Boolean(
+    reel.videoUrl &&
+      (reel.videoUrl.startsWith('blob:') ||
+        reel.videoUrl.startsWith('data:') ||
+        reel.videoUrl.endsWith('.mp4') ||
+        reel.videoUrl.endsWith('.webm') ||
+        reel.videoUrl.includes('.mp4') ||
+        reel.videoUrl.startsWith('http'))
+  );
   const effectiveVideoUrl = hasDirectVideo
     ? reel.videoUrl
     : 'https://assets.mixkit.co/videos/preview/mixkit-bride-and-groom-having-their-first-dance-41221-large.mp4';
