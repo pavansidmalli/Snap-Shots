@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, ArrowUpRight, MessageSquare, UserPlus } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { siteConfig } from '../config/siteConfig';
+import logoPng from '../assets/logo.png';
 import { BrandLogo } from './BrandLogo';
 
 interface HeaderProps {
@@ -111,8 +112,19 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
                 aria-label="Snap Shots Home"
               >
                 <img
-                  src="/assets/logo.png"
+                  src={logoPng || '/assets/logo.png'}
+                  onError={(e) => {
+                    const el = e.currentTarget;
+                    if (!el.src.endsWith('/assets/logo.png')) {
+                      el.src = '/assets/logo.png';
+                    } else if (!el.src.endsWith('/logo.png')) {
+                      el.src = '/logo.png';
+                    }
+                  }}
                   alt="Snap Shots"
+                  width={160}
+                  height={36}
+                  style={{ aspectRatio: '1382/310', minWidth: '120px' }}
                   className="h-8 sm:h-9 md:h-10 w-auto max-h-[44px] object-contain block transition-all duration-200"
                   loading="eager"
                   decoding="sync"
@@ -205,7 +217,24 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
                 }}
                 className="cursor-pointer"
               >
-                <BrandLogo variant="header" lightBackground={false} allowUpload={true} />
+                <img
+                  src={logoPng || '/assets/logo.png'}
+                  onError={(e) => {
+                    const el = e.currentTarget;
+                    if (!el.src.endsWith('/assets/logo.png')) {
+                      el.src = '/assets/logo.png';
+                    } else if (!el.src.endsWith('/logo.png')) {
+                      el.src = '/logo.png';
+                    }
+                  }}
+                  alt="Snap Shots"
+                  width={160}
+                  height={36}
+                  style={{ aspectRatio: '1382/310', minWidth: '120px' }}
+                  className="h-8 sm:h-9 w-auto max-h-[40px] object-contain block"
+                  loading="eager"
+                  decoding="sync"
+                />
               </div>
 
               {/* Dark Circular Close Button with White X */}

@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Camera, RotateCcw, Check } from 'lucide-react';
 import { useLogo } from '../context/LogoContext';
+import logoPng from '../assets/logo.png';
 
 interface BrandLogoProps {
   className?: string;
@@ -22,7 +23,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   const [justUpdated, setJustUpdated] = useState(false);
 
   const isHeader = variant === 'header';
-  const defaultLogo = '/assets/logo.png';
+  const defaultLogo = logoPng || '/assets/logo.png';
   const displayLogoUrl = customLogoUrl || defaultLogo;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,9 +75,18 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       <div className="relative group inline-flex items-center justify-start shrink-0">
         <img
           src={displayLogoUrl}
+          onError={(e) => {
+            const el = e.currentTarget;
+            if (!el.src.endsWith('/assets/logo.png')) {
+              el.src = '/assets/logo.png';
+            } else if (!el.src.endsWith('/logo.png')) {
+              el.src = '/logo.png';
+            }
+          }}
           alt="Snap Shots"
           width={160}
-          height={42}
+          height={36}
+          style={{ aspectRatio: '1382/310', minWidth: '120px' }}
           loading="eager"
           decoding="sync"
           className={`h-8 sm:h-9 md:h-10 w-auto max-h-[44px] object-contain object-left block transition-all duration-200 ${

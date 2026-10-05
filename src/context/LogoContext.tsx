@@ -19,7 +19,12 @@ const LogoContext = createContext<LogoContextType>({
 export const LogoProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(() => {
     try {
-      return localStorage.getItem(STORAGE_KEY) || null;
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored && (stored.includes('.svg') || stored.includes('snapshots-logo') || !stored.startsWith('data:image/'))) {
+        localStorage.removeItem(STORAGE_KEY);
+        return null;
+      }
+      return stored || null;
     } catch {
       return null;
     }
