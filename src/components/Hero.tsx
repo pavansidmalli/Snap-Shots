@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { ArrowUpRight, Play, Sparkles, Star, ShieldCheck, CheckCircle2, MapPin, Instagram, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sparkles, Star, ShieldCheck, CheckCircle2, MapPin, Instagram, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { siteConfig } from '../config/siteConfig';
 import { getResponsiveImageSrcSet } from '../utils/imageUtils';
@@ -7,8 +7,8 @@ import { useCountry } from '../context/CountryContext';
 import { ReelWorkItem } from '../types';
 
 interface HeroProps {
-  onBookClick: () => void;
-  onViewWorkClick: () => void;
+  onBookClick?: () => void;
+  onViewWorkClick?: () => void;
   onWatchReel?: (reel: ReelWorkItem) => void;
 }
 
@@ -82,7 +82,7 @@ const HERO_REELS: HeroReel[] = [
   },
 ];
 
-export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick, onWatchReel }) => {
+export const Hero: React.FC<HeroProps> = ({ onWatchReel }) => {
   const { startingPriceLabel } = useCountry();
   const heroRef = useRef<HTMLElement | null>(null);
   const shouldReduceMotion = useReducedMotion();
@@ -336,28 +336,6 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick, onWatc
                       allowFullScreen
                       title={reel.title}
                     />
-
-                    {/* Direct Watch Overlay (Plays Video In Website Popup - No Redirect) */}
-                    <div className="absolute bottom-2 left-2 right-2 z-30 pointer-events-auto">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handlePlayReel(reel);
-                        }}
-                        className="w-full flex items-center justify-between gap-1 px-3 py-1.5 rounded-full bg-gradient-to-r from-black/95 via-zinc-950/95 to-black/95 hover:from-[#bd1616] hover:to-[#9e1212] active:from-[#750d0d] active:to-[#750d0d] backdrop-blur-md text-white text-[10px] font-bold shadow-2xl border border-white/20 hover:border-[#bd1616] transition-all hover:scale-[1.02] cursor-pointer"
-                        title={`Watch ${reel.title} in website popup`}
-                      >
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <Play className="w-3 h-3 text-[#ffc800] fill-[#ffc800] shrink-0" />
-                          <span className="truncate">{reel.handle}</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-zinc-300 hover:text-white shrink-0 font-bold">
-                          <span>Play on Site</span>
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#bd1616] animate-ping" />
-                        </div>
-                      </button>
-                    </div>
                   </div>
                 </div>
               );
@@ -415,29 +393,6 @@ export const Hero: React.FC<HeroProps> = ({ onBookClick, onViewWorkClick, onWatc
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Primary & Secondary Call to Actions */}
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-            <button
-              onClick={onBookClick}
-              id="hero-primary-cta"
-              className="group w-full sm:w-auto h-12 flex items-center justify-center gap-3 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] px-8 text-sm font-bold text-white uppercase tracking-wider shadow-lg shadow-[#bd1616]/30 hover:shadow-xl hover:shadow-[#bd1616]/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-            >
-              <span>BOOK A SHOOT</span>
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
-                <ArrowUpRight className="w-4 h-4 text-white" />
-              </span>
-            </button>
-
-            <button
-              onClick={onViewWorkClick}
-              id="hero-secondary-cta"
-              className="w-full sm:w-auto h-12 flex items-center justify-center gap-2 rounded-full bg-zinc-900/90 hover:bg-zinc-800 active:bg-zinc-850 border border-zinc-700/80 hover:border-[#bd1616]/50 px-8 text-sm font-bold text-white uppercase tracking-wider shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-            >
-              <Play className="w-3.5 h-3.5 text-[#bd1616] fill-[#bd1616]" />
-              <span>VIEW OUR WORK</span>
-            </button>
           </div>
 
           {/* Trust Badges Bar (Single In-Line Row) */}

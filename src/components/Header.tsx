@@ -39,6 +39,7 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
 
   // Nav links matching the reference layout
   const navLinks = [
+    { label: 'Home', path: '/', isPage: true },
     { label: 'Pricing', path: '/#pricing', hash: 'pricing' },
     { label: 'Services', path: '/services', isPage: true },
     { label: 'Process', path: '/#process', hash: 'process' },
@@ -179,9 +180,9 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
             aria-hidden="true"
           />
 
-          {/* White Rounded Card (Exact Replica of Reference Screenshot) */}
+          {/* Black Transparent Rounded Card (matching Header glassmorphic theme) */}
           <div
-            className="relative w-full max-w-md sm:max-w-lg bg-white text-zinc-900 rounded-[32px] sm:rounded-[36px] shadow-2xl p-6 sm:p-8 border border-zinc-100 animate-in zoom-in-95 duration-200 flex flex-col justify-between"
+            className="relative w-full max-w-md sm:max-w-lg bg-black/95 text-white rounded-[32px] sm:rounded-[36px] shadow-[0_20px_50px_rgba(0,0,0,0.85)] p-6 sm:p-8 border border-zinc-800/90 backdrop-blur-md animate-in zoom-in-95 duration-200 flex flex-col justify-between"
             id="reference-mobile-menu-card"
           >
             {/* Top Bar: Brand Logo on Left & Dark Circular 'X' on Right */}
@@ -198,14 +199,14 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
                 }}
                 className="cursor-pointer"
               >
-                <BrandLogo variant="header" lightBackground={true} allowUpload={true} />
+                <BrandLogo variant="header" lightBackground={false} allowUpload={true} />
               </div>
 
-              {/* Dark Circular Close Button with White X (Matching Screenshot) */}
+              {/* Dark Circular Close Button with White X */}
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex h-11 w-11 items-center justify-center rounded-full bg-[#1b0a0a] hover:bg-[#bd1616] text-white shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-zinc-900/90 hover:bg-[#bd1616] text-white border border-zinc-700/80 hover:border-[#bd1616] shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
                 aria-label="Close Menu"
               >
                 <X className="w-5 h-5 text-white stroke-[2.5]" />
@@ -213,21 +214,31 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
             </div>
 
             {/* Navigation Links List */}
-            <nav className="flex flex-col space-y-3.5 my-2">
-              {navLinks.map((link) => (
-                <button
-                  key={link.label}
-                  type="button"
-                  onClick={() => handleNavClick(link)}
-                  className="text-left text-zinc-900 hover:text-[#bd1616] font-bold text-lg sm:text-xl transition-colors py-1 cursor-pointer"
-                >
-                  {link.label}
-                </button>
-              ))}
+            <nav className="flex flex-col space-y-1 my-1">
+              {navLinks.map((link) => {
+                const isActive = link.isPage && location.pathname === link.path;
+                return (
+                  <button
+                    key={link.label}
+                    type="button"
+                    onClick={() => handleNavClick(link)}
+                    className={`text-left font-semibold text-sm sm:text-[15px] transition-all px-2.5 py-1.5 rounded-xl cursor-pointer flex items-center justify-between group ${
+                      isActive
+                        ? 'text-[#bd1616] bg-[#bd1616]/10 font-bold'
+                        : 'text-zinc-200 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <span>{link.label}</span>
+                    <span className="text-zinc-500 group-hover:text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                      &rarr;
+                    </span>
+                  </button>
+                );
+              })}
             </nav>
 
             {/* Bottom Actions Cluster */}
-            <div className="mt-8 pt-5 border-t border-zinc-100 flex flex-col gap-3">
+            <div className="mt-4 pt-3.5 border-t border-zinc-800/90 flex flex-col gap-2.5">
               {/* Primary Action Button: "Book Now ↗" */}
               <button
                 type="button"
@@ -235,21 +246,21 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
                   setMobileMenuOpen(false);
                   onBookClick();
                 }}
-                className="w-full h-14 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white font-extrabold text-base flex items-center justify-center gap-2 shadow-lg shadow-[#bd1616]/30 active:scale-98 transition-all cursor-pointer border border-[#9e1212]"
+                className="w-full h-11 sm:h-12 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-[#bd1616]/30 active:scale-98 transition-all cursor-pointer border border-[#9e1212]"
                 id="menu-book-now-btn"
               >
                 <span>Book Now</span>
-                <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
+                <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
               </button>
 
               {/* Secondary Action Button: "Become a Creator" */}
               <button
                 type="button"
                 onClick={handleBecomeCreator}
-                className="w-full h-14 rounded-full bg-white hover:bg-zinc-50 active:bg-zinc-100 border-2 border-zinc-200 hover:border-zinc-300 text-zinc-900 font-extrabold text-base flex items-center justify-center gap-2 shadow-sm active:scale-98 transition-all cursor-pointer"
+                className="w-full h-11 sm:h-12 rounded-full bg-zinc-900/90 hover:bg-zinc-800 active:bg-zinc-850 border border-zinc-700/80 hover:border-zinc-600 text-zinc-200 hover:text-white font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm active:scale-98 transition-all cursor-pointer"
                 id="menu-become-creator-btn"
               >
-                <UserPlus className="w-4 h-4 text-zinc-700" />
+                <UserPlus className="w-3.5 h-3.5 text-zinc-300" />
                 <span>Become a Creator</span>
               </button>
 
@@ -261,7 +272,7 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-800 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-400 hover:text-white transition-colors"
                 >
                   <MessageSquare className="w-3.5 h-3.5 text-[#ffc800]" />
                   <span>Need help? Chat with our team on WhatsApp</span>
