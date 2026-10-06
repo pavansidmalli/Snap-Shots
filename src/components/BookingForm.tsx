@@ -103,7 +103,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ selectedService, selec
             : matched.shootTime.includes('3 Hours') || matched.shootTime.includes('3 hours')
             ? '2-3 Hours'
             : 'Custom / Flexible',
-          requirements: `Interested in the ${matched.name} (${matched.price} + GST).`,
+          requirements: `Interested in the ${matched.name} (${matched.price}).`,
         }));
       }
     }

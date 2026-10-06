@@ -68,10 +68,10 @@ export const PRICING_CONFIG: Record<SupportedCountryCode, CountryPricingConfig> 
     shortLabel: 'USA ($)',
     whatsappCountryName: 'USA',
     packages: {
-      quickShot: 149,
-      quickShotOriginal: 199,
-      eventReel: 399,
-      eventReelOriginal: 449,
+      quickShot: 99,          // Hourly Plan offer price: $99 (changed from 149)
+      quickShotOriginal: 149, // Hourly Plan cut price: $149
+      eventReel: 299,         // Half Day Plan offer price: $299 (changed from 399)
+      eventReelOriginal: 399, // Half Day Plan cut price: $399
       fullContent: 99,
       fullContentOriginal: 125,
     },

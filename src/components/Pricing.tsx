@@ -165,7 +165,6 @@ export const Pricing: React.FC<PricingProps> = ({ onSelectPackage }) => {
                           duration={1600}
                           className="text-3xl sm:text-4xl"
                         />
-                        <span className="text-xs text-zinc-400 font-medium">+ GST</span>
                       </div>
                     </div>
 
