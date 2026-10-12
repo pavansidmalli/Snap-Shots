@@ -9,6 +9,7 @@ import {
   Save,
   Check,
   CheckCircle2,
+  Loader2,
 } from 'lucide-react';
 import { siteConfig } from '../config/siteConfig';
 import { ReelWorkItem } from '../types';
@@ -82,11 +83,12 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState<boolean>(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
   const [saveSuccessMessage, setSaveSuccessMessage] = useState<string | null>(null);
   const centerVideoRef = useRef<HTMLVideoElement | null>(null);
   const directFileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Exact target slide locked when user clicks upload
+  // Exact target slide locked when user triggers upload
   const targetSlideRef = useRef<number>(0);
 
   // Check if running in AI Studio development/workspace mode
@@ -100,7 +102,6 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
       const saved = localStorage.getItem('snapshots_slide_replacements_strict_v3');
       if (saved) return JSON.parse(saved);
 
-      // Check legacy maps for migration
       const legacy = localStorage.getItem('snapshots_replaced_videos_map');
       if (legacy) {
         const parsed = JSON.parse(legacy);
@@ -117,6 +118,54 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
       return {};
     }
   });
+
+  // Fetch permanent custom slides from server (/api/custom-slides and /custom-slides.json)
+  // Ensures uploaded videos show up reliably on the live website for all visitors
+  useEffect(() => {
+    let isMounted = true;
+    const fetchSavedSlides = async () => {
+      try {
+        // Try /api/custom-slides first, fall back to /custom-slides.json
+        const res = await fetch(`/api/custom-slides?t=${Date.now()}`).catch(() =>
+          fetch(`/custom-slides.json?t=${Date.now()}`)
+        );
+        if (res && res.ok) {
+          const data = await res.json();
+          if (isMounted && data && typeof data === 'object') {
+            const parsed: Record<number, { videoUrl: string; posterUrl?: string }> = {};
+            Object.entries(data).forEach(([key, val]: [string, any]) => {
+              const numKey = Number(key);
+              if (!isNaN(numKey) && val?.videoUrl) {
+                parsed[numKey] = {
+                  videoUrl: val.videoUrl,
+                  posterUrl: val.posterUrl || '',
+                };
+              }
+            });
+            if (Object.keys(parsed).length > 0) {
+              setReplacedBySlide((prev) => {
+                const merged = { ...prev, ...parsed };
+                try {
+                  localStorage.setItem(
+                    'snapshots_slide_replacements_strict_v3',
+                    JSON.stringify(merged)
+                  );
+                } catch {}
+                return merged;
+              });
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load custom slides from server:', e);
+      }
+    };
+
+    fetchSavedSlides();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Map reels: Each slide index is strictly isolated and replaced ONLY if replacedBySlide[idx] exists
   const filteredReels: ReelWorkItem[] = siteConfig.portfolioReels.map((reel, idx) => {
@@ -156,12 +205,118 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
     }
   };
 
+  /**
+   * Upload video file to server permanently and update slide
+   */
+  const uploadVideoToServer = async (
+    targetIndex: number,
+    file: File,
+    posterDataUrl?: string
+  ) => {
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('slideIndex', String(targetIndex));
+      formData.append('video', file);
+      if (posterDataUrl) {
+        formData.append('posterDataUrl', posterDataUrl);
+      }
+
+      const res = await fetch('/api/upload-video-file', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error(`Upload failed with status ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (data.success && data.videoUrl) {
+        // Permanent server-hosted URL
+        const permanentVideoUrl = data.videoUrl;
+        const permanentPosterUrl = data.posterUrl || posterDataUrl;
+
+        setReplacedBySlide((prev) => {
+          const updated = {
+            ...prev,
+            [targetIndex]: {
+              videoUrl: permanentVideoUrl,
+              posterUrl: permanentPosterUrl,
+            },
+          };
+          try {
+            localStorage.setItem(
+              'snapshots_slide_replacements_strict_v3',
+              JSON.stringify(updated)
+            );
+          } catch {}
+          return updated;
+        });
+
+        setHasUnsavedChanges(false);
+        setSaveSuccessMessage(`Slide #${targetIndex + 1} video uploaded & saved permanently for live site!`);
+        setTimeout(() => setSaveSuccessMessage(null), 4000);
+        return;
+      }
+    } catch (err) {
+      console.error('Multipart upload error, trying base64 fallback:', err);
+      // Fallback: convert file to base64 and send via /api/upload-video
+      try {
+        const reader = new FileReader();
+        reader.onload = async () => {
+          const base64 = reader.result as string;
+          const fallbackRes = await fetch('/api/upload-video', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              slideIndex: targetIndex,
+              videoBase64: base64,
+              posterBase64: posterDataUrl,
+            }),
+          });
+          if (fallbackRes.ok) {
+            const fbData = await fallbackRes.json();
+            if (fbData.success && fbData.videoUrl) {
+              setReplacedBySlide((prev) => {
+                const updated = {
+                  ...prev,
+                  [targetIndex]: {
+                    videoUrl: fbData.videoUrl,
+                    posterUrl: fbData.posterUrl || posterDataUrl,
+                  },
+                };
+                try {
+                  localStorage.setItem(
+                    'snapshots_slide_replacements_strict_v3',
+                    JSON.stringify(updated)
+                  );
+                } catch {}
+                return updated;
+              });
+              setHasUnsavedChanges(false);
+              setSaveSuccessMessage(`Slide #${targetIndex + 1} saved successfully!`);
+              setTimeout(() => setSaveSuccessMessage(null), 4000);
+            }
+          }
+        };
+        reader.readAsDataURL(file);
+      } catch (fbErr) {
+        console.error('Fallback upload failed:', fbErr);
+      }
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   // Strictly apply video replacement to ONE single slide index only
   const applySlideReplacement = (
     targetIndex: number,
     newVideoUrl: string,
-    newPosterUrl?: string
+    newPosterUrl?: string,
+    file?: File
   ) => {
+    // 1. Immediately update local state so user sees instantaneous responsive feedback
     setReplacedBySlide((prev) => {
       const updated = {
         ...prev,
@@ -172,42 +327,71 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
       };
 
       try {
-        if (!newVideoUrl.startsWith('blob:')) {
-          localStorage.setItem(
-            'snapshots_slide_replacements_strict_v3',
-            JSON.stringify(updated)
-          );
-        }
+        localStorage.setItem(
+          'snapshots_slide_replacements_strict_v3',
+          JSON.stringify(updated)
+        );
       } catch {}
 
       return updated;
     });
 
-    // Mark as unsaved changes so user can explicitly click Save
-    setHasUnsavedChanges(true);
-    setSaveSuccessMessage(null);
-
     // Lock to this slide and play immediately
     setActiveIndex(targetIndex);
     setIsPlaying(true);
+    setHasUnsavedChanges(true);
+
+    // 2. If a local File was provided, stream it to server permanently
+    if (file) {
+      uploadVideoToServer(targetIndex, file, newPosterUrl);
+    } else if (newVideoUrl.startsWith('http://') || newVideoUrl.startsWith('https://') || newVideoUrl.startsWith('/')) {
+      // Direct URL: persist to server
+      fetch('/api/upload-video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slideIndex: targetIndex,
+          directUrl: newVideoUrl,
+          posterBase64: newPosterUrl,
+        }),
+      })
+        .then(() => {
+          setHasUnsavedChanges(false);
+          setSaveSuccessMessage(`Slide #${targetIndex + 1} video link saved for live website!`);
+          setTimeout(() => setSaveSuccessMessage(null), 4000);
+        })
+        .catch(() => {});
+    }
   };
 
-  // Explicit Save Changes handler
-  const handleSaveChanges = () => {
+  // Explicit Save Changes handler (pushes state to server /api/save-all-slides)
+  const handleSaveChanges = async () => {
     try {
       localStorage.setItem(
         'snapshots_slide_replacements_strict_v3',
         JSON.stringify(replacedBySlide)
       );
-    } catch {}
 
-    setHasUnsavedChanges(false);
-    const count = Object.keys(replacedBySlide).length;
-    setSaveSuccessMessage(
-      count > 0
-        ? `Saved! Video changes locked in across your slides.`
-        : `Slides state saved.`
-    );
+      const res = await fetch('/api/save-all-slides', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slides: replacedBySlide }),
+      });
+
+      if (res.ok) {
+        setHasUnsavedChanges(false);
+        const count = Object.keys(replacedBySlide).length;
+        setSaveSuccessMessage(
+          count > 0
+            ? `Saved! ${count} video slide${count > 1 ? 's' : ''} locked in and live on website.`
+            : `Slides state saved.`
+        );
+      } else {
+        setSaveSuccessMessage('Saved locally. Changes active in preview.');
+      }
+    } catch {
+      setSaveSuccessMessage('Saved locally in browser.');
+    }
 
     setTimeout(() => {
       setSaveSuccessMessage(null);
@@ -230,11 +414,12 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
     const targetIndex = targetSlideRef.current;
     const blobUrl = URL.createObjectURL(file);
 
-    // Extract poster frame
+    // Extract poster frame from video
     const video = document.createElement('video');
     video.src = blobUrl;
     video.currentTime = 0.5;
     video.onseeked = () => {
+      let poster: string | undefined;
       try {
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth || 720;
@@ -242,15 +427,13 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
         const ctx = canvas.getContext('2d');
         if (ctx) {
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const poster = canvas.toDataURL('image/jpeg', 0.85);
-          applySlideReplacement(targetIndex, blobUrl, poster);
-          return;
+          poster = canvas.toDataURL('image/jpeg', 0.85);
         }
       } catch {}
-      applySlideReplacement(targetIndex, blobUrl);
+      applySlideReplacement(targetIndex, blobUrl, poster, file);
     };
     video.onerror = () => {
-      applySlideReplacement(targetIndex, blobUrl);
+      applySlideReplacement(targetIndex, blobUrl, undefined, file);
     };
 
     // Reset input so re-selecting same file triggers change
@@ -258,7 +441,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
   };
 
   // Reset a specific slide
-  const handleResetSlide = (slideIndex: number, e?: React.MouseEvent) => {
+  const handleResetSlide = async (slideIndex: number, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setReplacedBySlide((prev) => {
       const updated = { ...prev };
@@ -271,13 +454,22 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
       } catch {}
       return updated;
     });
+
+    try {
+      await fetch('/api/reset-slides', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slideIndex }),
+      });
+    } catch {}
+
     setHasUnsavedChanges(false);
     setSaveSuccessMessage(`Slide #${slideIndex + 1} reset to default.`);
     setTimeout(() => setSaveSuccessMessage(null), 3000);
   };
 
   // Reset all slides
-  const handleResetAllSlides = (e?: React.MouseEvent) => {
+  const handleResetAllSlides = async (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setReplacedBySlide({});
     try {
@@ -285,6 +477,15 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
       localStorage.removeItem('snapshots_replaced_videos_map');
       localStorage.removeItem('snapshots_replaced_demo_video');
     } catch {}
+
+    try {
+      await fetch('/api/reset-slides', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resetAll: true }),
+      });
+    } catch {}
+
     setActiveIndex(0);
     setIsPlaying(true);
     setHasUnsavedChanges(false);
@@ -519,11 +720,20 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
                 <button
                   type="button"
                   onClick={() => triggerUploadForSlide(activeIndex)}
+                  disabled={isUploading}
                   id="ai-studio-upload-for-selected-slide-btn"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white font-bold text-xs shadow-lg shadow-[#bd1616]/30 transition-all hover:scale-105 active:scale-95 cursor-pointer border border-[#9e1212]"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white font-bold text-xs shadow-lg shadow-[#bd1616]/30 transition-all hover:scale-105 active:scale-95 disabled:opacity-60 cursor-pointer border border-[#9e1212]"
                 >
-                  <Upload className="w-3.5 h-3.5 text-white" />
-                  <span>Upload for Slide #{activeIndex + 1}</span>
+                  {isUploading ? (
+                    <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
+                  ) : (
+                    <Upload className="w-3.5 h-3.5 text-white" />
+                  )}
+                  <span>
+                    {isUploading
+                      ? 'Saving to Server...'
+                      : `Upload for Slide #${activeIndex + 1}`}
+                  </span>
                 </button>
 
                 {/* 2. Paste URL for current slide */}

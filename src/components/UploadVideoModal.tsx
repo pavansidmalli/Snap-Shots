@@ -14,7 +14,12 @@ interface UploadVideoModalProps {
   onClose: () => void;
   reels: ReelWorkItem[];
   targetIndex: number;
-  onApplyToSlide: (slideIndex: number, videoUrl: string, posterUrl?: string) => void;
+  onApplyToSlide: (
+    slideIndex: number,
+    videoUrl: string,
+    posterUrl?: string,
+    file?: File
+  ) => void;
 }
 
 export const UploadVideoModal: React.FC<UploadVideoModalProps> = ({
@@ -105,7 +110,7 @@ export const UploadVideoModal: React.FC<UploadVideoModalProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -122,7 +127,12 @@ export const UploadVideoModal: React.FC<UploadVideoModalProps> = ({
     }
 
     // Strictly apply ONLY to the selected slide index
-    onApplyToSlide(selectedSlideIndex, effectiveVideo, generatedPoster);
+    onApplyToSlide(
+      selectedSlideIndex,
+      effectiveVideo,
+      generatedPoster,
+      videoFile || undefined
+    );
     onClose();
   };
 
