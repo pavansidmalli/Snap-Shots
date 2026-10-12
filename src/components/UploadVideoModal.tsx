@@ -2,13 +2,9 @@ import React, { useState, useRef } from 'react';
 import {
   X,
   Upload,
-  Film,
-  CheckCircle2,
   AlertCircle,
-  Play,
-  Sparkles,
-  Link as LinkIcon,
   Video,
+  Film,
 } from 'lucide-react';
 import { ReelWorkItem } from '../types';
 import { getDefaultPosterForCategory } from '../utils/instagram';
@@ -16,28 +12,28 @@ import { getDefaultPosterForCategory } from '../utils/instagram';
 interface UploadVideoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddReel: (reel: ReelWorkItem) => void;
+  reels: ReelWorkItem[];
+  targetIndex: number;
+  onApplyToSlide: (slideIndex: number, videoUrl: string, posterUrl?: string) => void;
 }
 
 export const UploadVideoModal: React.FC<UploadVideoModalProps> = ({
   isOpen,
   onClose,
-  onAddReel,
+  reels,
+  targetIndex,
+  onApplyToSlide,
 }) => {
   const [sourceType, setSourceType] = useState<'file' | 'url'>('file');
+  const [selectedSlideIndex, setSelectedSlideIndex] = useState<number>(targetIndex);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoUrlInput, setVideoUrlInput] = useState<string>('');
   const [previewVideoUrl, setPreviewVideoUrl] = useState<string>('');
   const [generatedPoster, setGeneratedPoster] = useState<string>('');
-  const [title, setTitle] = useState<string>('');
-  const [category, setCategory] = useState<string>('Weddings');
-  const [views, setViews] = useState<string>('120K');
-  const [description, setDescription] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const hiddenVideoRef = useRef<HTMLVideoElement | null>(null);
 
   if (!isOpen) return null;
 
@@ -68,7 +64,7 @@ export const UploadVideoModal: React.FC<UploadVideoModalProps> = ({
         }
       } catch (e) {
         console.warn('Could not extract video frame poster:', e);
-        setGeneratedPoster(getDefaultPosterForCategory(category));
+        setGeneratedPoster(getDefaultPosterForCategory('Wedding'));
       } finally {
         setIsProcessing(false);
       }
@@ -76,7 +72,7 @@ export const UploadVideoModal: React.FC<UploadVideoModalProps> = ({
 
     video.onerror = () => {
       setIsProcessing(false);
-      setGeneratedPoster(getDefaultPosterForCategory(category));
+      setGeneratedPoster(getDefaultPosterForCategory('Wedding'));
     };
   };
 
@@ -93,65 +89,44 @@ export const UploadVideoModal: React.FC<UploadVideoModalProps> = ({
     setVideoFile(file);
     const blobUrl = URL.createObjectURL(file);
     setPreviewVideoUrl(blobUrl);
-
-    // Auto fill title if empty
-    if (!title.trim()) {
-      const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
-      setTitle(cleanName.charAt(0).toUpperCase() + cleanName.slice(1));
-    }
-
     extractPosterFrame(blobUrl);
   };
 
-  const handleUrlChange = (url: string) => {
-    setVideoUrlInput(url);
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError('');
-    if (url.trim().startsWith('http')) {
-      setPreviewVideoUrl(url.trim());
-      extractPosterFrame(url.trim());
+    const val = e.target.value;
+    setVideoUrlInput(val);
+    if (val.trim() && (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('/'))) {
+      setPreviewVideoUrl(val.trim());
+      extractPosterFrame(val.trim());
+    } else {
+      setPreviewVideoUrl('');
+      setGeneratedPoster('');
     }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
 
-    const effectiveVideo = sourceType === 'file' ? previewVideoUrl : videoUrlInput.trim();
+    const effectiveVideo =
+      sourceType === 'file' ? previewVideoUrl : videoUrlInput.trim();
 
     if (!effectiveVideo) {
       setError(
         sourceType === 'file'
-          ? 'Please select a video file to upload.'
+          ? 'Please choose a video file (.mp4, .mov, etc.) to upload.'
           : 'Please enter a valid video URL.'
       );
       return;
     }
 
-    if (!title.trim()) {
-      setError('Please enter a title for your video.');
-      return;
-    }
-
-    const newReel: ReelWorkItem = {
-      id: `custom-reel-${Date.now()}`,
-      title: title.trim(),
-      category: category || 'Custom Reel',
-      videoUrl: effectiveVideo,
-      instagramUrl: effectiveVideo,
-      posterUrl: generatedPoster || getDefaultPosterForCategory(category),
-      client: 'Uploaded by You',
-      views: views.trim() || 'New',
-      duration: '0:30',
-      eventDate: 'Custom Upload',
-      description:
-        description.trim() ||
-        'Uploaded by client to showcase custom reels and videography style.',
-      aspectRatio: '9:16',
-      isCustomUpload: true,
-    };
-
-    onAddReel(newReel);
+    // Strictly apply ONLY to the selected slide index
+    onApplyToSlide(selectedSlideIndex, effectiveVideo, generatedPoster);
     onClose();
   };
+
+  const currentReel = reels[selectedSlideIndex];
 
   return (
     <div
@@ -160,7 +135,7 @@ export const UploadVideoModal: React.FC<UploadVideoModalProps> = ({
       aria-labelledby="upload-video-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
     >
-      <div className="relative w-full max-w-lg rounded-3xl bg-zinc-950 border border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-lg rounded-3xl bg-zinc-950 border border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header */}
         <div className="px-6 py-4 bg-zinc-900/90 border-b border-zinc-800/80 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -169,10 +144,10 @@ export const UploadVideoModal: React.FC<UploadVideoModalProps> = ({
             </div>
             <div>
               <h2 id="upload-video-title" className="text-base font-black text-white">
-                Upload Your Video
+                Upload for Slide #{selectedSlideIndex + 1} Only
               </h2>
               <p className="text-xs text-zinc-400">
-                Add your custom reel to the 3D showcase
+                Uploads into this exact slide without affecting any other slides
               </p>
             </div>
           </div>
@@ -180,44 +155,71 @@ export const UploadVideoModal: React.FC<UploadVideoModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close modal"
             className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+            aria-label="Close dialog"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Content Body */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4">
-          {/* Source Toggle Tabs */}
-          <div className="grid grid-cols-2 gap-2 p-1 bg-zinc-900 rounded-xl border border-zinc-800 text-xs font-semibold">
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-5">
+          {/* Target Slide Selector */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300 mb-1.5">
+              Target Slide (Will replace only this slide):
+            </label>
+            <select
+              value={selectedSlideIndex}
+              onChange={(e) => setSelectedSlideIndex(Number(e.target.value))}
+              className="w-full rounded-xl bg-zinc-900 border border-zinc-800 px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#bd1616]"
+            >
+              {reels.map((r, i) => (
+                <option key={r.id || i} value={i}>
+                  Slide #{i + 1}: {r.title}
+                </option>
+              ))}
+            </select>
+            {currentReel && (
+              <p className="text-[11px] text-zinc-400 mt-1">
+                Currently targeting: <strong className="text-white">Slide #{selectedSlideIndex + 1}</strong> ({currentReel.title})
+              </p>
+            )}
+          </div>
+
+          {/* Source Tabs: File Upload vs Direct URL */}
+          <div className="flex rounded-xl bg-zinc-900 p-1 border border-zinc-800">
             <button
               type="button"
-              onClick={() => setSourceType('file')}
-              className={`py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              onClick={() => {
+                setSourceType('file');
+                setError('');
+              }}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                 sourceType === 'file'
-                  ? 'bg-[#bd1616] text-white shadow-md'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-[#bd1616] text-white shadow-sm'
+                  : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <Upload className="w-3.5 h-3.5" />
-              <span>Video File (Local)</span>
+              Upload Local File (.mp4)
             </button>
             <button
               type="button"
-              onClick={() => setSourceType('url')}
-              className={`py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              onClick={() => {
+                setSourceType('url');
+                setError('');
+              }}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                 sourceType === 'url'
-                  ? 'bg-[#bd1616] text-white shadow-md'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-[#bd1616] text-white shadow-sm'
+                  : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <LinkIcon className="w-3.5 h-3.5" />
-              <span>Video URL (Link)</span>
+              Paste Direct Video URL
             </button>
           </div>
 
-          {/* File Picker Zone */}
+          {/* File Picker View */}
           {sourceType === 'file' ? (
             <div>
               <input
@@ -226,167 +228,67 @@ export const UploadVideoModal: React.FC<UploadVideoModalProps> = ({
                 accept="video/mp4,video/webm,video/quicktime,video/*"
                 onChange={handleFileChange}
                 className="hidden"
-                id="custom-video-file-input"
               />
 
               <div
                 onClick={() => fileInputRef.current?.click()}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  if (e.dataTransfer.files?.[0]) {
-                    handleFileChange({
-                      target: { files: e.dataTransfer.files },
-                    } as any);
-                  }
-                }}
-                className={`border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-all ${
-                  videoFile
-                    ? 'border-emerald-500/60 bg-emerald-950/10'
-                    : 'border-zinc-700 hover:border-[#bd1616] bg-zinc-900/50 hover:bg-zinc-900/80'
-                }`}
+                className="border-2 border-dashed border-zinc-700 hover:border-[#bd1616] bg-zinc-900/50 hover:bg-zinc-900/80 rounded-2xl p-6 text-center transition-all cursor-pointer group"
               >
-                {videoFile ? (
-                  <div className="flex flex-col items-center gap-2">
-                    <CheckCircle2 className="w-8 h-8 text-emerald-400" />
-                    <p className="text-xs sm:text-sm font-bold text-white truncate max-w-xs">
-                      {videoFile.name}
-                    </p>
-                    <p className="text-[11px] text-zinc-400">
-                      {(videoFile.size / (1024 * 1024)).toFixed(1)} MB &bull; Click to change video
-                    </p>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400">
-                      <Film className="w-5 h-5 text-[#bd1616]" />
-                    </div>
-                    <div>
-                      <p className="text-xs sm:text-sm font-semibold text-white">
-                        Click or drag &amp; drop your video here
-                      </p>
-                      <p className="text-[11px] text-zinc-400 mt-0.5">
-                        MP4, WebM, MOV (9:16 vertical reels recommended)
-                      </p>
-                    </div>
-                  </div>
-                )}
+                <div className="w-12 h-12 rounded-full bg-zinc-800 group-hover:bg-[#bd1616]/20 border border-zinc-700 group-hover:border-[#bd1616]/40 flex items-center justify-center text-zinc-300 group-hover:text-[#bd1616] mx-auto mb-3 transition-colors">
+                  <Upload className="w-6 h-6" />
+                </div>
+                <p className="text-xs font-bold text-white mb-1">
+                  {videoFile ? videoFile.name : 'Click to select your video file'}
+                </p>
+                <p className="text-[11px] text-zinc-400">
+                  {videoFile
+                    ? `${(videoFile.size / (1024 * 1024)).toFixed(1)} MB selected • Click to change`
+                    : 'Supports MP4, MOV, WEBM (9:16 vertical recommended)'}
+                </p>
               </div>
             </div>
           ) : (
+            /* Direct Video URL View */
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                Video Direct URL (MP4 / WebM / Reel Stream)
-              </label>
-              <div className="relative">
-                <input
-                  type="url"
-                  value={videoUrlInput}
-                  onChange={(e) => handleUrlChange(e.target.value)}
-                  placeholder="https://example.com/videos/my-reel.mp4"
-                  className="w-full rounded-xl bg-zinc-900 border border-zinc-800 px-3.5 py-2.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#bd1616]"
-                />
-              </div>
-              <p className="text-[10.5px] text-zinc-500 mt-1">
-                Provide a direct link to any MP4/WebM vertical video.
-              </p>
-            </div>
-          )}
-
-          {/* Video Preview If Available */}
-          {previewVideoUrl && (
-            <div className="p-3 bg-zinc-900/80 rounded-2xl border border-zinc-800 flex items-center gap-3">
-              <div className="w-14 h-24 rounded-lg overflow-hidden bg-black shrink-0 relative border border-zinc-700">
-                <video
-                  src={previewVideoUrl}
-                  className="w-full h-full object-cover"
-                  muted
-                  playsInline
-                  autoPlay
-                  loop
-                />
-              </div>
-              <div className="flex-1 min-w-0 text-left">
-                <div className="flex items-center gap-1.5 text-emerald-400 text-xs font-bold">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Video Loaded &amp; Ready</span>
-                </div>
-                <p className="text-[11px] text-zinc-300 truncate mt-0.5 font-medium">
-                  {title || 'Untitled Reel'}
-                </p>
-                <p className="text-[10px] text-zinc-500 mt-0.5">
-                  Poster frame automatically extracted for 3D carousel.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Title Field */}
-          <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-              Reel Title <span className="text-[#bd1616]">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Royal Hyderabad Wedding Highlights"
-              className="w-full rounded-xl bg-zinc-900 border border-zinc-800 px-3.5 py-2.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#bd1616]"
-            />
-          </div>
-
-          {/* Category & Views */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                Category
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full rounded-xl bg-zinc-900 border border-zinc-800 px-3 py-2.5 text-xs text-white focus:outline-none focus:border-[#bd1616]"
-              >
-                <option value="Weddings">Weddings</option>
-                <option value="Event Reels">Event Reels</option>
-                <option value="Commercial">Commercial</option>
-                <option value="Fashion">Fashion</option>
-                <option value="Birthday Reels">Birthday Reels</option>
-                <option value="Corporate">Corporate</option>
-                <option value="Nightlife">Nightlife</option>
-                <option value="Lifestyle">Lifestyle</option>
-                <option value="Custom Reel">Custom Reel</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                Views Badge
+                Direct Video Stream URL (.mp4)
               </label>
               <input
-                type="text"
-                value={views}
-                onChange={(e) => setViews(e.target.value)}
-                placeholder="e.g. 150K"
+                type="url"
+                value={videoUrlInput}
+                onChange={handleUrlChange}
+                placeholder="https://example.com/your-reel.mp4"
                 className="w-full rounded-xl bg-zinc-900 border border-zinc-800 px-3.5 py-2.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#bd1616]"
-              >
-              </input>
+              />
             </div>
-          </div>
+          )}
 
-          {/* Optional Description */}
-          <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-              Description / Notes (Optional)
-            </label>
-            <textarea
-              rows={2}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Behind the scenes details, client name, or shoot concept..."
-              className="w-full rounded-xl bg-zinc-900 border border-zinc-800 px-3.5 py-2 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#bd1616] resize-none"
-            />
-          </div>
+          {/* Live Preview Box */}
+          {previewVideoUrl && (
+            <div className="rounded-2xl bg-zinc-900/90 border border-zinc-800 p-3.5 flex items-center gap-3">
+              <div className="relative w-16 h-28 rounded-xl overflow-hidden bg-black shrink-0 border border-zinc-700">
+                <video
+                  src={previewVideoUrl}
+                  playsInline
+                  autoPlay
+                  muted
+                  loop
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-[#bd1616] block mb-0.5">
+                  Ready to Apply
+                </span>
+                <p className="text-xs font-bold text-white truncate">
+                  {videoFile ? videoFile.name : 'Custom Video Source'}
+                </p>
+                <p className="text-[11px] text-zinc-400 mt-0.5">
+                  Will apply ONLY to Slide #{selectedSlideIndex + 1}.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Error notice */}
           {error && (
@@ -408,10 +310,14 @@ export const UploadVideoModal: React.FC<UploadVideoModalProps> = ({
             <button
               type="submit"
               disabled={isProcessing}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white font-bold text-xs tracking-wide shadow-lg shadow-[#bd1616]/30 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white font-bold text-xs tracking-wide shadow-lg shadow-[#bd1616]/30 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer border border-[#9e1212]"
             >
-              <Upload className="w-3.5 h-3.5 text-white" />
-              <span>{isProcessing ? 'Processing Video...' : 'Add to Showcase'}</span>
+              <Film className="w-3.5 h-3.5 text-white" />
+              <span>
+                {isProcessing
+                  ? 'Saving...'
+                  : `Save Video to Slide #${selectedSlideIndex + 1}`}
+              </span>
             </button>
           </div>
         </form>

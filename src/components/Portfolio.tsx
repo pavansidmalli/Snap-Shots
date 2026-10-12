@@ -2,46 +2,135 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
-  Play,
-  Pause,
-  Eye,
-  Upload,
-  Sparkles,
-  Trash2,
   Volume2,
   VolumeX,
+  Upload,
+  RotateCcw,
+  Save,
+  Check,
+  CheckCircle2,
 } from 'lucide-react';
 import { siteConfig } from '../config/siteConfig';
 import { ReelWorkItem } from '../types';
-import { getResponsiveImageSrcSet } from '../utils/imageUtils';
+import { isAiStudioEnvironment } from '../utils/aiStudioEnv';
 import { UploadVideoModal } from './UploadVideoModal';
 
 interface PortfolioProps {
   onSelectReel?: (reel: ReelWorkItem) => void;
 }
 
+/**
+ * Individual Video Slide Card:
+ * Enforces rule: ONLY the middle video plays. All other side videos are strictly paused.
+ * When a video comes to the middle, it plays; when it leaves the middle, it pauses.
+ */
+interface VideoSlideCardProps {
+  videoUrl: string;
+  posterUrl?: string;
+  isCenter: boolean;
+  isPlaying: boolean;
+  isMuted: boolean;
+}
+
+const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
+  videoUrl,
+  posterUrl,
+  isCenter,
+  isPlaying,
+  isMuted,
+}) => {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (isCenter) {
+      video.muted = isMuted;
+      if (isPlaying) {
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {});
+        }
+      } else {
+        video.pause();
+      }
+    } else {
+      // Side videos MUST be paused at all times
+      video.pause();
+    }
+  }, [isCenter, isPlaying, isMuted, videoUrl]);
+
+  return (
+    <video
+      ref={videoRef}
+      src={videoUrl}
+      poster={posterUrl}
+      playsInline
+      loop
+      muted={isCenter ? isMuted : true}
+      className="w-full h-full object-cover"
+    />
+  );
+};
+
 export const Portfolio: React.FC<PortfolioProps> = () => {
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [isHovered, setIsHovered] = useState<boolean>(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState<boolean>(false);
-  const [uploadToast, setUploadToast] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [isMuted, setIsMuted] = useState<boolean>(true);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState<boolean>(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
+  const [saveSuccessMessage, setSaveSuccessMessage] = useState<string | null>(null);
   const centerVideoRef = useRef<HTMLVideoElement | null>(null);
+  const directFileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Custom user uploaded reels
-  const [customReels, setCustomReels] = useState<ReelWorkItem[]>(() => {
+  // Exact target slide locked when user clicks upload
+  const targetSlideRef = useRef<number>(0);
+
+  // Check if running in AI Studio development/workspace mode
+  const isAiStudio = isAiStudioEnvironment();
+
+  // Strict replacement dictionary keyed purely by numeric slide index (0, 1, 2, ...)
+  const [replacedBySlide, setReplacedBySlide] = useState<
+    Record<number, { videoUrl: string; posterUrl?: string }>
+  >(() => {
     try {
-      const saved = localStorage.getItem('snapshots_user_custom_reels');
-      return saved ? JSON.parse(saved) : [];
+      const saved = localStorage.getItem('snapshots_slide_replacements_strict_v3');
+      if (saved) return JSON.parse(saved);
+
+      // Check legacy maps for migration
+      const legacy = localStorage.getItem('snapshots_replaced_videos_map');
+      if (legacy) {
+        const parsed = JSON.parse(legacy);
+        const migrated: Record<number, { videoUrl: string; posterUrl?: string }> = {};
+        siteConfig.portfolioReels.forEach((reel, idx) => {
+          if (parsed[reel.id] || parsed[`slide-${idx}`]) {
+            migrated[idx] = parsed[reel.id] || parsed[`slide-${idx}`];
+          }
+        });
+        return migrated;
+      }
+      return {};
     } catch {
-      return [];
+      return {};
     }
   });
 
-  // Combine custom uploaded reels and configured site reels
-  const filteredReels = [...customReels, ...siteConfig.portfolioReels];
+  // Map reels: Each slide index is strictly isolated and replaced ONLY if replacedBySlide[idx] exists
+  const filteredReels: ReelWorkItem[] = siteConfig.portfolioReels.map((reel, idx) => {
+    const replacement = replacedBySlide[idx];
+    if (replacement) {
+      return {
+        ...reel,
+        videoUrl: replacement.videoUrl,
+        posterUrl: replacement.posterUrl || reel.posterUrl,
+      };
+    }
+    return reel;
+  });
+
   const totalSlides = filteredReels.length;
 
   const handleNext = useCallback(() => {
@@ -67,42 +156,150 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
     }
   };
 
-  const handleAddCustomReel = (newReel: ReelWorkItem) => {
-    const updated = [newReel, ...customReels];
-    setCustomReels(updated);
-    setActiveIndex(0); // Center the newly uploaded video immediately
-    setIsPlaying(true);
-    setUploadToast(`"${newReel.title}" added to showcase! Playing live in carousel.`);
-    setTimeout(() => setUploadToast(null), 6000);
+  // Strictly apply video replacement to ONE single slide index only
+  const applySlideReplacement = (
+    targetIndex: number,
+    newVideoUrl: string,
+    newPosterUrl?: string
+  ) => {
+    setReplacedBySlide((prev) => {
+      const updated = {
+        ...prev,
+        [targetIndex]: {
+          videoUrl: newVideoUrl,
+          posterUrl: newPosterUrl,
+        },
+      };
 
-    try {
-      // Persist reels with persistent URLs (and lightweight metadata)
-      const persistable = updated.filter((r) => !r.videoUrl.startsWith('blob:'));
-      localStorage.setItem('snapshots_user_custom_reels', JSON.stringify(persistable));
-    } catch {
-      // Storage fallback
-    }
+      try {
+        if (!newVideoUrl.startsWith('blob:')) {
+          localStorage.setItem(
+            'snapshots_slide_replacements_strict_v3',
+            JSON.stringify(updated)
+          );
+        }
+      } catch {}
+
+      return updated;
+    });
+
+    // Mark as unsaved changes so user can explicitly click Save
+    setHasUnsavedChanges(true);
+    setSaveSuccessMessage(null);
+
+    // Lock to this slide and play immediately
+    setActiveIndex(targetIndex);
+    setIsPlaying(true);
   };
 
-  const handleClearCustomReels = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCustomReels([]);
+  // Explicit Save Changes handler
+  const handleSaveChanges = () => {
     try {
-      localStorage.removeItem('snapshots_user_custom_reels');
+      localStorage.setItem(
+        'snapshots_slide_replacements_strict_v3',
+        JSON.stringify(replacedBySlide)
+      );
+    } catch {}
+
+    setHasUnsavedChanges(false);
+    const count = Object.keys(replacedBySlide).length;
+    setSaveSuccessMessage(
+      count > 0
+        ? `Saved! Video changes locked in across your slides.`
+        : `Slides state saved.`
+    );
+
+    setTimeout(() => {
+      setSaveSuccessMessage(null);
+    }, 4500);
+  };
+
+  // Trigger file upload for a specific slide
+  const triggerUploadForSlide = (slideIndex: number) => {
+    targetSlideRef.current = slideIndex;
+    setActiveIndex(slideIndex);
+    directFileInputRef.current?.click();
+  };
+
+  // Direct file picked callback
+  const handleFilePicked = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Use locked target slide index
+    const targetIndex = targetSlideRef.current;
+    const blobUrl = URL.createObjectURL(file);
+
+    // Extract poster frame
+    const video = document.createElement('video');
+    video.src = blobUrl;
+    video.currentTime = 0.5;
+    video.onseeked = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 720;
+        canvas.height = video.videoHeight || 1280;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const poster = canvas.toDataURL('image/jpeg', 0.85);
+          applySlideReplacement(targetIndex, blobUrl, poster);
+          return;
+        }
+      } catch {}
+      applySlideReplacement(targetIndex, blobUrl);
+    };
+    video.onerror = () => {
+      applySlideReplacement(targetIndex, blobUrl);
+    };
+
+    // Reset input so re-selecting same file triggers change
+    e.target.value = '';
+  };
+
+  // Reset a specific slide
+  const handleResetSlide = (slideIndex: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setReplacedBySlide((prev) => {
+      const updated = { ...prev };
+      delete updated[slideIndex];
+      try {
+        localStorage.setItem(
+          'snapshots_slide_replacements_strict_v3',
+          JSON.stringify(updated)
+        );
+      } catch {}
+      return updated;
+    });
+    setHasUnsavedChanges(false);
+    setSaveSuccessMessage(`Slide #${slideIndex + 1} reset to default.`);
+    setTimeout(() => setSaveSuccessMessage(null), 3000);
+  };
+
+  // Reset all slides
+  const handleResetAllSlides = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setReplacedBySlide({});
+    try {
+      localStorage.removeItem('snapshots_slide_replacements_strict_v3');
+      localStorage.removeItem('snapshots_replaced_videos_map');
+      localStorage.removeItem('snapshots_replaced_demo_video');
     } catch {}
     setActiveIndex(0);
-    setUploadToast('Custom uploads cleared.');
-    setTimeout(() => setUploadToast(null), 3000);
+    setIsPlaying(true);
+    setHasUnsavedChanges(false);
+    setSaveSuccessMessage('All slides reset to default demo videos.');
+    setTimeout(() => setSaveSuccessMessage(null), 3000);
   };
 
-  // Auto-scroll effect: advances slides every 4.5 seconds when not hovered/touched
+  // IMPORTANT: Disable auto-scroll in AI Studio mode so slides NEVER shift while user is editing/uploading!
   useEffect(() => {
-    if (isHovered || totalSlides <= 1) return;
+    if (isAiStudio || isHovered || totalSlides <= 1) return;
     const interval = setInterval(() => {
       handleNext();
     }, 4500);
     return () => clearInterval(interval);
-  }, [isHovered, totalSlides, handleNext]);
+  }, [isAiStudio, isHovered, totalSlides, handleNext]);
 
   // Touch swipe support for mobile
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -122,27 +319,22 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
     setTouchStartX(null);
   };
 
+  const isCurrentSlideCustomized = Boolean(replacedBySlide[activeIndex]);
+  const hasAnyCustomReplacements = Object.keys(replacedBySlide).length > 0;
+
   return (
     <div id="work" className="bg-transparent pt-4 sm:pt-6 pb-6 sm:pb-8 relative overflow-hidden select-none">
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Upload Success Toast Notice */}
-        {uploadToast && (
-          <div className="mb-4 mx-auto max-w-lg p-3 rounded-2xl bg-zinc-900/95 border border-[#bd1616]/60 shadow-2xl flex items-center justify-between gap-3 text-white text-xs animate-in fade-in slide-in-from-top-2">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#ffc800] shrink-0" />
-              <span className="font-semibold text-zinc-100">{uploadToast}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setUploadToast(null)}
-              className="text-zinc-400 hover:text-white px-1.5 py-0.5 rounded-lg cursor-pointer"
-            >
-              &times;
-            </button>
-          </div>
-        )}
+        {/* Hidden File Picker directly locked to targetSlideRef */}
+        <input
+          ref={directFileInputRef}
+          type="file"
+          accept="video/mp4,video/webm,video/quicktime,video/*"
+          onChange={handleFilePicked}
+          className="hidden"
+        />
 
-        {/* 3D-Feel Carousel / Image Slides Stage (5 visible slides with equal-sized side cards) */}
+        {/* 3D-Feel Carousel / Pure Video Slides Stage */}
         <div
           className="relative h-[440px] min-[390px]:h-[480px] sm:h-[530px] md:h-[560px] max-w-5xl lg:max-w-6xl mx-auto flex items-center justify-center overflow-hidden sm:overflow-visible"
           onMouseEnter={() => setIsHovered(true)}
@@ -169,19 +361,13 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
 
             return (
               <div
-                key={reel.id}
+                key={reel.id || index}
                 onClick={() => {
                   if (isCenter) {
                     toggleCenterPlay();
-                  } else if (isAdjacentLeft) {
-                    handlePrev();
-                  } else if (isAdjacentRight) {
-                    handleNext();
-                  } else if (isFarLeft) {
-                    setActiveIndex((prev) => (prev - 2 + totalSlides) % totalSlides);
-                    setIsPlaying(true);
-                  } else if (isFarRight) {
-                    setActiveIndex((prev) => (prev + 2) % totalSlides);
+                  } else {
+                    // Clicking ANY side card selects that exact slide immediately
+                    setActiveIndex(index);
                     setIsPlaying(true);
                   }
                 }}
@@ -197,102 +383,58 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
                     : 'z-10 w-[175px] min-[390px]:w-[190px] sm:w-[210px] md:w-[235px] aspect-[9/16] rounded-[18px] sm:rounded-[24px] overflow-hidden bg-zinc-950 shadow-lg border border-zinc-800/60 translate-x-[250px] min-[390px]:translate-x-[280px] sm:translate-x-[360px] md:translate-x-[430px] scale-[0.76] opacity-50 hover:opacity-75'
                 }`}
               >
-                {/* 9:16 Video / Poster Stage */}
-                {isCenter && reel.videoUrl ? (
-                  <div className="relative w-full h-full bg-black">
-                    <video
-                      ref={centerVideoRef}
-                      src={reel.videoUrl}
-                      poster={reel.posterUrl}
-                      playsInline
-                      autoPlay
-                      loop
-                      muted={isMuted}
-                      className="w-full h-full object-cover"
-                    />
+                {/* 9:16 Pure Video Slide Stage: ONLY middle plays, all sides are strictly paused */}
+                <div className="relative w-full h-full bg-black">
+                  <VideoSlideCard
+                    videoUrl={reel.videoUrl}
+                    posterUrl={reel.posterUrl}
+                    isCenter={isCenter}
+                    isPlaying={isPlaying}
+                    isMuted={isMuted}
+                  />
 
-                    {/* Inline Mute / Unmute Button on Center Video */}
+                  {/* AI Studio Only: Direct Upload Button on this exact slide */}
+                  {isAiStudio && isCenter && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        triggerUploadForSlide(index);
+                      }}
+                      className="absolute top-3.5 left-3.5 z-40 px-2.5 py-1.5 rounded-full bg-black/75 hover:bg-[#bd1616] text-white border border-white/20 transition-all cursor-pointer backdrop-blur-md shadow-lg flex items-center gap-1.5 hover:scale-105 active:scale-95"
+                      title={`Upload a video to replace Slide #${index + 1} only`}
+                    >
+                      <Upload className="w-3 h-3 text-white" />
+                      <span className="text-[10px] font-bold">Slide #{index + 1}</span>
+                    </button>
+                  )}
+
+                  {/* Sound Icon Button - strictly the only icon/control kept on the video slide */}
+                  {isCenter && (
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         setIsMuted((prev) => !prev);
                       }}
-                      className="absolute top-3.5 right-3.5 z-40 p-2 rounded-full bg-black/70 hover:bg-[#bd1616] text-white border border-white/20 transition-all cursor-pointer backdrop-blur-md shadow-lg hover:scale-105 active:scale-95"
+                      className="absolute top-3.5 right-3.5 z-40 p-2.5 rounded-full bg-black/60 hover:bg-[#bd1616] text-white border border-white/20 transition-all cursor-pointer backdrop-blur-md shadow-lg hover:scale-110 active:scale-95"
                       aria-label={isMuted ? 'Unmute video audio' : 'Mute video audio'}
                       title={isMuted ? 'Click to unmute sound' : 'Mute sound'}
                     >
-                      {isMuted ? <VolumeX className="w-3.5 h-3.5 text-white" /> : <Volume2 className="w-3.5 h-3.5 text-white" />}
+                      {isMuted ? (
+                        <VolumeX className="w-4 h-4 text-white" />
+                      ) : (
+                        <Volume2 className="w-4 h-4 text-white" />
+                      )}
                     </button>
-
-                    {/* Center Play Icon when paused */}
-                    {!isPlaying && (
-                      <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none bg-black/40 backdrop-blur-xs">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#bd1616] text-white shadow-2xl">
-                          <Play className="w-6 h-6 fill-white ml-0.5" />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <img
-                    src={reel.posterUrl}
-                    srcSet={getResponsiveImageSrcSet(reel.posterUrl, [320, 480, 640, 800])}
-                    sizes="(max-width: 640px) 280px, 340px"
-                    alt={reel.title}
-                    loading={isCenter ? 'eager' : 'lazy'}
-                    decoding="async"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                )}
-
-                {/* Ambient Soft Top & Bottom Gradients */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/40 pointer-events-none" />
-
-                {/* Custom Upload Badge */}
-                {reel.isCustomUpload && (
-                  <div className="absolute top-3 left-3 z-20 pointer-events-none">
-                    <span className="px-2 py-0.5 rounded-full bg-[#bd1616] text-[9px] font-black tracking-wider text-white shadow-md uppercase">
-                      Your Video
-                    </span>
-                  </div>
-                )}
-
-                {/* Subtle Brand Watermark (matching screenshot's top watermark) */}
-                {!reel.isCustomUpload && !isCenter && (
-                  <div className="absolute top-3 right-3 z-20 pointer-events-none">
-                    <span className="text-[10px] font-black tracking-widest text-white/90 drop-shadow-md">
-                      SNAP SHOTS
-                    </span>
-                  </div>
-                )}
-
-                {/* Bottom Overlay Title & Views */}
-                <div className="absolute bottom-3 left-3 right-3 z-20 text-left pointer-events-none">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[9px] font-bold text-white border border-white/10 uppercase tracking-wider">
-                      {reel.category}
-                    </span>
-                    <span className="flex items-center gap-1 text-[10px] font-medium text-zinc-300 bg-black/50 px-2 py-0.5 rounded-full">
-                      <Eye className="w-3 h-3 text-[#bd1616]" />
-                      <span>{reel.views}</span>
-                    </span>
-                    {isCenter && (
-                      <span className="px-2 py-0.5 rounded-full bg-[#bd1616]/80 backdrop-blur-md text-[8.5px] font-black text-white uppercase tracking-wider">
-                        {isPlaying ? 'LIVE PREVIEW' : 'PAUSED'}
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="text-white text-xs sm:text-sm font-bold line-clamp-1 drop-shadow-md">
-                    {reel.title}
-                  </h3>
+                  )}
                 </div>
               </div>
             );
           })}
         </div>
 
-        {/* Carousel Navigation & Indicators (Identical to Reference Screenshot) */}
+        {/* Carousel Navigation & Indicators */}
         <div className="mt-6 sm:mt-8 flex items-center justify-center gap-4 sm:gap-6">
           {/* Left Circular Arrow Button */}
           <button
@@ -335,42 +477,142 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
           </button>
         </div>
 
-        {/* Action Bar with "Upload Your Video" Button */}
-        <div className="mt-5 sm:mt-6 flex flex-wrap items-center justify-center gap-3">
-          <button
-            type="button"
-            onClick={() => setIsUploadModalOpen(true)}
-            id="upload-reel-trigger-btn"
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg shadow-[#bd1616]/35 hover:shadow-[#bd1616]/55 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
-          >
-            <Upload className="w-4 h-4 text-white" />
-            <span>Upload Your Video</span>
-          </button>
+        {/* AI Studio Only: Slide Selector & Dedicated Upload Toolbar with SAVE BUTTON */}
+        {isAiStudio && (
+          <div className="mt-6 p-4 rounded-3xl bg-zinc-950/80 border border-zinc-800 max-w-3xl mx-auto space-y-3.5 animate-in fade-in duration-300">
+            {/* Top row: Mode notice & quick slide switcher pills */}
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800/80 pb-3">
+              <div className="inline-flex items-center gap-1.5 text-xs text-zinc-300">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="font-bold text-white">AI Studio Mode:</span>
+                <span className="text-zinc-400">Select slide to replace its video</span>
+              </div>
 
-          {customReels.length > 0 && (
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-800 text-xs text-zinc-300 shadow-sm">
-              <span className="font-semibold text-white">Your Videos: {customReels.length}</span>
-              <button
-                type="button"
-                onClick={handleClearCustomReels}
-                title="Clear uploaded videos"
-                className="text-zinc-400 hover:text-red-400 p-1 rounded-full hover:bg-zinc-800 transition-colors cursor-pointer"
-                aria-label="Clear my uploaded videos"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+              {/* Numbered slide selector pills */}
+              <div className="flex items-center gap-1 flex-wrap">
+                {filteredReels.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      setActiveIndex(i);
+                      setIsPlaying(true);
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      activeIndex === i
+                        ? 'bg-[#bd1616] text-white shadow-md'
+                        : replacedBySlide[i]
+                        ? 'bg-zinc-800 text-emerald-400 border border-emerald-500/40'
+                        : 'bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800'
+                    }`}
+                  >
+                    #{i + 1}
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
-        </div>
+
+            {/* Bottom row: Action Buttons for the EXACT selected slide */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+              <div className="flex flex-wrap items-center gap-2">
+                {/* 1. Upload for current slide */}
+                <button
+                  type="button"
+                  onClick={() => triggerUploadForSlide(activeIndex)}
+                  id="ai-studio-upload-for-selected-slide-btn"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white font-bold text-xs shadow-lg shadow-[#bd1616]/30 transition-all hover:scale-105 active:scale-95 cursor-pointer border border-[#9e1212]"
+                >
+                  <Upload className="w-3.5 h-3.5 text-white" />
+                  <span>Upload for Slide #{activeIndex + 1}</span>
+                </button>
+
+                {/* 2. Paste URL for current slide */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    targetSlideRef.current = activeIndex;
+                    setIsUploadModalOpen(true);
+                  }}
+                  id="ai-studio-paste-url-for-slide-btn"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold border border-zinc-700/80 transition-colors cursor-pointer"
+                >
+                  <span>Paste URL</span>
+                </button>
+
+                {/* 3. SAVE BUTTON: Prominently saves uploaded videos */}
+                <button
+                  type="button"
+                  onClick={handleSaveChanges}
+                  id="ai-studio-save-videos-btn"
+                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer border ${
+                    hasUnsavedChanges
+                      ? 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border-emerald-400 shadow-emerald-600/40 animate-pulse'
+                      : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border-zinc-700'
+                  }`}
+                  title="Save uploaded videos for slides"
+                >
+                  {hasUnsavedChanges ? (
+                    <>
+                      <Save className="w-3.5 h-3.5 text-white" />
+                      <span>Save Changes</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Save Videos</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Reset buttons */}
+              <div className="flex items-center gap-2">
+                {isCurrentSlideCustomized && (
+                  <button
+                    type="button"
+                    onClick={(e) => handleResetSlide(activeIndex, e)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                    title={`Reset Slide #${activeIndex + 1} back to original`}
+                  >
+                    <RotateCcw className="w-3 h-3 text-[#bd1616]" />
+                    <span>Reset Slide #{activeIndex + 1}</span>
+                  </button>
+                )}
+
+                {hasAnyCustomReplacements && (
+                  <button
+                    type="button"
+                    onClick={handleResetAllSlides}
+                    className="text-xs text-zinc-500 hover:text-red-400 transition-colors cursor-pointer px-2"
+                  >
+                    Reset All
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Save Confirmation Toast Message */}
+            {saveSuccessMessage && (
+              <div className="flex items-center gap-2 p-2.5 rounded-2xl bg-emerald-950/70 border border-emerald-500/50 text-emerald-300 text-xs animate-in fade-in slide-in-from-top-1">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span className="font-semibold">{saveSuccessMessage}</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Video Upload Modal */}
-      <UploadVideoModal
-        isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
-        onAddReel={handleAddCustomReel}
-      />
+      {/* Video Upload Modal - strictly applies only to targetIndex */}
+      {isAiStudio && (
+        <UploadVideoModal
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+          reels={filteredReels}
+          targetIndex={activeIndex}
+          onApplyToSlide={applySlideReplacement}
+        />
+      )}
     </div>
   );
 };
-

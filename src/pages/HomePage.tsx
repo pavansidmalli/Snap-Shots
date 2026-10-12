@@ -7,7 +7,7 @@ import { Process } from '../components/Process';
 import { Testimonials } from '../components/Testimonials';
 import { CTA } from '../components/CTA';
 import { FadeInSection } from '../components/FadeInSection';
-import { ReelWorkItem, PackageItem } from '../types';
+import { ReelWorkItem } from '../types';
 
 interface HomePageProps {
   onBookClick: (pkgId?: string) => void;
@@ -41,27 +41,27 @@ export const HomePage: React.FC<HomePageProps> = ({
         <HeroStatsBar />
       </FadeInSection>
 
-      {/* 4. Pricing Packages (Hourly, Half Day, Full Day, Custom) */}
+      {/* 3. Pricing Packages (Hourly, Half Day, Full Day, Custom) */}
       <FadeInSection>
         <Pricing onSelectPackage={onSelectPackage} />
       </FadeInSection>
 
-      {/* 5. Why Choose Us - The Snap Shots Difference */}
+      {/* 4. Why Choose Us - The Snap Shots Difference */}
       <FadeInSection>
         <WhyChooseUs />
       </FadeInSection>
 
-      {/* 6. Process - How Snap Shots Works */}
+      {/* 5. Process - How Snap Shots Works */}
       <FadeInSection>
         <Process onStartBooking={() => onBookClick()} />
       </FadeInSection>
 
-      {/* 7. Testimonials & Client Reviews */}
+      {/* 6. Testimonials & Client Reviews */}
       <FadeInSection>
         <Testimonials />
       </FadeInSection>
 
-      {/* 8. Final CTA Banner */}
+      {/* 7. Bottom Call To Action */}
       <FadeInSection>
         <CTA onBookClick={() => onBookClick()} />
       </FadeInSection>
