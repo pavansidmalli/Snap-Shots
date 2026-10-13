@@ -144,7 +144,7 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
           aria-hidden="true"
           onLoad={handleMediaLoaded}
           onError={() => {}}
-          className={`absolute inset-0 w-full h-full object-cover select-none pointer-events-none transition-opacity duration-500 ${
+          className={`absolute inset-0 w-full h-full object-cover select-none pointer-events-none transition-all duration-500 ease-out will-change-transform group-hover:scale-105 ${
             isMediaReady ? 'opacity-100' : 'opacity-0'
           }`}
         />
