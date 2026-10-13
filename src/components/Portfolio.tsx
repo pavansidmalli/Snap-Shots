@@ -42,13 +42,16 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
   isMuted,
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [videoLoaded, setVideoLoaded] = useState<boolean>(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
+    video.defaultMuted = true;
+    video.muted = isCenter ? isMuted : true;
+
     if (isCenter) {
-      video.muted = isMuted;
       if (isPlaying) {
         const playPromise = video.play();
         if (playPromise !== undefined) {
@@ -64,15 +67,35 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
   }, [isCenter, isPlaying, isMuted, videoUrl]);
 
   return (
-    <video
-      ref={videoRef}
-      src={videoUrl}
-      poster={posterUrl}
-      playsInline
-      loop
-      muted={isCenter ? isMuted : true}
-      className="w-full h-full object-cover"
-    />
+    <div className="relative w-full h-full overflow-hidden bg-black">
+      {/* Permanent Poster Backdrop: Guarantees zero blank/black flash during buffering or side view */}
+      {posterUrl && (
+        <img
+          src={posterUrl}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none transition-opacity duration-300"
+          style={{ opacity: videoLoaded && isCenter && isPlaying ? 0 : 1 }}
+        />
+      )}
+
+      {/* Primary Video Element */}
+      <video
+        ref={videoRef}
+        src={videoUrl}
+        poster={posterUrl}
+        playsInline
+        webkit-playsinline="true"
+        loop
+        preload={isCenter ? 'auto' : 'metadata'}
+        muted={isCenter ? isMuted : true}
+        onLoadedData={() => setVideoLoaded(true)}
+        onPlaying={() => setVideoLoaded(true)}
+        className={`relative z-10 w-full h-full object-cover transition-opacity duration-300 ${
+          videoLoaded ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
+    </div>
   );
 };
 
@@ -137,33 +160,38 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
     const fetchSavedSlides = async () => {
       try {
         // Try /api/custom-slides first, fall back to /custom-slides.json
-        const res = await fetch(`/api/custom-slides?t=${Date.now()}`).catch(() =>
-          fetch(`/custom-slides.json?t=${Date.now()}`)
-        );
+        let res = await fetch(`/api/custom-slides?t=${Date.now()}`).catch(() => null);
+        if (!res || !res.ok || (res.headers.get('content-type') && !res.headers.get('content-type')!.includes('json'))) {
+          // If running on static host (e.g. Vercel) where API routes rewrite to HTML, fetch static JSON
+          res = await fetch(`/custom-slides.json?t=${Date.now()}`).catch(() => null);
+        }
         if (res && res.ok) {
-          const data = await res.json();
-          if (isMounted && data && typeof data === 'object') {
-            const parsed: Record<number, { videoUrl: string; posterUrl?: string }> = {};
-            Object.entries(data).forEach(([key, val]: [string, any]) => {
-              const numKey = Number(key);
-              if (!isNaN(numKey) && val?.videoUrl && !val.videoUrl.startsWith('blob:')) {
-                parsed[numKey] = {
-                  videoUrl: val.videoUrl,
-                  posterUrl: val.posterUrl || '',
-                };
-              }
-            });
-            if (Object.keys(parsed).length > 0) {
-              setReplacedBySlide((prev) => {
-                const merged = { ...prev, ...parsed };
-                try {
-                  localStorage.setItem(
-                    'snapshots_slide_replacements_strict_v3',
-                    JSON.stringify(merged)
-                  );
-                } catch {}
-                return merged;
+          const contentType = res.headers.get('content-type') || '';
+          if (contentType.includes('json') || contentType.includes('text/plain') || contentType === '') {
+            const data = await res.json();
+            if (isMounted && data && typeof data === 'object') {
+              const parsed: Record<number, { videoUrl: string; posterUrl?: string }> = {};
+              Object.entries(data).forEach(([key, val]: [string, any]) => {
+                const numKey = Number(key);
+                if (!isNaN(numKey) && val?.videoUrl && !val.videoUrl.startsWith('blob:')) {
+                  parsed[numKey] = {
+                    videoUrl: val.videoUrl,
+                    posterUrl: val.posterUrl || '',
+                  };
+                }
               });
+              if (Object.keys(parsed).length > 0) {
+                setReplacedBySlide((prev) => {
+                  const merged = { ...prev, ...parsed };
+                  try {
+                    localStorage.setItem(
+                      'snapshots_slide_replacements_strict_v3',
+                      JSON.stringify(merged)
+                    );
+                  } catch {}
+                  return merged;
+                });
+              }
             }
           }
         }
@@ -233,14 +261,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
   }, [totalSlides]);
 
   const toggleCenterPlay = () => {
-    if (!centerVideoRef.current) return;
-    if (isPlaying) {
-      centerVideoRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      centerVideoRef.current.play().catch(() => {});
-      setIsPlaying(true);
-    }
+    setIsPlaying((prev) => !prev);
   };
 
   /**

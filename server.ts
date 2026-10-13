@@ -94,11 +94,20 @@ async function startServer() {
           }
         }
 
-        // Also sync uploaded file to dist/assets/uploads if dist exists
+        // Also sync uploaded video and poster to dist/assets/uploads if dist exists
         const distUploadDir = path.resolve(__dirname, 'dist/assets/uploads');
         if (fs.existsSync(distUploadDir)) {
           try {
             fs.copyFileSync(videoFile.path, path.join(distUploadDir, videoFile.filename));
+            if (posterFile) {
+              fs.copyFileSync(posterFile.path, path.join(distUploadDir, posterFile.filename));
+            } else if (permanentPosterUrl) {
+              const posterBase = path.basename(permanentPosterUrl);
+              const srcPosterPath = path.join(uploadDir, posterBase);
+              if (fs.existsSync(srcPosterPath)) {
+                fs.copyFileSync(srcPosterPath, path.join(distUploadDir, posterBase));
+              }
+            }
           } catch {}
         }
 
