@@ -1,6 +1,7 @@
 import React from 'react';
 import { Hero } from '../components/Hero';
 import { HeroStatsBar } from '../components/HeroStatsBar';
+import { PastEventGalleryCarousel } from '../components/PastEventGalleryCarousel';
 import { Pricing } from '../components/Pricing';
 import { WhyChooseUs } from '../components/WhyChooseUs';
 import { Process } from '../components/Process';
@@ -41,27 +42,32 @@ export const HomePage: React.FC<HomePageProps> = ({
         <HeroStatsBar />
       </FadeInSection>
 
-      {/* 3. Pricing Packages (Hourly, Half Day, Full Day, Custom) */}
+      {/* 3. Touch-Friendly Past Event Work Image Carousel Gallery */}
+      <FadeInSection duration={0.8} yOffset={25}>
+        <PastEventGalleryCarousel onBookClick={(category) => onBookClick(category)} />
+      </FadeInSection>
+
+      {/* 4. Pricing Packages (Hourly, Half Day, Full Day, Custom) */}
       <FadeInSection>
         <Pricing onSelectPackage={onSelectPackage} />
       </FadeInSection>
 
-      {/* 4. Why Choose Us - The Snap Shots Difference */}
+      {/* 5. Why Choose Us - The Snap Shots Difference */}
       <FadeInSection>
         <WhyChooseUs />
       </FadeInSection>
 
-      {/* 5. Process - How Snap Shots Works */}
+      {/* 6. Process - How Snap Shots Works */}
       <FadeInSection>
         <Process onStartBooking={() => onBookClick()} />
       </FadeInSection>
 
-      {/* 6. Testimonials & Client Reviews */}
+      {/* 7. Testimonials & Client Reviews */}
       <FadeInSection>
         <Testimonials />
       </FadeInSection>
 
-      {/* 7. Bottom Call To Action */}
+      {/* 8. Bottom Call To Action */}
       <FadeInSection>
         <CTA onBookClick={() => onBookClick()} />
       </FadeInSection>

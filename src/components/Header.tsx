@@ -47,6 +47,7 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
     { label: 'Testimonials', path: '/#testimonials', hash: 'testimonials' },
     { label: 'FAQs', path: '/faqs', isPage: true },
     { label: 'Our Work', path: '/#work', hash: 'work' },
+    { label: 'Past Events', path: '/#past-work', hash: 'past-work' },
     { label: 'Contact Us', path: '/contact', isPage: true },
   ];
 

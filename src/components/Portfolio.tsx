@@ -5,6 +5,7 @@ import {
   Volume2,
   VolumeX,
   Play,
+  Film,
   Upload,
   RotateCcw,
   Save,
@@ -33,6 +34,8 @@ interface VideoSlideCardProps {
   isCenter: boolean;
   isPlaying: boolean;
   isMuted: boolean;
+  title?: string;
+  category?: string;
 }
 
 const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
@@ -41,8 +44,18 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
   isCenter,
   isPlaying,
   isMuted,
+  title,
+  category,
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [isMediaReady, setIsMediaReady] = useState<boolean>(false);
+  const [hasError, setHasError] = useState<boolean>(false);
+
+  // Reset loading state if video source URL changes
+  useEffect(() => {
+    setIsMediaReady(false);
+    setHasError(false);
+  }, [videoUrl, posterUrl]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -73,30 +86,93 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
     }
   }, [isCenter, isPlaying, isMuted, videoUrl]);
 
+  const handleMediaLoaded = () => {
+    setIsMediaReady(true);
+  };
+
   return (
-    <div className="relative w-full h-full overflow-hidden bg-black">
-      {/* Background Poster: Shown while video is buffering or as solid fallback */}
+    <div className="relative w-full h-full overflow-hidden bg-zinc-950">
+      {/* ================================================================ */}
+      {/* SKELETON LOADER & SUBTLE ANIMATED PULSE                          */}
+      {/* Displayed while video and poster are being fetched & initialized */}
+      {/* ================================================================ */}
+      <div
+        className={`absolute inset-0 z-20 flex flex-col justify-between p-4 bg-gradient-to-b from-zinc-900/90 via-zinc-950 to-black select-none pointer-events-none transition-opacity duration-700 ease-out ${
+          isMediaReady && !hasError ? 'opacity-0' : 'opacity-100'
+        }`}
+        aria-hidden={isMediaReady && !hasError}
+      >
+        {/* Shimmer light sweep */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent animate-shimmer" />
+
+        {/* Top skeleton tag & live pulse dot */}
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="h-2.5 w-16 rounded-full bg-zinc-800/80 animate-pulse" />
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#bd1616] animate-ping" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#bd1616]/70" />
+          </div>
+        </div>
+
+        {/* Center reel icon with subtle brand red pulsing glow */}
+        <div className="relative z-10 flex flex-col items-center justify-center my-auto gap-3">
+          <div className="relative flex items-center justify-center">
+            {/* Subtle brand red aura pulse */}
+            <div className="absolute w-14 h-14 rounded-full bg-[#bd1616]/20 animate-ping opacity-30" />
+            <div className="relative w-12 h-12 rounded-2xl bg-zinc-900/90 border border-zinc-800 flex items-center justify-center shadow-lg backdrop-blur-sm">
+              <Film className="w-5 h-5 text-zinc-400 animate-pulse" />
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 uppercase tracking-widest animate-pulse">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#bd1616]" />
+            <span>Loading Reel</span>
+          </div>
+        </div>
+
+        {/* Bottom metadata skeleton lines */}
+        <div className="relative z-10 space-y-2">
+          <div className="h-3 w-4/5 rounded-full bg-zinc-800/80 animate-pulse" />
+          <div className="h-2 w-1/2 rounded-full bg-zinc-800/50 animate-pulse" />
+        </div>
+      </div>
+
+      {/* Background Poster: Shown once loaded or while video buffers */}
       {posterUrl && (
         <img
           src={posterUrl}
-          alt=""
+          alt={title || ''}
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+          onLoad={handleMediaLoaded}
+          onError={() => {}}
+          className={`absolute inset-0 w-full h-full object-cover select-none pointer-events-none transition-opacity duration-500 ${
+            isMediaReady ? 'opacity-100' : 'opacity-0'
+          }`}
         />
       )}
 
-      {/* Primary Video Element: Always visible, native object-cover */}
-      <video
-        ref={videoRef}
-        src={videoUrl}
-        poster={posterUrl}
-        playsInline
-        webkit-playsinline="true"
-        loop
-        preload="auto"
-        muted={isCenter ? isMuted : true}
-        className="relative z-10 w-full h-full object-cover"
-      />
+      {/* Primary Video Element: Decodes and plays seamlessly */}
+      {videoUrl && (
+        <video
+          ref={videoRef}
+          src={videoUrl}
+          poster={posterUrl}
+          playsInline
+          webkit-playsinline="true"
+          loop
+          preload="auto"
+          muted={isCenter ? isMuted : true}
+          onLoadedData={handleMediaLoaded}
+          onCanPlay={handleMediaLoaded}
+          onPlaying={handleMediaLoaded}
+          onError={() => {
+            setHasError(true);
+            setIsMediaReady(true);
+          }}
+          className={`relative z-10 w-full h-full object-cover transition-opacity duration-500 ${
+            isMediaReady ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+      )}
     </div>
   );
 };
@@ -693,6 +769,8 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
                     isCenter={isCenter}
                     isPlaying={isPlaying}
                     isMuted={isMuted}
+                    title={reel.title}
+                    category={reel.category}
                   />
 
                   {/* AI Studio Only: Direct Upload Button on this exact slide */}
