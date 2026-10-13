@@ -49,11 +49,8 @@ export const UploadVideoModal: React.FC<UploadVideoModalProps> = ({
     video.src = fileOrBlobUrl;
     video.crossOrigin = 'anonymous';
     video.muted = true;
-    video.playsInline = true;
-    video.currentTime = 0.8;
-
-    video.onloadeddata = () => {
-      video.currentTime = Math.min(1.0, video.duration > 1 ? 1.0 : 0.2);
+    video.onloadedmetadata = () => {
+      video.currentTime = Math.min(0.5, (video.duration || 1) / 2);
     };
 
     video.onseeked = () => {

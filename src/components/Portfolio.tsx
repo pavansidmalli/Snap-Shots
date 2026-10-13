@@ -4,6 +4,7 @@ import {
   ChevronRight,
   Volume2,
   VolumeX,
+  Play,
   Upload,
   RotateCcw,
   Save,
@@ -42,12 +43,12 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
   isMuted,
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [videoLoaded, setVideoLoaded] = useState<boolean>(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
+    // Cross-browser audio and playback policy compliance
     video.defaultMuted = true;
     video.muted = isCenter ? isMuted : true;
 
@@ -55,7 +56,13 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
       if (isPlaying) {
         const playPromise = video.play();
         if (playPromise !== undefined) {
-          playPromise.catch(() => {});
+          playPromise.catch(() => {
+            // If browser blocked unmuted autoplay, retry muted
+            if (!video.muted) {
+              video.muted = true;
+              video.play().catch(() => {});
+            }
+          });
         }
       } else {
         video.pause();
@@ -68,18 +75,17 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
 
   return (
     <div className="relative w-full h-full overflow-hidden bg-black">
-      {/* Permanent Poster Backdrop: Guarantees zero blank/black flash during buffering or side view */}
+      {/* Background Poster: Shown while video is buffering or as solid fallback */}
       {posterUrl && (
         <img
           src={posterUrl}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none transition-opacity duration-300"
-          style={{ opacity: videoLoaded && isCenter && isPlaying ? 0 : 1 }}
+          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
         />
       )}
 
-      {/* Primary Video Element */}
+      {/* Primary Video Element: Always visible, native object-cover */}
       <video
         ref={videoRef}
         src={videoUrl}
@@ -87,13 +93,9 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
         playsInline
         webkit-playsinline="true"
         loop
-        preload={isCenter ? 'auto' : 'metadata'}
+        preload="auto"
         muted={isCenter ? isMuted : true}
-        onLoadedData={() => setVideoLoaded(true)}
-        onPlaying={() => setVideoLoaded(true)}
-        className={`relative z-10 w-full h-full object-cover transition-opacity duration-300 ${
-          videoLoaded ? 'opacity-100' : 'opacity-0'
-        }`}
+        className="relative z-10 w-full h-full object-cover"
       />
     </div>
   );
@@ -501,27 +503,39 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
     const targetIndex = targetSlideRef.current;
     const blobUrl = URL.createObjectURL(file);
 
-    // Extract poster frame from video
-    const video = document.createElement('video');
-    video.src = blobUrl;
-    video.currentTime = 0.5;
-    video.onseeked = () => {
-      let poster: string | undefined;
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth || 720;
-        canvas.height = video.videoHeight || 1280;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          poster = canvas.toDataURL('image/jpeg', 0.85);
-        }
-      } catch {}
-      applySlideReplacement(targetIndex, blobUrl, poster, file);
-    };
-    video.onerror = () => {
-      applySlideReplacement(targetIndex, blobUrl, undefined, file);
-    };
+    // Apply replacement immediately with blob URL so preview is INSTANT and responsive
+    applySlideReplacement(targetIndex, blobUrl, undefined, file);
+
+    // Also extract poster frame in background without blocking upload
+    try {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.src = blobUrl;
+      video.muted = true;
+      video.playsInline = true;
+      video.onloadedmetadata = () => {
+        video.currentTime = Math.min(0.5, (video.duration || 1) / 2);
+      };
+      video.onseeked = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth || 720;
+          canvas.height = video.videoHeight || 1280;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const poster = canvas.toDataURL('image/jpeg', 0.85);
+            setReplacedBySlide((prev) => ({
+              ...prev,
+              [targetIndex]: {
+                videoUrl: prev[targetIndex]?.videoUrl || blobUrl,
+                posterUrl: poster,
+              },
+            }));
+          }
+        } catch {}
+      };
+    } catch {}
 
     // Reset input so re-selecting same file triggers change
     e.target.value = '';
@@ -715,6 +729,21 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
                         <Volume2 className="w-4 h-4 text-white" />
                       )}
                     </button>
+                  )}
+
+                  {/* Center Play Button Overlay: Shown when center video is paused so user can tap to play */}
+                  {isCenter && !isPlaying && (
+                    <div
+                      className="absolute inset-0 z-30 flex items-center justify-center bg-black/35 backdrop-blur-[1px] transition-all cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsPlaying(true);
+                      }}
+                    >
+                      <div className="w-16 h-16 rounded-full bg-[#bd1616] text-white flex items-center justify-center shadow-[0_0_30px_rgba(189,22,22,0.6)] hover:scale-110 active:scale-95 transition-transform">
+                        <Play className="w-7 h-7 text-white fill-white ml-1" />
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
