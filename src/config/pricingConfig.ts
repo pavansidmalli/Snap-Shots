@@ -72,8 +72,8 @@ export const PRICING_CONFIG: Record<SupportedCountryCode, CountryPricingConfig> 
       quickShotOriginal: 149, // Hourly Plan cut price: $149
       eventReel: 299,         // Half Day Plan offer price: $299 (changed from 399)
       eventReelOriginal: 399, // Half Day Plan cut price: $399
-      fullContent: 99,
-      fullContentOriginal: 125,
+      fullContent: 79,        // Add On's offer price: $79 (changed from 99)
+      fullContentOriginal: 99,// Add On's original cut price: $99 (changed from 125)
     },
   },
 };

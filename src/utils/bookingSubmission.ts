@@ -1,5 +1,6 @@
 import { BookingFormData } from '../types';
 import { bookingConfig, siteConfig } from '../config/siteConfig';
+import { saveBookingToFirestore } from '../config/firebase';
 
 /**
  * Clean validation function for the booking form.
@@ -135,7 +136,24 @@ export async function submitBookingRequest(
   data: BookingFormData
 ): Promise<{ success: boolean; message?: string }> {
   try {
-    // If a webhook URL is configured in siteConfig.booking.webhookUrl, send POST
+    // 1. Save directly to Firebase Firestore
+    try {
+      await saveBookingToFirestore({
+        clientName: data.name,
+        phone: data.phone,
+        email: data.email || undefined,
+        service: data.service,
+        package: data.packageName || undefined,
+        eventDate: data.date,
+        city: data.location || undefined,
+        country: data.country || undefined,
+        requirements: data.requirements || undefined,
+      });
+    } catch (firebaseErr) {
+      console.warn('Could not persist booking to Firebase:', firebaseErr);
+    }
+
+    // 2. If a webhook URL is configured in siteConfig.booking.webhookUrl, send POST
     if (bookingConfig.webhookUrl && bookingConfig.webhookUrl.startsWith('http')) {
       const response = await fetch(bookingConfig.webhookUrl, {
         method: 'POST',
@@ -152,7 +170,7 @@ export async function submitBookingRequest(
       }
     }
 
-    // Save to local storage for persistence across reloads
+    // 3. Save to local storage for persistence across reloads
     try {
       const existing = JSON.parse(localStorage.getItem('snapshots_user_bookings') || '[]');
       existing.unshift({
@@ -168,7 +186,6 @@ export async function submitBookingRequest(
     return { success: true };
   } catch (err: unknown) {
     console.error('Booking submission error:', err);
-    // Even if remote webhook fails or is not configured, we do not crash
     return { success: true };
   }
 }

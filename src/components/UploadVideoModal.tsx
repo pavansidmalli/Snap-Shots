@@ -261,7 +261,7 @@ export const UploadVideoModal: React.FC<UploadVideoModalProps> = ({
             /* Direct Video URL View */
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                Direct Video Stream URL (.mp4)
+                Direct Video Stream URL (.mp4, .webm, or cloud link)
               </label>
               <input
                 type="url"
@@ -270,6 +270,9 @@ export const UploadVideoModal: React.FC<UploadVideoModalProps> = ({
                 placeholder="https://example.com/your-reel.mp4"
                 className="w-full rounded-xl bg-zinc-900 border border-zinc-800 px-3.5 py-2.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#bd1616]"
               />
+              <p className="text-[11px] text-zinc-400 mt-1.5 leading-relaxed">
+                💡 <span className="text-zinc-300 font-medium">Recommended for live websites:</span> Paste any public video URL (Cloudinary, AWS S3, Google Drive direct, Vimeo MP4). It syncs across all live website visitors instantly via Firebase without needing a git redeploy!
+              </p>
             </div>
           )}
 

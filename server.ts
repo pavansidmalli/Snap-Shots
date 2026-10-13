@@ -210,10 +210,16 @@ async function startServer() {
     try {
       const { slides } = req.body;
       if (slides && typeof slides === 'object') {
-        fs.writeFileSync(slidesConfigPath, JSON.stringify(slides, null, 2), 'utf-8');
-        syncToDist(slides);
-        console.log(`[Save-All] Saved ${Object.keys(slides).length} slide configurations`);
-        return res.json({ success: true, count: Object.keys(slides).length });
+        const cleanSlides: Record<string, any> = {};
+        for (const [k, v] of Object.entries(slides as Record<string, any>)) {
+          if (v && v.videoUrl && !v.videoUrl.startsWith('blob:')) {
+            cleanSlides[k] = v;
+          }
+        }
+        fs.writeFileSync(slidesConfigPath, JSON.stringify(cleanSlides, null, 2), 'utf-8');
+        syncToDist(cleanSlides);
+        console.log(`[Save-All] Saved ${Object.keys(cleanSlides).length} clean slide configurations`);
+        return res.json({ success: true, count: Object.keys(cleanSlides).length });
       }
       return res.status(400).json({ error: 'Invalid slides payload' });
     } catch (err: any) {

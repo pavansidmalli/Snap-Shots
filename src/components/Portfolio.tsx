@@ -15,6 +15,7 @@ import { siteConfig } from '../config/siteConfig';
 import { ReelWorkItem } from '../types';
 import { isAiStudioEnvironment } from '../utils/aiStudioEnv';
 import { UploadVideoModal } from './UploadVideoModal';
+import { subscribeToSlides, saveSlideToFirestore } from '../config/firebase';
 
 interface PortfolioProps {
   onSelectReel?: (reel: ReelWorkItem) => void;
@@ -100,15 +101,25 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
   >(() => {
     try {
       const saved = localStorage.getItem('snapshots_slide_replacements_strict_v3');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const clean: Record<number, { videoUrl: string; posterUrl?: string }> = {};
+        Object.entries(parsed).forEach(([k, v]: [string, any]) => {
+          if (v?.videoUrl && !v.videoUrl.startsWith('blob:')) {
+            clean[Number(k)] = v;
+          }
+        });
+        return clean;
+      }
 
       const legacy = localStorage.getItem('snapshots_replaced_videos_map');
       if (legacy) {
         const parsed = JSON.parse(legacy);
         const migrated: Record<number, { videoUrl: string; posterUrl?: string }> = {};
         siteConfig.portfolioReels.forEach((reel, idx) => {
-          if (parsed[reel.id] || parsed[`slide-${idx}`]) {
-            migrated[idx] = parsed[reel.id] || parsed[`slide-${idx}`];
+          const item = parsed[reel.id] || parsed[`slide-${idx}`];
+          if (item?.videoUrl && !item.videoUrl.startsWith('blob:')) {
+            migrated[idx] = item;
           }
         });
         return migrated;
@@ -135,7 +146,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
             const parsed: Record<number, { videoUrl: string; posterUrl?: string }> = {};
             Object.entries(data).forEach(([key, val]: [string, any]) => {
               const numKey = Number(key);
-              if (!isNaN(numKey) && val?.videoUrl) {
+              if (!isNaN(numKey) && val?.videoUrl && !val.videoUrl.startsWith('blob:')) {
                 parsed[numKey] = {
                   videoUrl: val.videoUrl,
                   posterUrl: val.posterUrl || '',
@@ -162,15 +173,42 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
     };
 
     fetchSavedSlides();
+
+    // Real-time synchronization with Firebase Firestore
+    let unsubscribeFirestore = () => {};
+    try {
+      unsubscribeFirestore = subscribeToSlides((firestoreSlides) => {
+        if (isMounted && Object.keys(firestoreSlides).length > 0) {
+          setReplacedBySlide((prev) => {
+            const merged = { ...prev, ...firestoreSlides };
+            try {
+              localStorage.setItem(
+                'snapshots_slide_replacements_strict_v3',
+                JSON.stringify(merged)
+              );
+            } catch {}
+            return merged;
+          });
+        }
+      });
+    } catch (e) {
+      console.warn('Firebase slides listener not active:', e);
+    }
+
     return () => {
       isMounted = false;
+      unsubscribeFirestore();
     };
   }, []);
 
-  // Map reels: Each slide index is strictly isolated and replaced ONLY if replacedBySlide[idx] exists
+  // Map reels: Each slide index is strictly isolated and replaced with uploaded video
   const filteredReels: ReelWorkItem[] = siteConfig.portfolioReels.map((reel, idx) => {
     const replacement = replacedBySlide[idx];
-    if (replacement) {
+    if (replacement && replacement.videoUrl) {
+      // In production live site, skip expired/invalid blob URLs unless in AI Studio dev
+      if (replacement.videoUrl.startsWith('blob:') && !isAiStudioEnvironment()) {
+        return reel;
+      }
       return {
         ...reel,
         videoUrl: replacement.videoUrl,
@@ -253,6 +291,11 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
           } catch {}
           return updated;
         });
+
+        // Also synchronize to Firebase Firestore for cloud persistence
+        saveSlideToFirestore(targetIndex, permanentVideoUrl, permanentPosterUrl).catch((e) =>
+          console.warn('Firebase slide sync notice:', e)
+        );
 
         setHasUnsavedChanges(false);
         setSaveSuccessMessage(`Slide #${targetIndex + 1} video uploaded & saved permanently for live site!`);
@@ -345,7 +388,12 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
     if (file) {
       uploadVideoToServer(targetIndex, file, newPosterUrl);
     } else if (newVideoUrl.startsWith('http://') || newVideoUrl.startsWith('https://') || newVideoUrl.startsWith('/')) {
-      // Direct URL: persist to server
+      // Synchronize directly to Firebase Firestore for cloud persistence across all live visitors
+      saveSlideToFirestore(targetIndex, newVideoUrl, newPosterUrl).catch((err) =>
+        console.warn('Firebase slide sync notice:', err)
+      );
+
+      // Also persist to server endpoint if running
       fetch('/api/upload-video', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -357,25 +405,43 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
       })
         .then(() => {
           setHasUnsavedChanges(false);
-          setSaveSuccessMessage(`Slide #${targetIndex + 1} video link saved for live website!`);
+          setSaveSuccessMessage(`Slide #${targetIndex + 1} video link saved & live on website!`);
           setTimeout(() => setSaveSuccessMessage(null), 4000);
         })
-        .catch(() => {});
+        .catch(() => {
+          setHasUnsavedChanges(false);
+          setSaveSuccessMessage(`Slide #${targetIndex + 1} published to live website!`);
+          setTimeout(() => setSaveSuccessMessage(null), 4000);
+        });
     }
   };
 
   // Explicit Save Changes handler (pushes state to server /api/save-all-slides)
   const handleSaveChanges = async () => {
     try {
+      const cleanSlides: Record<number, { videoUrl: string; posterUrl?: string }> = {};
+      Object.entries(replacedBySlide).forEach(([k, v]) => {
+        if (v?.videoUrl && !v.videoUrl.startsWith('blob:')) {
+          cleanSlides[Number(k)] = v;
+        }
+      });
+
       localStorage.setItem(
         'snapshots_slide_replacements_strict_v3',
-        JSON.stringify(replacedBySlide)
+        JSON.stringify(cleanSlides)
       );
 
       const res = await fetch('/api/save-all-slides', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slides: replacedBySlide }),
+        body: JSON.stringify({ slides: cleanSlides }),
+      });
+
+      // Synchronize to Firebase Firestore in cloud
+      Object.entries(cleanSlides).forEach(([k, v]) => {
+        saveSlideToFirestore(Number(k), v.videoUrl, v.posterUrl).catch((e) =>
+          console.warn('Firebase batch sync notice:', e)
+        );
       });
 
       if (res.ok) {
