@@ -46,7 +46,16 @@ export function isAiStudioEnvironment(): boolean {
   try {
     const params = new URLSearchParams(window.location.search);
     if (params.get('studio') === 'true' || params.get('admin') === 'true') {
+      try {
+        localStorage.setItem('snapshots_ai_studio_mode', 'true');
+      } catch {}
       return true;
+    }
+    if (params.get('admin') === 'false' || params.get('studio') === 'false') {
+      try {
+        localStorage.removeItem('snapshots_ai_studio_mode');
+      } catch {}
+      return false;
     }
     if (localStorage.getItem('snapshots_ai_studio_mode') === 'true') {
       return true;

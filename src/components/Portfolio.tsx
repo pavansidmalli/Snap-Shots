@@ -18,6 +18,7 @@ import { ReelWorkItem } from '../types';
 import { isAiStudioEnvironment } from '../utils/aiStudioEnv';
 import { UploadVideoModal } from './UploadVideoModal';
 import { subscribeToSlides, saveSlideToFirestore } from '../config/firebase';
+import { useAdminAuth } from '../context/AdminAuthContext';
 
 interface PortfolioProps {
   onSelectReel?: (reel: ReelWorkItem) => void;
@@ -193,8 +194,9 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
   // Exact target slide locked when user triggers upload
   const targetSlideRef = useRef<number>(0);
 
-  // Check if running in AI Studio development/workspace mode
-  const isAiStudio = isAiStudioEnvironment();
+  // Check if running in AI Studio development/workspace mode or logged in as Admin
+  const { isAdmin } = useAdminAuth();
+  const isAiStudio = isAiStudioEnvironment() || isAdmin;
 
   // Strict replacement dictionary keyed purely by numeric slide index (0, 1, 2, ...)
   const [replacedBySlide, setReplacedBySlide] = useState<

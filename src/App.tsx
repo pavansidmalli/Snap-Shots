@@ -16,6 +16,8 @@ import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { WelcomePopup } from './components/WelcomePopup';
 import { LogoProvider } from './context/LogoContext';
 import { CountryProvider } from './context/CountryContext';
+import { AdminAuthProvider } from './context/AdminAuthContext';
+import { AdminLoginModal } from './components/AdminLoginModal';
 import { PackageItem } from './types';
 
 // Scroll restoration helper on route transition
@@ -187,18 +189,23 @@ function MainAppLayout() {
 
       {/* Timed Welcome Privilege Offer Popup */}
       <WelcomePopup onClaimOffer={() => openBookingModal(undefined, undefined, 'SNAP15')} />
+
+      {/* Admin Login Modal */}
+      <AdminLoginModal />
     </div>
   );
 }
 
 export default function App() {
   return (
-    <CountryProvider>
-      <LogoProvider>
-        <BrowserRouter>
-          <MainAppLayout />
-        </BrowserRouter>
-      </LogoProvider>
-    </CountryProvider>
+    <AdminAuthProvider>
+      <CountryProvider>
+        <LogoProvider>
+          <BrowserRouter>
+            <MainAppLayout />
+          </BrowserRouter>
+        </LogoProvider>
+      </CountryProvider>
+    </AdminAuthProvider>
   );
 }
