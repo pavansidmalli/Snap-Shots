@@ -292,7 +292,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
         const parsed = JSON.parse(saved);
         const clean: Record<number, { videoUrl: string; posterUrl?: string }> = {};
         Object.entries(parsed).forEach(([k, v]: [string, any]) => {
-          if (v?.videoUrl && !v.videoUrl.startsWith('blob:')) {
+          if (v?.videoUrl && !v.videoUrl.startsWith('blob:') && !v.videoUrl.includes('/assets/uploads/')) {
             clean[Number(k)] = v;
           }
         });
@@ -305,7 +305,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
         const migrated: Record<number, { videoUrl: string; posterUrl?: string }> = {};
         siteConfig.portfolioReels.forEach((reel, idx) => {
           const item = parsed[reel.id] || parsed[`slide-${idx}`];
-          if (item?.videoUrl && !item.videoUrl.startsWith('blob:')) {
+          if (item?.videoUrl && !item.videoUrl.startsWith('blob:') && !item.videoUrl.includes('/assets/uploads/')) {
             migrated[idx] = item;
           }
         });
@@ -337,7 +337,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
               const parsed: Record<number, { videoUrl: string; posterUrl?: string }> = {};
               Object.entries(data).forEach(([key, val]: [string, any]) => {
                 const numKey = Number(key);
-                if (!isNaN(numKey) && val?.videoUrl && !val.videoUrl.startsWith('blob:')) {
+                if (!isNaN(numKey) && val?.videoUrl && !val.videoUrl.startsWith('blob:') && !val.videoUrl.includes('/assets/uploads/')) {
                   parsed[numKey] = {
                     videoUrl: val.videoUrl,
                     posterUrl: val.posterUrl || '',
@@ -371,16 +371,24 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
     try {
       unsubscribeFirestore = subscribeToSlides((firestoreSlides) => {
         if (isMounted && Object.keys(firestoreSlides).length > 0) {
-          setReplacedBySlide((prev) => {
-            const merged = { ...prev, ...firestoreSlides };
-            try {
-              localStorage.setItem(
-                'snapshots_slide_replacements_strict_v3',
-                JSON.stringify(merged)
-              );
-            } catch {}
-            return merged;
+          const cleanFirestore: Record<number, { videoUrl: string; posterUrl?: string }> = {};
+          Object.entries(firestoreSlides).forEach(([k, v]) => {
+            if (v?.videoUrl && !v.videoUrl.includes('/assets/uploads/')) {
+              cleanFirestore[Number(k)] = v;
+            }
           });
+          if (Object.keys(cleanFirestore).length > 0) {
+            setReplacedBySlide((prev) => {
+              const merged = { ...prev, ...cleanFirestore };
+              try {
+                localStorage.setItem(
+                  'snapshots_slide_replacements_strict_v3',
+                  JSON.stringify(merged)
+                );
+              } catch {}
+              return merged;
+            });
+          }
         }
       });
     } catch (e) {
@@ -393,13 +401,17 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
     };
   }, []);
 
-  // Map reels: Each slide index is strictly isolated and replaced with uploaded video
+  // Map reels: Each slide index is strictly isolated and points to /videos/reel-[1-10].mp4
   const filteredReels: ReelWorkItem[] = siteConfig.portfolioReels.map((reel, idx) => {
     const replacement = replacedBySlide[idx];
-    if (replacement && replacement.videoUrl) {
+    const defaultVideoPath = `/videos/reel-${idx + 1}.mp4`;
+    if (replacement && replacement.videoUrl && !replacement.videoUrl.includes('/assets/uploads/')) {
       // In production live site, skip expired/invalid blob URLs unless in AI Studio dev
       if (replacement.videoUrl.startsWith('blob:') && !isAiStudioEnvironment()) {
-        return reel;
+        return {
+          ...reel,
+          videoUrl: defaultVideoPath,
+        };
       }
       return {
         ...reel,
@@ -407,7 +419,10 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
         posterUrl: replacement.posterUrl || reel.posterUrl,
       };
     }
-    return reel;
+    return {
+      ...reel,
+      videoUrl: reel.videoUrl || defaultVideoPath,
+    };
   });
 
   const totalSlides = filteredReels.length;
