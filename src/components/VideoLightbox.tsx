@@ -12,9 +12,16 @@ import {
   Maximize2,
   Eye,
   Film,
+  Instagram,
+  ExternalLink,
 } from 'lucide-react';
 import { ReelWorkItem } from '../types';
 import { getResponsiveImageSrcSet } from '../utils/imageUtils';
+import {
+  isValidInstagramUrl,
+  getInstagramEmbedUrl,
+  getCleanInstagramUrl,
+} from '../utils/instagram';
 
 interface VideoLightboxProps {
   reel: ReelWorkItem | null;
@@ -58,15 +65,28 @@ export const VideoLightbox: React.FC<VideoLightboxProps> = ({ reel, onClose, onB
 
   if (!reel) return null;
 
+  // Check if it's an Instagram Reel
+  const effectiveUrl = reel.videoUrl || reel.instagramUrl || '';
+  const isInstagram = Boolean(
+    effectiveUrl &&
+      (isValidInstagramUrl(effectiveUrl) ||
+        effectiveUrl.includes('instagram.com/reel') ||
+        effectiveUrl.includes('instagram.com/p/'))
+  );
+  const instagramEmbedUrl = isInstagram ? getInstagramEmbedUrl(effectiveUrl) : null;
+  const cleanInstagramLink = isInstagram ? getCleanInstagramUrl(effectiveUrl) : null;
+
   // Determine effective video source
   const hasDirectVideo = Boolean(
-    reel.videoUrl &&
+    !isInstagram &&
+      reel.videoUrl &&
       (reel.videoUrl.startsWith('blob:') ||
         reel.videoUrl.startsWith('data:') ||
         reel.videoUrl.endsWith('.mp4') ||
         reel.videoUrl.endsWith('.webm') ||
         reel.videoUrl.includes('.mp4') ||
-        reel.videoUrl.startsWith('http'))
+        reel.videoUrl.startsWith('/videos/') ||
+        reel.videoUrl.startsWith('/assets/'))
   );
   const effectiveVideoUrl = hasDirectVideo
     ? reel.videoUrl
@@ -161,9 +181,33 @@ export const VideoLightbox: React.FC<VideoLightboxProps> = ({ reel, onClose, onB
           <X className="w-5 h-5" />
         </button>
 
-        {/* Media Column (9:16 Vertical Controlled Video Player) */}
+        {/* Media Column (9:16 Vertical Controlled Video Player or Instagram Embed) */}
         <div className="relative w-full md:w-[380px] lg:w-[410px] aspect-[9/16] max-h-[52vh] md:max-h-[85vh] bg-black flex-shrink-0 mx-auto flex items-center justify-center overflow-hidden select-none">
-          {!videoError ? (
+          {isInstagram && instagramEmbedUrl ? (
+            <div className="relative w-full h-full bg-black flex flex-col">
+              <iframe
+                src={instagramEmbedUrl}
+                className="w-full h-full border-0 bg-black"
+                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                allowFullScreen
+                title={reel.title}
+              />
+              {cleanInstagramLink && (
+                <a
+                  href={cleanInstagramLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute bottom-3 left-3 right-3 z-30 px-3.5 py-2 rounded-full bg-black/85 hover:bg-[#bd1616] border border-white/20 text-white text-xs font-bold flex items-center justify-between backdrop-blur-md transition-colors shadow-lg"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <Instagram className="w-4 h-4 text-pink-400" />
+                    <span>Watch Full Reel on Instagram</span>
+                  </span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
+            </div>
+          ) : !videoError ? (
             <>
               <video
                 ref={videoRef}

@@ -10,7 +10,7 @@ const configuredPortfolioReels: ReelWorkItem[] = instagramReels.map((item, idx) 
   id: `ig-reel-${idx + 1}`,
   title: item.title,
   category: item.category,
-  videoUrl: item.videoUrl || item.url,
+  videoUrl: item.videoUrl || `/videos/reel-${idx + 1}.mp4`,
   instagramUrl: item.url,
   isInstagram: false,
   posterUrl: item.posterUrl || getDefaultPosterForCategory(item.category),

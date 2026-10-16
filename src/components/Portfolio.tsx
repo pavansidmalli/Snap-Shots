@@ -12,6 +12,9 @@ import {
   Check,
   CheckCircle2,
   Loader2,
+  Instagram,
+  ExternalLink,
+  AlertTriangle,
 } from 'lucide-react';
 import { siteConfig } from '../config/siteConfig';
 import { ReelWorkItem } from '../types';
@@ -19,6 +22,11 @@ import { isAiStudioEnvironment } from '../utils/aiStudioEnv';
 import { UploadVideoModal } from './UploadVideoModal';
 import { subscribeToSlides, saveSlideToFirestore } from '../config/firebase';
 import { useAdminAuth } from '../context/AdminAuthContext';
+import {
+  isValidInstagramUrl,
+  getInstagramEmbedUrl,
+  getCleanInstagramUrl,
+} from '../utils/instagram';
 
 interface PortfolioProps {
   onSelectReel?: (reel: ReelWorkItem) => void;
@@ -37,6 +45,9 @@ interface VideoSlideCardProps {
   isMuted: boolean;
   title?: string;
   category?: string;
+  instagramUrl?: string;
+  isAdmin?: boolean;
+  slideNumber?: number;
 }
 
 const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
@@ -47,20 +58,35 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
   isMuted,
   title,
   category,
+  instagramUrl,
+  isAdmin,
+  slideNumber,
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isMediaReady, setIsMediaReady] = useState<boolean>(false);
   const [hasError, setHasError] = useState<boolean>(false);
 
+  // Check if this slide is linked to an Instagram Reel
+  const effectiveUrl = videoUrl || instagramUrl || '';
+  const isInstagram = Boolean(
+    effectiveUrl &&
+    (isValidInstagramUrl(effectiveUrl) ||
+     effectiveUrl.includes('instagram.com/reel') ||
+     effectiveUrl.includes('instagram.com/p/'))
+  );
+  const instagramEmbedUrl = isInstagram ? getInstagramEmbedUrl(effectiveUrl) : null;
+  const cleanInstagramLink = isInstagram ? getCleanInstagramUrl(effectiveUrl) : null;
+
   // Reset loading state if video source URL changes
   useEffect(() => {
     setIsMediaReady(false);
     setHasError(false);
-  }, [videoUrl, posterUrl]);
+  }, [videoUrl, posterUrl, effectiveUrl]);
 
   useEffect(() => {
+    // For direct video playback
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || isInstagram) return;
 
     // Cross-browser audio and playback policy compliance
     video.defaultMuted = true;
@@ -85,7 +111,7 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
       // Side videos MUST be paused at all times
       video.pause();
     }
-  }, [isCenter, isPlaying, isMuted, videoUrl]);
+  }, [isCenter, isPlaying, isMuted, videoUrl, isInstagram]);
 
   const handleMediaLoaded = () => {
     setIsMediaReady(true);
@@ -98,10 +124,10 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
       {/* Displayed while video and poster are being fetched & initialized */}
       {/* ================================================================ */}
       <div
-        className={`absolute inset-0 z-20 flex flex-col justify-between p-4 bg-gradient-to-b from-zinc-900/90 via-zinc-950 to-black select-none pointer-events-none transition-opacity duration-700 ease-out ${
-          isMediaReady && !hasError ? 'opacity-0' : 'opacity-100'
+        className={`absolute inset-0 z-20 flex flex-col justify-between p-4 bg-gradient-to-b from-zinc-900/90 via-zinc-950 to-black select-none pointer-events-none transition-opacity duration-500 ease-out ${
+          isMediaReady ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
-        aria-hidden={isMediaReady && !hasError}
+        aria-hidden={isMediaReady}
       >
         {/* Shimmer light sweep */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent animate-shimmer" />
@@ -118,7 +144,6 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
         {/* Center reel icon with subtle brand red pulsing glow */}
         <div className="relative z-10 flex flex-col items-center justify-center my-auto gap-3">
           <div className="relative flex items-center justify-center">
-            {/* Subtle brand red aura pulse */}
             <div className="absolute w-14 h-14 rounded-full bg-[#bd1616]/20 animate-ping opacity-30" />
             <div className="relative w-12 h-12 rounded-2xl bg-zinc-900/90 border border-zinc-800 flex items-center justify-center shadow-lg backdrop-blur-sm">
               <Film className="w-5 h-5 text-zinc-400 animate-pulse" />
@@ -137,22 +162,62 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
         </div>
       </div>
 
-      {/* Background Poster: Shown once loaded or while video buffers */}
+      {/* Background Poster: Displayed once loaded or when video buffers/fails */}
       {posterUrl && (
         <img
           src={posterUrl}
           alt={title || ''}
           aria-hidden="true"
           onLoad={handleMediaLoaded}
-          onError={() => {}}
+          onError={() => {
+            // Even if poster errors out, don't trap the user in the loading skeleton
+            setIsMediaReady(true);
+          }}
           className={`absolute inset-0 w-full h-full object-cover select-none pointer-events-none transition-all duration-500 ease-out will-change-transform group-hover:scale-105 ${
             isMediaReady ? 'opacity-100' : 'opacity-0'
           }`}
         />
       )}
 
-      {/* Primary Video Element: Decodes and plays seamlessly */}
-      {videoUrl && (
+      {/* Case 1: Instagram Reel Embed for center slide */}
+      {isInstagram && instagramEmbedUrl && isCenter && (
+        <div className="relative z-10 w-full h-full bg-black">
+          <iframe
+            src={instagramEmbedUrl}
+            className="w-full h-full border-0 select-none bg-black"
+            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+            allowFullScreen
+            onLoad={handleMediaLoaded}
+            title={title || 'Instagram Reel'}
+          />
+          {cleanInstagramLink && (
+            <a
+              href={cleanInstagramLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="absolute bottom-2.5 left-2.5 right-2.5 z-30 px-3 py-1.5 rounded-full bg-black/85 hover:bg-[#bd1616] border border-white/20 text-white text-[10px] font-bold flex items-center justify-between backdrop-blur-md transition-colors shadow-lg"
+            >
+              <span className="flex items-center gap-1.5 truncate">
+                <Instagram className="w-3.5 h-3.5 text-pink-400 shrink-0" />
+                <span className="truncate">Open on Instagram</span>
+              </span>
+              <ExternalLink className="w-3 h-3 shrink-0 ml-1 text-zinc-300" />
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* Case 1b: Instagram Reel badge overlay for side slides */}
+      {isInstagram && !isCenter && (
+        <div className="absolute top-3 left-3 z-20 flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-white/10 text-white text-[10px] font-bold">
+          <Instagram className="w-3 h-3 text-[#bd1616]" />
+          <span>Instagram Reel</span>
+        </div>
+      )}
+
+      {/* Case 2: Primary HTML5 Video Element for direct video files (.mp4, .webm, blob) */}
+      {!isInstagram && videoUrl && (
         <video
           ref={videoRef}
           src={videoUrl}
@@ -166,13 +231,32 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
           onCanPlay={handleMediaLoaded}
           onPlaying={handleMediaLoaded}
           onError={() => {
+            // Local file or remote video failed to load (e.g. 404 on Vercel host)
             setHasError(true);
             setIsMediaReady(true);
           }}
           className={`relative z-10 w-full h-full object-cover transition-opacity duration-500 ${
-            isMediaReady ? 'opacity-100' : 'opacity-0'
+            isMediaReady && !hasError ? 'opacity-100' : 'opacity-0'
           }`}
         />
+      )}
+
+      {/* Graceful Video Load Fallback: shown when video URL returns 404 or fails */}
+      {hasError && !isInstagram && (
+        <div className="absolute inset-0 z-15 flex flex-col items-center justify-center p-4 bg-black/40 backdrop-blur-xs text-center select-none pointer-events-none">
+          <div className="w-12 h-12 rounded-full bg-black/75 border border-white/20 flex items-center justify-center mb-2 shadow-lg">
+            <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+          </div>
+          <span className="text-xs font-bold text-white tracking-wide line-clamp-1">{title}</span>
+          <span className="text-[10px] text-zinc-300 mt-0.5 uppercase tracking-wider font-semibold">
+            {category || 'Snap Shots 4K Edit'}
+          </span>
+          {isAdmin && isCenter && (
+            <span className="mt-2 text-[10px] text-yellow-300 bg-black/90 px-2.5 py-1 rounded-md border border-yellow-500/50 shadow-md">
+              Awaiting <code className="text-white font-mono font-bold">/videos/reel-{slideNumber || 1}.mp4</code> • Click Slide #{slideNumber || 1} button above to upload
+            </span>
+          )}
+        </div>
       )}
     </div>
   );
@@ -765,66 +849,80 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
               >
                 {/* 9:16 Pure Video Slide Stage: ONLY middle plays, all sides are strictly paused */}
                 <div className="relative w-full h-full bg-black">
-                  <VideoSlideCard
-                    videoUrl={reel.videoUrl}
-                    posterUrl={reel.posterUrl}
-                    isCenter={isCenter}
-                    isPlaying={isPlaying}
-                    isMuted={isMuted}
-                    title={reel.title}
-                    category={reel.category}
-                  />
+                  {(() => {
+                    const isInstagramReel = Boolean(
+                      (reel.videoUrl && (isValidInstagramUrl(reel.videoUrl) || reel.videoUrl.includes('instagram.com/reel') || reel.videoUrl.includes('instagram.com/p/'))) ||
+                      (reel.instagramUrl && isValidInstagramUrl(reel.instagramUrl))
+                    );
 
-                  {/* AI Studio Only: Direct Upload Button on this exact slide */}
-                  {isAiStudio && isCenter && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        triggerUploadForSlide(index);
-                      }}
-                      className="absolute top-3.5 left-3.5 z-40 px-2.5 py-1.5 rounded-full bg-black/75 hover:bg-[#bd1616] text-white border border-white/20 transition-all cursor-pointer backdrop-blur-md shadow-lg flex items-center gap-1.5 hover:scale-105 active:scale-95"
-                      title={`Upload a video to replace Slide #${index + 1} only`}
-                    >
-                      <Upload className="w-3 h-3 text-white" />
-                      <span className="text-[10px] font-bold">Slide #{index + 1}</span>
-                    </button>
-                  )}
+                    return (
+                      <>
+                        <VideoSlideCard
+                          videoUrl={reel.videoUrl}
+                          posterUrl={reel.posterUrl}
+                          isCenter={isCenter}
+                          isPlaying={isPlaying}
+                          isMuted={isMuted}
+                          title={reel.title}
+                          category={reel.category}
+                          instagramUrl={reel.instagramUrl}
+                          isAdmin={isAiStudio}
+                          slideNumber={index + 1}
+                        />
 
-                  {/* Sound Icon Button - strictly the only icon/control kept on the video slide */}
-                  {isCenter && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsMuted((prev) => !prev);
-                      }}
-                      className="absolute top-3.5 right-3.5 z-40 p-2.5 rounded-full bg-black/60 hover:bg-[#bd1616] text-white border border-white/20 transition-all cursor-pointer backdrop-blur-md shadow-lg hover:scale-110 active:scale-95"
-                      aria-label={isMuted ? 'Unmute video audio' : 'Mute video audio'}
-                      title={isMuted ? 'Click to unmute sound' : 'Mute sound'}
-                    >
-                      {isMuted ? (
-                        <VolumeX className="w-4 h-4 text-white" />
-                      ) : (
-                        <Volume2 className="w-4 h-4 text-white" />
-                      )}
-                    </button>
-                  )}
+                        {/* AI Studio / Admin Only: Direct Upload Button on this exact slide */}
+                        {isAiStudio && isCenter && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              triggerUploadForSlide(index);
+                            }}
+                            className="absolute top-3.5 left-3.5 z-40 px-2.5 py-1.5 rounded-full bg-black/75 hover:bg-[#bd1616] text-white border border-white/20 transition-all cursor-pointer backdrop-blur-md shadow-lg flex items-center gap-1.5 hover:scale-105 active:scale-95"
+                            title={`Upload a video to replace Slide #${index + 1} only`}
+                          >
+                            <Upload className="w-3 h-3 text-white" />
+                            <span className="text-[10px] font-bold">Slide #{index + 1}</span>
+                          </button>
+                        )}
 
-                  {/* Center Play Button Overlay: Shown when center video is paused so user can tap to play */}
-                  {isCenter && !isPlaying && (
-                    <div
-                      className="absolute inset-0 z-30 flex items-center justify-center bg-black/35 backdrop-blur-[1px] transition-all cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsPlaying(true);
-                      }}
-                    >
-                      <div className="w-16 h-16 rounded-full bg-[#bd1616] text-white flex items-center justify-center shadow-[0_0_30px_rgba(189,22,22,0.6)] hover:scale-110 active:scale-95 transition-transform">
-                        <Play className="w-7 h-7 text-white fill-white ml-1" />
-                      </div>
-                    </div>
-                  )}
+                        {/* Sound Icon Button - shown for direct HTML5 videos only */}
+                        {isCenter && !isInstagramReel && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsMuted((prev) => !prev);
+                            }}
+                            className="absolute top-3.5 right-3.5 z-40 p-2.5 rounded-full bg-black/60 hover:bg-[#bd1616] text-white border border-white/20 transition-all cursor-pointer backdrop-blur-md shadow-lg hover:scale-110 active:scale-95"
+                            aria-label={isMuted ? 'Unmute video audio' : 'Mute video audio'}
+                            title={isMuted ? 'Click to unmute sound' : 'Mute sound'}
+                          >
+                            {isMuted ? (
+                              <VolumeX className="w-4 h-4 text-white" />
+                            ) : (
+                              <Volume2 className="w-4 h-4 text-white" />
+                            )}
+                          </button>
+                        )}
+
+                        {/* Center Play Button Overlay: Shown when direct video is paused */}
+                        {isCenter && !isPlaying && !isInstagramReel && (
+                          <div
+                            className="absolute inset-0 z-30 flex items-center justify-center bg-black/35 backdrop-blur-[1px] transition-all cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsPlaying(true);
+                            }}
+                          >
+                            <div className="w-16 h-16 rounded-full bg-[#bd1616] text-white flex items-center justify-center shadow-[0_0_30px_rgba(189,22,22,0.6)] hover:scale-110 active:scale-95 transition-transform">
+                              <Play className="w-7 h-7 text-white fill-white ml-1" />
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             );

@@ -5,9 +5,18 @@ import {
   AlertCircle,
   Video,
   Film,
+  Instagram,
+  CheckCircle2,
+  Globe,
+  Sparkles,
 } from 'lucide-react';
 import { ReelWorkItem } from '../types';
-import { getDefaultPosterForCategory } from '../utils/instagram';
+import {
+  getDefaultPosterForCategory,
+  isValidInstagramUrl,
+  extractInstagramId,
+  getCleanInstagramUrl,
+} from '../utils/instagram';
 
 interface UploadVideoModalProps {
   isOpen: boolean;
@@ -216,19 +225,20 @@ export const UploadVideoModal: React.FC<UploadVideoModalProps> = ({
                 setSourceType('url');
                 setError('');
               }}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 sourceType === 'url'
                   ? 'bg-[#bd1616] text-white shadow-sm'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              Paste Direct Video URL
+              <Instagram className="w-3.5 h-3.5" />
+              <span>Video URL / Instagram</span>
             </button>
           </div>
 
           {/* File Picker View */}
           {sourceType === 'file' ? (
-            <div>
+            <div className="space-y-2">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -253,45 +263,71 @@ export const UploadVideoModal: React.FC<UploadVideoModalProps> = ({
                     : 'Supports MP4, MOV, WEBM (9:16 vertical recommended)'}
                 </p>
               </div>
+
+              <div className="p-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800/80 text-[11px] text-zinc-400 leading-relaxed">
+                💡 <strong className="text-zinc-200">How to upload your own videos:</strong> Place your MP4 files directly into the <code className="text-zinc-200 bg-black/60 px-1 py-0.5 rounded">public/videos/</code> folder named <code className="text-zinc-200 bg-black/60 px-1 py-0.5 rounded">reel-1.mp4</code>, <code className="text-zinc-200 bg-black/60 px-1 py-0.5 rounded">reel-2.mp4</code> ... up to <code className="text-zinc-200 bg-black/60 px-1 py-0.5 rounded">reel-10.mp4</code>. Once placed, push to GitHub for live Vercel deployment!
+              </div>
             </div>
           ) : (
-            /* Direct Video URL View */
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                Direct Video Stream URL (.mp4, .webm, or cloud link)
+            /* Direct Video or Instagram URL View */
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-zinc-300">
+                Instagram Reel Link or Direct Video Stream URL (.mp4)
               </label>
-              <input
-                type="url"
-                value={videoUrlInput}
-                onChange={handleUrlChange}
-                placeholder="https://example.com/your-reel.mp4"
-                className="w-full rounded-xl bg-zinc-900 border border-zinc-800 px-3.5 py-2.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#bd1616]"
-              />
-              <p className="text-[11px] text-zinc-400 mt-1.5 leading-relaxed">
-                💡 <span className="text-zinc-300 font-medium">Recommended for live websites:</span> Paste any public video URL (Cloudinary, AWS S3, Google Drive direct, Vimeo MP4). It syncs across all live website visitors instantly via Firebase without needing a git redeploy!
-              </p>
+              <div className="relative">
+                <input
+                  type="url"
+                  value={videoUrlInput}
+                  onChange={handleUrlChange}
+                  placeholder="https://www.instagram.com/reel/... or https://example.com/video.mp4"
+                  className="w-full rounded-xl bg-zinc-900 border border-zinc-800 px-3.5 py-2.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#bd1616] pr-9"
+                />
+                {isValidInstagramUrl(videoUrlInput) && (
+                  <Instagram className="w-4 h-4 text-pink-400 absolute right-3 top-3 pointer-events-none" />
+                )}
+              </div>
+
+              {isValidInstagramUrl(videoUrlInput) ? (
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-xs">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+                  <span>
+                    Instagram Reel detected (ID: <code className="font-mono text-emerald-200 font-bold">{extractInstagramId(videoUrlInput)}</code>). Will embed officially into Slide #{selectedSlideIndex + 1}!
+                  </span>
+                </div>
+              ) : (
+                <p className="text-[11px] text-zinc-400 leading-relaxed">
+                  ✨ <span className="text-zinc-300 font-medium">Instant live website sync:</span> Paste an Instagram Reel link or direct MP4 URL (Cloudinary, AWS S3, Google Drive, Catbox). It syncs across all live website visitors instantly via Firebase!
+                </p>
+              )}
             </div>
           )}
 
           {/* Live Preview Box */}
           {previewVideoUrl && (
             <div className="rounded-2xl bg-zinc-900/90 border border-zinc-800 p-3.5 flex items-center gap-3">
-              <div className="relative w-16 h-28 rounded-xl overflow-hidden bg-black shrink-0 border border-zinc-700">
-                <video
-                  src={previewVideoUrl}
-                  playsInline
-                  autoPlay
-                  muted
-                  loop
-                  className="w-full h-full object-cover"
-                />
+              <div className="relative w-16 h-28 rounded-xl overflow-hidden bg-black shrink-0 border border-zinc-700 flex items-center justify-center">
+                {isValidInstagramUrl(previewVideoUrl) ? (
+                  <div className="w-full h-full bg-gradient-to-br from-purple-900/60 via-pink-900/50 to-black flex flex-col items-center justify-center p-1 text-center">
+                    <Instagram className="w-6 h-6 text-pink-400 mb-1" />
+                    <span className="text-[9px] font-bold text-white">IG REEL</span>
+                  </div>
+                ) : (
+                  <video
+                    src={previewVideoUrl}
+                    playsInline
+                    autoPlay
+                    muted
+                    loop
+                    className="w-full h-full object-cover"
+                  />
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <span className="text-[10px] uppercase font-bold tracking-wider text-[#bd1616] block mb-0.5">
-                  Ready to Apply
+                  {isValidInstagramUrl(previewVideoUrl) ? 'Instagram Reel Linked' : 'Ready to Apply'}
                 </span>
                 <p className="text-xs font-bold text-white truncate">
-                  {videoFile ? videoFile.name : 'Custom Video Source'}
+                  {videoFile ? videoFile.name : isValidInstagramUrl(previewVideoUrl) ? `Reel @${extractInstagramId(previewVideoUrl)}` : 'Custom Video Source'}
                 </p>
                 <p className="text-[11px] text-zinc-400 mt-0.5">
                   Will apply ONLY to Slide #{selectedSlideIndex + 1}.

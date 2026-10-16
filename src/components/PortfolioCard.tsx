@@ -18,8 +18,16 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({ reel, onSelect }) 
   const [isMuted, setIsMuted] = useState(true);
   const [progress, setProgress] = useState(0);
 
-  const isInstagram = Boolean(reel.isInstagram || reel.instagramUrl);
-  const isDirectVideo = reel.videoUrl && reel.videoUrl.endsWith('.mp4');
+  const [isVideoError, setIsVideoError] = useState(false);
+
+  const isInstagram = Boolean(reel.isInstagram || reel.instagramUrl || (reel.videoUrl && (reel.videoUrl.includes('instagram.com/reel') || reel.videoUrl.includes('instagram.com/p/'))));
+  const isDirectVideo = !isInstagram && !isVideoError && Boolean(
+    reel.videoUrl &&
+    (reel.videoUrl.endsWith('.mp4') ||
+     reel.videoUrl.endsWith('.webm') ||
+     reel.videoUrl.startsWith('blob:') ||
+     reel.videoUrl.includes('.mp4'))
+  );
 
   const handleMouseEnter = () => {
     setIsHovered(true);
@@ -91,6 +99,7 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({ reel, onSelect }) 
             playsInline
             preload="metadata"
             onTimeUpdate={handleTimeUpdate}
+            onError={() => setIsVideoError(true)}
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 transform-gpu will-change-transform"
           />
         ) : (

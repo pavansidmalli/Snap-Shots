@@ -16,7 +16,13 @@ async function startServer() {
   app.use(express.json({ limit: '100mb' }));
   app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
-  // Ensure upload directory exists in public/assets/uploads
+  // Ensure public/videos directory exists
+  const videosDir = path.resolve(__dirname, 'public/videos');
+  if (!fs.existsSync(videosDir)) {
+    fs.mkdirSync(videosDir, { recursive: true });
+  }
+
+  // Ensure legacy upload directory exists in public/assets/uploads
   const uploadDir = path.resolve(__dirname, 'public/assets/uploads');
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
@@ -40,16 +46,17 @@ async function startServer() {
     }
   };
 
-  // Configure Multer for streaming file uploads directly to public/assets/uploads
+  // Configure Multer for streaming file uploads directly to public/videos
   const storage = multer.diskStorage({
     destination: (_req, _file, cb) => {
-      cb(null, uploadDir);
+      cb(null, videosDir);
     },
     filename: (req, file, cb) => {
       const slideIndex = req.body?.slideIndex ?? '0';
+      const reelNum = Number(slideIndex) + 1;
       const ext = path.extname(file.originalname) || '.mp4';
       const cleanExt = ext.startsWith('.') ? ext : `.${ext}`;
-      cb(null, `reel-slide-${slideIndex}-${Date.now()}${cleanExt}`);
+      cb(null, `reel-${reelNum}${cleanExt}`);
     },
   });
 
@@ -76,40 +83,41 @@ async function startServer() {
           return res.status(400).json({ error: 'No video file provided in form data' });
         }
 
-        const permanentVideoUrl = `/assets/uploads/${videoFile.filename}`;
+        const permanentVideoUrl = `/videos/${videoFile.filename}`;
         let permanentPosterUrl = '';
 
         if (posterFile) {
-          permanentPosterUrl = `/assets/uploads/${posterFile.filename}`;
+          permanentPosterUrl = `/videos/${posterFile.filename}`;
         } else if (req.body?.posterDataUrl && req.body.posterDataUrl.startsWith('data:image/')) {
           // If poster passed as data URL
           try {
             const cleanPoster = req.body.posterDataUrl.replace(/^data:image\/\w+;base64,/, '');
             const posterBuffer = Buffer.from(cleanPoster, 'base64');
             const posterFilename = `poster-slide-${slideIndex}-${Date.now()}.jpg`;
-            fs.writeFileSync(path.join(uploadDir, posterFilename), posterBuffer);
-            permanentPosterUrl = `/assets/uploads/${posterFilename}`;
+            fs.writeFileSync(path.join(videosDir, posterFilename), posterBuffer);
+            permanentPosterUrl = `/videos/${posterFilename}`;
           } catch (e) {
             console.warn('Could not save poster data URL:', e);
           }
         }
 
-        // Also sync uploaded video and poster to dist/assets/uploads if dist exists
-        const distUploadDir = path.resolve(__dirname, 'dist/assets/uploads');
-        if (fs.existsSync(distUploadDir)) {
-          try {
-            fs.copyFileSync(videoFile.path, path.join(distUploadDir, videoFile.filename));
-            if (posterFile) {
-              fs.copyFileSync(posterFile.path, path.join(distUploadDir, posterFile.filename));
-            } else if (permanentPosterUrl) {
-              const posterBase = path.basename(permanentPosterUrl);
-              const srcPosterPath = path.join(uploadDir, posterBase);
-              if (fs.existsSync(srcPosterPath)) {
-                fs.copyFileSync(srcPosterPath, path.join(distUploadDir, posterBase));
-              }
-            }
-          } catch {}
+        // Also sync uploaded video and poster to dist/videos if dist exists
+        const distVideosDir = path.resolve(__dirname, 'dist/videos');
+        if (!fs.existsSync(distVideosDir)) {
+          fs.mkdirSync(distVideosDir, { recursive: true });
         }
+        try {
+          fs.copyFileSync(videoFile.path, path.join(distVideosDir, videoFile.filename));
+          if (posterFile) {
+            fs.copyFileSync(posterFile.path, path.join(distVideosDir, posterFile.filename));
+          } else if (permanentPosterUrl) {
+            const posterBase = path.basename(permanentPosterUrl);
+            const srcPosterPath = path.join(videosDir, posterBase);
+            if (fs.existsSync(srcPosterPath)) {
+              fs.copyFileSync(srcPosterPath, path.join(distVideosDir, posterBase));
+            }
+          }
+        } catch {}
 
         // Update public/custom-slides.json
         let existing: Record<string, any> = {};
@@ -171,13 +179,14 @@ async function startServer() {
         return res.status(400).json({ error: 'No video data provided' });
       }
 
-      // Convert Base64 data to binary buffer and write to /public/assets/uploads/
+      // Convert Base64 data to binary buffer and write to /public/videos/
       const cleanBase64 = videoBase64
         .replace(/^data:video\/\w+;base64,/, '')
         .replace(/^data:application\/octet-stream;base64,/, '');
       const buffer = Buffer.from(cleanBase64, 'base64');
-      const filename = `reel-slide-${targetIndex}-${Date.now()}.mp4`;
-      const filePath = path.join(uploadDir, filename);
+      const reelNum = Number(targetIndex) + 1;
+      const filename = `reel-${reelNum}.mp4`;
+      const filePath = path.join(videosDir, filename);
 
       fs.writeFileSync(filePath, buffer);
 
@@ -186,12 +195,12 @@ async function startServer() {
         const cleanPoster = posterBase64.replace(/^data:image\/\w+;base64,/, '');
         const posterBuffer = Buffer.from(cleanPoster, 'base64');
         const posterFilename = `poster-slide-${targetIndex}-${Date.now()}.jpg`;
-        const posterFilePath = path.join(uploadDir, posterFilename);
+        const posterFilePath = path.join(videosDir, posterFilename);
         fs.writeFileSync(posterFilePath, posterBuffer);
-        posterUrl = `/assets/uploads/${posterFilename}`;
+        posterUrl = `/videos/${posterFilename}`;
       }
 
-      const permanentVideoUrl = `/assets/uploads/${filename}`;
+      const permanentVideoUrl = `/videos/${filename}`;
 
       existing[targetIndex] = {
         videoUrl: permanentVideoUrl,
