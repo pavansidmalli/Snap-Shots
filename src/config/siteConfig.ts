@@ -13,7 +13,7 @@ const configuredPortfolioReels: ReelWorkItem[] = instagramReels.map((item, idx) 
   videoUrl: item.videoUrl || `/videos/reel-${idx + 1}.mp4`,
   instagramUrl: item.url,
   isInstagram: false,
-  posterUrl: item.posterUrl || getDefaultPosterForCategory(item.category),
+  posterUrl: item.posterUrl || '',
   client: item.client || 'Snap Shots Live Coverage',
   views: item.views || '95K+',
   duration: item.duration || '0:30',

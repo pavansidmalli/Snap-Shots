@@ -2,9 +2,9 @@
  * ============================================================================
  * SNAP SHOTS - WORK THAT PERFORMS REELS CONFIGURATION
  * ============================================================================
- * Direct video links configured to read from `/videos/` directory.
- * When you upload your MP4 files into `public/videos/`, name them:
- * reel-1.mp4, reel-2.mp4, ... reel-10.mp4.
+ * Direct video links configured strictly to read the user's uploaded MP4
+ * files from `/videos/` directory: reel-1.mp4 through reel-10.mp4.
+ * All placeholder and external stock images/posters have been removed.
  */
 
 export interface InstagramReelItem {
@@ -24,7 +24,6 @@ export const instagramReels: InstagramReelItem[] = [
     title: "Lord Ganesha Grand Utsav & Divine Celebrations",
     category: "Events & Festivals",
     url: "https://www.instagram.com/reel/SnapShotsGaneshaUtsav/",
-    posterUrl: "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=800&auto=format&fit=crop",
     videoUrl: "/videos/reel-1.mp4",
     client: "Snap Shots Utsav Coverage",
     views: "520K",
@@ -35,7 +34,6 @@ export const instagramReels: InstagramReelItem[] = [
     title: "Haldi Vibes & Traditional Rituals",
     category: "Wedding",
     url: "https://www.instagram.com/reel/DbWch7rCSw_/",
-    posterUrl: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=800&auto=format&fit=crop",
     videoUrl: "/videos/reel-2.mp4",
     client: "Snap Shots Weddings",
     views: "285K",
@@ -46,7 +44,6 @@ export const instagramReels: InstagramReelItem[] = [
     title: "Royal Groom & Grand Entry",
     category: "Wedding",
     url: "https://www.instagram.com/reel/DbQ0Hy2OT-h/",
-    posterUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800&auto=format&fit=crop",
     videoUrl: "/videos/reel-3.mp4",
     client: "Snap Shots Royal Weddings",
     views: "340K",
@@ -57,7 +54,6 @@ export const instagramReels: InstagramReelItem[] = [
     title: "Pastel Outdoor Celebration & Decor",
     category: "Event",
     url: "https://www.instagram.com/reel/DdUSBbWJaJ9/",
-    posterUrl: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=800&auto=format&fit=crop",
     videoUrl: "/videos/reel-4.mp4",
     client: "Snap Shots Utsav Coverage",
     views: "480K",
@@ -68,7 +64,6 @@ export const instagramReels: InstagramReelItem[] = [
     title: "Sundowner Rhythm & Nightlife Energy",
     category: "Event",
     url: "https://www.instagram.com/reel/DbWdisUCxA2/",
-    posterUrl: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800&auto=format&fit=crop",
     videoUrl: "/videos/reel-5.mp4",
     client: "Snap Shots Nightlife",
     views: "310K",
@@ -79,7 +74,6 @@ export const instagramReels: InstagramReelItem[] = [
     title: "Sangeet Dance & Stage Fireworks",
     category: "Wedding",
     url: "https://www.instagram.com/reel/DdwIldARQSE/",
-    posterUrl: "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=800&auto=format&fit=crop",
     videoUrl: "/videos/reel-6.mp4",
     client: "Snap Shots Live Stage",
     views: "195K",
@@ -90,7 +84,6 @@ export const instagramReels: InstagramReelItem[] = [
     title: "Golden Hour 25th Milestone Birthday",
     category: "Birthday",
     url: "https://www.instagram.com/reel/DbWch7rCSw_/",
-    posterUrl: "https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=800&auto=format&fit=crop",
     videoUrl: "/videos/reel-7.mp4",
     client: "Snap Shots Birthdays",
     views: "145K",
@@ -101,7 +94,6 @@ export const instagramReels: InstagramReelItem[] = [
     title: "Streetwear Fashion Drop & Runway",
     category: "Brand Content",
     url: "https://www.instagram.com/reel/DbWch7rCSw_/",
-    posterUrl: "https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=800&auto=format&fit=crop",
     videoUrl: "/videos/reel-8.mp4",
     client: "KINETIC Apparel",
     views: "260K",
@@ -112,7 +104,6 @@ export const instagramReels: InstagramReelItem[] = [
     title: "Corporate Flagship Store Activation",
     category: "Corporate",
     url: "https://www.instagram.com/reel/DbWch7rCSw_/",
-    posterUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=800&auto=format&fit=crop",
     videoUrl: "/videos/reel-9.mp4",
     client: "AURA Retail Opening",
     views: "180K",
@@ -123,7 +114,6 @@ export const instagramReels: InstagramReelItem[] = [
     title: "Artisanal Coffee & Product Texture",
     category: "Product",
     url: "https://www.instagram.com/reel/DbWch7rCSw_/",
-    posterUrl: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=800&auto=format&fit=crop",
     videoUrl: "/videos/reel-10.mp4",
     client: "Velvet Roast Coffee",
     views: "120K",

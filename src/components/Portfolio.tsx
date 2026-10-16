@@ -162,8 +162,8 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
         </div>
       </div>
 
-      {/* Background Poster: Displayed once loaded or when video buffers/fails */}
-      {posterUrl && (
+      {/* Background Poster: Only displayed if a genuine user-uploaded poster is provided (never Unsplash) */}
+      {posterUrl && !posterUrl.includes('unsplash.com') && (
         <img
           src={posterUrl}
           alt={title || ''}
@@ -221,12 +221,21 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
         <video
           ref={videoRef}
           src={videoUrl}
-          poster={posterUrl}
+          poster={posterUrl && !posterUrl.includes('unsplash.com') ? posterUrl : undefined}
           playsInline
           webkit-playsinline="true"
           loop
           preload="auto"
           muted={isCenter ? isMuted : true}
+          onLoadedMetadata={() => {
+            setIsMediaReady(true);
+            const v = videoRef.current;
+            if (v && v.currentTime === 0) {
+              try {
+                v.currentTime = 0.001;
+              } catch {}
+            }
+          }}
           onLoadedData={handleMediaLoaded}
           onCanPlay={handleMediaLoaded}
           onPlaying={handleMediaLoaded}
@@ -405,23 +414,30 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
   const filteredReels: ReelWorkItem[] = siteConfig.portfolioReels.map((reel, idx) => {
     const replacement = replacedBySlide[idx];
     const defaultVideoPath = `/videos/reel-${idx + 1}.mp4`;
+    const cleanReelPoster = reel.posterUrl && !reel.posterUrl.includes('unsplash.com') ? reel.posterUrl : undefined;
     if (replacement && replacement.videoUrl && !replacement.videoUrl.includes('/assets/uploads/')) {
+      const cleanReplacementPoster =
+        replacement.posterUrl && !replacement.posterUrl.includes('unsplash.com')
+          ? replacement.posterUrl
+          : undefined;
       // In production live site, skip expired/invalid blob URLs unless in AI Studio dev
       if (replacement.videoUrl.startsWith('blob:') && !isAiStudioEnvironment()) {
         return {
           ...reel,
           videoUrl: defaultVideoPath,
+          posterUrl: cleanReplacementPoster || cleanReelPoster,
         };
       }
       return {
         ...reel,
         videoUrl: replacement.videoUrl,
-        posterUrl: replacement.posterUrl || reel.posterUrl,
+        posterUrl: cleanReplacementPoster || cleanReelPoster,
       };
     }
     return {
       ...reel,
       videoUrl: reel.videoUrl || defaultVideoPath,
+      posterUrl: cleanReelPoster,
     };
   });
 
