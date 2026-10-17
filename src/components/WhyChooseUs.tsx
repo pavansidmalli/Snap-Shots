@@ -1,6 +1,5 @@
 import React from 'react';
-import { Award, Zap, Cloud, Tag, ShieldCheck, CheckCircle2 } from 'lucide-react';
-import { siteConfig } from '../config/siteConfig';
+import { Award, Zap, Tag, CheckCircle2 } from 'lucide-react';
 import { useCountry } from '../context/CountryContext';
 
 export const WhyChooseUs: React.FC = () => {
@@ -43,18 +42,6 @@ export const WhyChooseUs: React.FC = () => {
         'Live event edits ready for immediate story reposts',
       ],
     },
-    {
-      icon: Cloud,
-      number: '04',
-      title: 'Secure Cloud Backup Forever',
-      desc: 'Never worry about losing your footage. Every raw video clip, high-resolution photo, and finished master export is safely archived in private cloud storage.',
-      badge: 'Permanent 4K Vault',
-      points: [
-        '100% ownership of uncompressed RAW files',
-        'Private download links for clients & family',
-        'High-speed Google Drive & iCloud instant sync',
-      ],
-    },
   ];
 
   return (
@@ -76,8 +63,8 @@ export const WhyChooseUs: React.FC = () => {
           </p>
         </div>
 
-        {/* 2x2 Bento-Style Grid matching ReelOnGo's layout */}
-        <div className="mt-14 grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-5xl mx-auto">
+        {/* 3-Column Bento Grid */}
+        <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
           {cards.map((item, idx) => {
             const Icon = item.icon;
             return (
@@ -115,7 +102,7 @@ export const WhyChooseUs: React.FC = () => {
 
                 <div className="mt-6 flex items-center justify-between text-xs text-zinc-500 font-mono">
                   <span>SNAP SHOTS STANDARD</span>
-                  <span className="font-bold text-zinc-400">0{idx + 1} / 04</span>
+                  <span className="font-bold text-zinc-400">0{idx + 1} / 0{cards.length}</span>
                 </div>
               </div>
             );

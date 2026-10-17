@@ -249,6 +249,29 @@
   animation-play-state: paused;
 }
 
+/* Continuous Gallery Infinite Marquee Scroll */
+@keyframes gallery-continuous-scroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-gallery-continuous {
+  display: flex;
+  width: max-content;
+  animation: gallery-continuous-scroll 45s linear infinite;
+  will-change: transform;
+}
+
+@media (max-width: 640px) {
+  .animate-gallery-continuous {
+    animation-duration: 32s;
+  }
+}
+
 /* Subtle Shimmer Animation for Skeleton Loaders */
 @keyframes shimmer {
   0% { transform: translate3d(-100%, 0, 0); }

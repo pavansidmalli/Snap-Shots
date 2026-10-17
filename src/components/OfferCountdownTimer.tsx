@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Flame, Clock } from 'lucide-react';
+import { Flame } from 'lucide-react';
 
 export const OfferCountdownTimer: React.FC<{ className?: string }> = ({ className = '' }) => {
   const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number }>({
-    hours: 4,
-    minutes: 38,
-    seconds: 24,
+    hours: 23,
+    minutes: 59,
+    seconds: 59,
   });
 
   useEffect(() => {
     const now = Date.now();
-    const storedEnd = sessionStorage.getItem('snapshot_offer_countdown');
+    const storageKey = 'snapshot_offer_countdown_24h';
+    const storedEnd = sessionStorage.getItem(storageKey);
     let target = storedEnd ? parseInt(storedEnd, 10) : 0;
 
-    // Reset to a rolling ~5 hour window if expired or absent
-    if (!target || target <= now) {
-      target = now + (5 * 3600 + 17 * 60 + 43) * 1000;
-      sessionStorage.setItem('snapshot_offer_countdown', target.toString());
+    // Reset to a rolling 24-hour window if expired, absent, or less than 12 hours remaining
+    if (!target || target <= now || target - now < 12 * 3600 * 1000) {
+      target = now + (23 * 3600 + 59 * 60 + 59) * 1000;
+      sessionStorage.setItem(storageKey, target.toString());
     }
 
     const updateTimer = () => {
@@ -28,8 +29,8 @@ export const OfferCountdownTimer: React.FC<{ className?: string }> = ({ classNam
       setTimeLeft({ hours, minutes, seconds });
 
       if (remaining <= 0) {
-        const nextTarget = Date.now() + 6 * 3600 * 1000;
-        sessionStorage.setItem('snapshot_offer_countdown', nextTarget.toString());
+        const nextTarget = Date.now() + 24 * 3600 * 1000;
+        sessionStorage.setItem(storageKey, nextTarget.toString());
       }
     };
 

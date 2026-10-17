@@ -98,7 +98,7 @@ export const Hero: React.FC<HeroProps> = ({ onWatchReel }) => {
 
           {/* Supporting Text */}
           <p className="mt-5 text-base sm:text-lg text-zinc-300 max-w-2xl mx-auto leading-relaxed font-normal" id="hero-subheadline">
-            <span className="font-semibold text-white lowercase">your moments our snaps.</span> Professional reels, photography and visual content created for events, brands, businesses and social media.
+            Professional reels, photography and visual content created for events, brands, businesses and social media.
           </p>
 
           {/* Live Cities Notice */}

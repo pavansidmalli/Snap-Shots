@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, ArrowUpRight, MessageSquare, UserPlus, Shield, Lock } from 'lucide-react';
+import { X, ArrowUpRight, MessageSquare, UserPlus } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { siteConfig } from '../config/siteConfig';
 import logoPng from '../assets/logo.png';
-import { BrandLogo } from './BrandLogo';
-import { useAdminAuth } from '../context/AdminAuthContext';
 
 interface HeaderProps {
   onBookClick: () => void;
@@ -13,7 +11,6 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const { isAdmin, setIsLoginModalOpen } = useAdminAuth();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,8 +45,6 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
     { label: 'Process', path: '/#process', hash: 'process' },
     { label: 'Testimonials', path: '/#testimonials', hash: 'testimonials' },
     { label: 'FAQs', path: '/faqs', isPage: true },
-    { label: 'Our Work', path: '/#work', hash: 'work' },
-    { label: 'Past Events', path: '/#past-work', hash: 'past-work' },
     { label: 'Contact Us', path: '/contact', isPage: true },
   ];
 
