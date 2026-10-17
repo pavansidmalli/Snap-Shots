@@ -2,14 +2,14 @@ import React from 'react';
 
 /**
  * ============================================================================
- * CINEMATIC RED STAGE BACKGROUND THEME
+ * CINEMATIC RED STAGE BACKGROUND THEME (SILKY VELVET EDITION)
  * ============================================================================
- * Faithfully recreates the user's uploaded reference image across the entire site:
- * - Dramatic overhead crimson spotlight beaming downward from the top-center
- * - Twin glowing neon red curved ribbon arcs with lens flares and ember trails
- * - Fine red stardust particle spray along the sweeping wings
- * - Glossy dark reflective stage floor with ambient red light pool & horizon flare
- * - Fixed GPU-accelerated layer that seamlessly frames every section and page
+ * Faithfully replaces the site background with the user's latest reference image:
+ * - Soft, rich, diffused top-center crimson spotlight radiating downward
+ * - Smooth, silky liquid glowing red wave ribbons on left & right flanks
+ * - Seductive dark velvet black center void providing optimal text/reel contrast
+ * - Glossy reflective stage floor with ambient red spotlight pools & horizon sheen
+ * - 100% fixed GPU-accelerated layer that seamlessly covers the entire website
  */
 export const CinematicRedStageBackground: React.FC = () => {
   return (
@@ -18,37 +18,38 @@ export const CinematicRedStageBackground: React.FC = () => {
       style={{ transform: 'translate3d(0, 0, 0)' }}
       aria-hidden="true"
     >
-      {/* 1. TOP OVERHEAD DRAMATIC CRIMSON SPOTLIGHT */}
+      {/* 1. TOP OVERHEAD DIFFUSED CRIMSON SPOTLIGHT */}
+      {/* Wide soft atmospheric aura */}
       <div
-        className="absolute -top-12 left-1/2 -translate-x-1/2 w-[140vw] max-w-[1800px] h-[65vh] sm:h-[75vh]"
+        className="absolute -top-16 left-1/2 -translate-x-1/2 w-[120vw] max-w-[1500px] h-[55vh] sm:h-[65vh]"
         style={{
           background:
-            'radial-gradient(ellipse 65% 55% at 50% 0%, rgba(189, 22, 22, 0.42) 0%, rgba(125, 13, 13, 0.26) 30%, rgba(55, 5, 5, 0.12) 60%, transparent 85%)',
-          filter: 'blur(35px)',
-        }}
-      />
-
-      {/* Volumetric Top Spotlight Conical Angled Beams */}
-      <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[90vw] max-w-[1200px] h-[60vh] opacity-35"
-        style={{
-          background:
-            'conic-gradient(from 180deg at 50% 0%, transparent 60deg, rgba(189, 22, 22, 0.28) 85deg, rgba(230, 45, 45, 0.38) 90deg, rgba(189, 22, 22, 0.28) 95deg, transparent 120deg)',
+            'radial-gradient(ellipse 65% 45% at 50% 0%, rgba(195, 20, 20, 0.55) 0%, rgba(135, 12, 12, 0.34) 28%, rgba(55, 4, 4, 0.12) 58%, transparent 80%)',
           filter: 'blur(45px)',
         }}
       />
 
-      {/* Upper-Center Crimson Ambient Flare */}
+      {/* Intense inner spotlight core at the top apex */}
       <div
-        className="absolute top-[8%] left-1/2 -translate-x-1/2 w-[600px] sm:w-[900px] h-[350px] sm:h-[450px]"
+        className="absolute -top-10 left-1/2 -translate-x-1/2 w-[65vw] max-w-[850px] h-[35vh]"
         style={{
           background:
-            'radial-gradient(circle at 50% 40%, rgba(220, 28, 28, 0.28) 0%, rgba(140, 15, 15, 0.14) 45%, transparent 75%)',
-          filter: 'blur(50px)',
+            'radial-gradient(ellipse 50% 32% at 50% 0%, rgba(235, 35, 35, 0.48) 0%, rgba(189, 22, 22, 0.28) 45%, transparent 75%)',
+          filter: 'blur(35px)',
         }}
       />
 
-      {/* 2. SVG LAYER: NEON RED CURVED LIGHT RIBBONS & DUST PARTICLES */}
+      {/* Subtle diffused mid-center atmospheric haze */}
+      <div
+        className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[500px] sm:w-[750px] h-[300px] opacity-70"
+        style={{
+          background:
+            'radial-gradient(ellipse 55% 40% at 50% 30%, rgba(189, 22, 22, 0.18) 0%, rgba(95, 8, 8, 0.08) 50%, transparent 80%)',
+          filter: 'blur(60px)',
+        }}
+      />
+
+      {/* 2. SILKY LIQUID RED LIGHT WAVES ON LEFT & RIGHT FLANKS (SVG) */}
       <svg
         className="absolute inset-0 w-full h-full object-cover"
         viewBox="0 0 1920 1080"
@@ -56,205 +57,193 @@ export const CinematicRedStageBackground: React.FC = () => {
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          {/* Neon Glow Filters */}
-          <filter id="neon-glow-primary" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="4" result="blur1" />
-            <feGaussianBlur stdDeviation="12" result="blur2" />
-            <feGaussianBlur stdDeviation="28" result="blur3" />
-            <feMerge>
-              <feMergeNode in="blur3" />
-              <feMergeNode in="blur2" />
-              <feMergeNode in="blur1" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-
-          <filter id="soft-glow-wide" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="22" result="blurWide" />
+          {/* Silky Wave Glow Filters */}
+          <filter id="velvet-glow-wide" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="35" result="blurWide" />
             <feMerge>
               <feMergeNode in="blurWide" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
 
-          {/* Gradients for Ribbons */}
-          <linearGradient id="neon-ribbon-upper" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#bd1616" stopOpacity="0.95" />
-            <stop offset="12%" stopColor="#ff4d4d" stopOpacity="1" />
-            <stop offset="35%" stopColor="#ff2222" stopOpacity="0.85" />
-            <stop offset="50%" stopColor="#ff7878" stopOpacity="0.95" />
-            <stop offset="65%" stopColor="#ff2222" stopOpacity="0.85" />
-            <stop offset="88%" stopColor="#ff4d4d" stopOpacity="1" />
-            <stop offset="100%" stopColor="#bd1616" stopOpacity="0.95" />
+          <filter id="velvet-glow-mid" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="16" result="blurMid" />
+            <feGaussianBlur stdDeviation="6" result="blurTight" />
+            <feMerge>
+              <feMergeNode in="blurMid" />
+              <feMergeNode in="blurTight" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
+          {/* Left Wave Gradient: Starts off-screen left, glows bright on curve crest, softens towards floor */}
+          <linearGradient id="left-wave-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#750d0d" stopOpacity="0.4" />
+            <stop offset="25%" stopColor="#bd1616" stopOpacity="0.95" />
+            <stop offset="45%" stopColor="#ff4545" stopOpacity="1" />
+            <stop offset="70%" stopColor="#e61e1e" stopOpacity="0.85" />
+            <stop offset="90%" stopColor="#8f0f0f" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#000000" stopOpacity="0" />
           </linearGradient>
 
-          <linearGradient id="neon-ribbon-lower" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#750d0d" stopOpacity="0.8" />
-            <stop offset="20%" stopColor="#bd1616" stopOpacity="0.95" />
-            <stop offset="50%" stopColor="#ff3a3a" stopOpacity="0.8" />
-            <stop offset="80%" stopColor="#bd1616" stopOpacity="0.95" />
-            <stop offset="100%" stopColor="#750d0d" stopOpacity="0.8" />
-          </linearGradient>
-
-          <linearGradient id="floor-horizon-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#000000" stopOpacity="1" />
-            <stop offset="25%" stopColor="#750d0d" stopOpacity="0.4" />
-            <stop offset="50%" stopColor="#ff3b3b" stopOpacity="0.9" />
-            <stop offset="75%" stopColor="#750d0d" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#000000" stopOpacity="1" />
+          {/* Right Wave Gradient: Symmetrical entrance from right flank */}
+          <linearGradient id="right-wave-grad" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#750d0d" stopOpacity="0.4" />
+            <stop offset="25%" stopColor="#bd1616" stopOpacity="0.95" />
+            <stop offset="45%" stopColor="#ff4545" stopOpacity="1" />
+            <stop offset="70%" stopColor="#e61e1e" stopOpacity="0.85" />
+            <stop offset="90%" stopColor="#8f0f0f" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#000000" stopOpacity="0" />
           </linearGradient>
         </defs>
 
-        {/* --- CURVED RIBBON 1: Primary Upper Neon Arc --- */}
-        {/* Wide ambient bloom */}
+        {/* --- LEFT FLANK: SILKY LIQUID RED LIGHT RIBBONS --- */}
+        {/* Left Wave: Wide ambient velvet bloom */}
         <path
-          d="M -40 220 C 320 540, 680 750, 960 760 C 1240 750, 1600 540, 1960 220"
+          d="M -50 490 C 100 520, 240 610, 430 710 C 560 760, 710 785, 840 790"
           fill="none"
           stroke="#bd1616"
-          strokeWidth="32"
-          opacity="0.25"
-          filter="url(#soft-glow-wide)"
-        />
-
-        {/* Mid-level neon bloom */}
-        <path
-          d="M -40 220 C 320 540, 680 750, 960 760 C 1240 750, 1600 540, 1960 220"
-          fill="none"
-          stroke="url(#neon-ribbon-upper)"
-          strokeWidth="10"
-          opacity="0.8"
-          filter="url(#neon-glow-primary)"
-        />
-
-        {/* Intense hot core line */}
-        <path
-          d="M -40 220 C 320 540, 680 750, 960 760 C 1240 750, 1600 540, 1960 220"
-          fill="none"
-          stroke="#ffe6e6"
-          strokeWidth="2.5"
-          opacity="0.95"
-        />
-
-        {/* --- CURVED RIBBON 2: Secondary Lower Neon Arc --- */}
-        {/* Soft shadow/glow layer */}
-        <path
-          d="M -40 380 C 360 670, 720 780, 960 785 C 1200 780, 1560 670, 1960 380"
-          fill="none"
-          stroke="#750d0d"
-          strokeWidth="22"
-          opacity="0.3"
-          filter="url(#soft-glow-wide)"
-        />
-
-        {/* Mid glow */}
-        <path
-          d="M -40 380 C 360 670, 720 780, 960 785 C 1200 780, 1560 670, 1960 380"
-          fill="none"
-          stroke="url(#neon-ribbon-lower)"
-          strokeWidth="6"
-          opacity="0.75"
-          filter="url(#neon-glow-primary)"
-        />
-
-        {/* Core filament */}
-        <path
-          d="M -40 380 C 360 670, 720 780, 960 785 C 1200 780, 1560 670, 1960 380"
-          fill="none"
-          stroke="#ff8888"
-          strokeWidth="1.5"
-          opacity="0.9"
-        />
-
-        {/* --- CURVED RIBBON 3: Whispering Shadow Flow --- */}
-        <path
-          d="M -40 480 C 400 730, 750 810, 960 812 C 1170 810, 1520 730, 1960 480"
-          fill="none"
-          stroke="#bd1616"
-          strokeWidth="3"
+          strokeWidth="45"
           opacity="0.35"
+          filter="url(#velvet-glow-wide)"
         />
 
-        {/* --- SPARKLING EMBER DUST & PARTICLES ALONG THE WINGS --- */}
-        {/* Left wing particle clusters */}
-        <g opacity="0.85">
-          <circle cx="120" cy="280" r="1.5" fill="#ffffff" opacity="0.9" />
-          <circle cx="160" cy="330" r="2" fill="#ff7a7a" opacity="0.8" />
-          <circle cx="190" cy="310" r="1.2" fill="#ffc800" opacity="0.7" />
-          <circle cx="220" cy="380" r="2.5" fill="#ff4d4d" opacity="0.85" />
-          <circle cx="250" cy="410" r="1.8" fill="#ffffff" opacity="0.9" />
-          <circle cx="280" cy="450" r="1.5" fill="#ff8080" opacity="0.75" />
-          <circle cx="320" cy="490" r="2.2" fill="#ff4d4d" opacity="0.8" />
-          <circle cx="350" cy="540" r="1.8" fill="#ffc800" opacity="0.7" />
-          <circle cx="390" cy="570" r="2" fill="#ffffff" opacity="0.9" />
-          <circle cx="430" cy="610" r="1.4" fill="#ff6666" opacity="0.8" />
-          <circle cx="470" cy="650" r="2" fill="#ff3333" opacity="0.75" />
-          <circle cx="510" cy="680" r="1.2" fill="#ffffff" opacity="0.8" />
-        </g>
+        {/* Left Wave: Main luminous silky crest */}
+        <path
+          d="M -50 490 C 100 520, 240 610, 430 710 C 560 760, 710 785, 840 790"
+          fill="none"
+          stroke="url(#left-wave-grad)"
+          strokeWidth="18"
+          opacity="0.85"
+          filter="url(#velvet-glow-mid)"
+        />
 
-        {/* Right wing particle clusters */}
-        <g opacity="0.85">
-          <circle cx="1800" cy="280" r="1.5" fill="#ffffff" opacity="0.9" />
-          <circle cx="1760" cy="330" r="2" fill="#ff7a7a" opacity="0.8" />
-          <circle cx="1730" cy="310" r="1.2" fill="#ffc800" opacity="0.7" />
-          <circle cx="1700" cy="380" r="2.5" fill="#ff4d4d" opacity="0.85" />
-          <circle cx="1670" cy="410" r="1.8" fill="#ffffff" opacity="0.9" />
-          <circle cx="1640" cy="450" r="1.5" fill="#ff8080" opacity="0.75" />
-          <circle cx="1600" cy="490" r="2.2" fill="#ff4d4d" opacity="0.8" />
-          <circle cx="1570" cy="540" r="1.8" fill="#ffc800" opacity="0.7" />
-          <circle cx="1530" cy="570" r="2" fill="#ffffff" opacity="0.9" />
-          <circle cx="1490" cy="610" r="1.4" fill="#ff6666" opacity="0.8" />
-          <circle cx="1450" cy="650" r="2" fill="#ff3333" opacity="0.75" />
-          <circle cx="1410" cy="680" r="1.2" fill="#ffffff" opacity="0.8" />
-        </g>
+        {/* Left Wave: Soft hot satin core thread */}
+        <path
+          d="M -50 490 C 100 520, 240 610, 430 710 C 560 760, 710 785, 840 790"
+          fill="none"
+          stroke="#ff9999"
+          strokeWidth="3.5"
+          opacity="0.8"
+        />
+
+        {/* Left Wave: Secondary softer lower liquid fold */}
+        <path
+          d="M -50 580 C 110 630, 260 700, 450 760 C 570 785, 680 798, 790 800"
+          fill="none"
+          stroke="#bd1616"
+          strokeWidth="16"
+          opacity="0.45"
+          filter="url(#velvet-glow-wide)"
+        />
+
+        {/* --- RIGHT FLANK: SILKY LIQUID RED LIGHT RIBBONS --- */}
+        {/* Right Wave: Wide ambient velvet bloom */}
+        <path
+          d="M 1970 490 C 1820 520, 1680 610, 1490 710 C 1360 760, 1210 785, 1080 790"
+          fill="none"
+          stroke="#bd1616"
+          strokeWidth="45"
+          opacity="0.35"
+          filter="url(#velvet-glow-wide)"
+        />
+
+        {/* Right Wave: Main luminous silky crest */}
+        <path
+          d="M 1970 490 C 1820 520, 1680 610, 1490 710 C 1360 760, 1210 785, 1080 790"
+          fill="none"
+          stroke="url(#right-wave-grad)"
+          strokeWidth="18"
+          opacity="0.85"
+          filter="url(#velvet-glow-mid)"
+        />
+
+        {/* Right Wave: Soft hot satin core thread */}
+        <path
+          d="M 1970 490 C 1820 520, 1680 610, 1490 710 C 1360 760, 1210 785, 1080 790"
+          fill="none"
+          stroke="#ff9999"
+          strokeWidth="3.5"
+          opacity="0.8"
+        />
+
+        {/* Right Wave: Secondary softer lower liquid fold */}
+        <path
+          d="M 1970 580 C 1810 630, 1660 700, 1470 760 C 1350 785, 1240 798, 1130 800"
+          fill="none"
+          stroke="#bd1616"
+          strokeWidth="16"
+          opacity="0.45"
+          filter="url(#velvet-glow-wide)"
+        />
       </svg>
 
-      {/* 3. GLOSSY REFLECTIVE STAGE FLOOR & HORIZON REFLECTION POOL */}
-      {/* Floor Horizon Neon Baseline */}
+      {/* 3. GLOSSY REFLECTIVE STAGE FLOOR & DIFFUSED LIGHT POOLS */}
+      {/* Soft Horizon Ambient Line */}
       <div
-        className="absolute top-[75%] sm:top-[77%] left-0 right-0 h-[2px] opacity-80"
+        className="absolute top-[73%] sm:top-[74%] left-0 right-0 h-[2px] opacity-75"
         style={{
           background:
-            'linear-gradient(90deg, transparent 0%, rgba(189,22,22,0.3) 25%, rgba(255,77,77,0.95) 50%, rgba(189,22,22,0.3) 75%, transparent 100%)',
-          boxShadow: '0 0 16px 2px rgba(255, 60, 60, 0.65)',
+            'linear-gradient(90deg, transparent 0%, rgba(189,22,22,0.2) 15%, rgba(255,60,60,0.7) 45%, rgba(255,80,80,0.85) 50%, rgba(255,60,60,0.7) 55%, rgba(189,22,22,0.2) 85%, transparent 100%)',
+          filter: 'blur(2px)',
         }}
       />
 
-      {/* Center Stage Floor Spotlight Flare Pool */}
+      {/* Center Floor Spotlight Flare Pool */}
       <div
-        className="absolute top-[75%] sm:top-[77%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[480px] sm:w-[700px] h-[70px] sm:h-[100px]"
+        className="absolute top-[73%] sm:top-[74%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] sm:w-[680px] h-[65px] sm:h-[90px]"
         style={{
           background:
-            'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(255, 60, 60, 0.5) 0%, rgba(189, 22, 22, 0.25) 45%, transparent 75%)',
-          filter: 'blur(16px)',
+            'radial-gradient(ellipse 65% 50% at 50% 50%, rgba(240, 45, 45, 0.48) 0%, rgba(189, 22, 22, 0.22) 48%, transparent 75%)',
+          filter: 'blur(22px)',
         }}
       />
 
-      {/* Lower Glossy Stage Reflection Floor Sheen */}
+      {/* Left Flank Mirrored Wave Floor Reflection */}
       <div
-        className="absolute top-[75%] sm:top-[77%] bottom-0 left-0 right-0"
+        className="absolute top-[74%] sm:top-[75%] left-[8%] sm:left-[14%] w-[320px] sm:w-[450px] h-[100px]"
         style={{
           background:
-            'linear-gradient(180deg, rgba(140, 14, 14, 0.24) 0%, rgba(70, 7, 7, 0.14) 25%, rgba(15, 2, 2, 0.35) 60%, rgba(0, 0, 0, 0.85) 100%)',
+            'radial-gradient(ellipse 55% 35% at 40% 20%, rgba(210, 30, 30, 0.32) 0%, rgba(130, 12, 12, 0.12) 50%, transparent 75%)',
+          filter: 'blur(28px)',
+        }}
+      />
+
+      {/* Right Flank Mirrored Wave Floor Reflection */}
+      <div
+        className="absolute top-[74%] sm:top-[75%] right-[8%] sm:right-[14%] w-[320px] sm:w-[450px] h-[100px]"
+        style={{
+          background:
+            'radial-gradient(ellipse 55% 35% at 60% 20%, rgba(210, 30, 30, 0.32) 0%, rgba(130, 12, 12, 0.12) 50%, transparent 75%)',
+          filter: 'blur(28px)',
+        }}
+      />
+
+      {/* Reflective Ground Floor Plane Sheen */}
+      <div
+        className="absolute top-[73%] sm:top-[74%] bottom-0 left-0 right-0"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(130, 12, 12, 0.22) 0%, rgba(60, 5, 5, 0.12) 28%, rgba(15, 2, 2, 0.3) 65%, rgba(0, 0, 0, 0.88) 100%)',
         }}
       >
-        {/* Mirrored Central Floor Radiance */}
+        {/* Soft Central Floor Glow Radiance */}
         <div
-          className="absolute top-2 left-1/2 -translate-x-1/2 w-[80vw] max-w-[900px] h-[140px]"
+          className="absolute top-2 left-1/2 -translate-x-1/2 w-[70vw] max-w-[800px] h-[120px]"
           style={{
             background:
-              'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(189, 22, 22, 0.35) 0%, rgba(100, 10, 10, 0.15) 50%, transparent 80%)',
-            filter: 'blur(25px)',
+              'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(189, 22, 22, 0.32) 0%, rgba(95, 8, 8, 0.12) 50%, transparent 80%)',
+            filter: 'blur(30px)',
           }}
         />
       </div>
 
-      {/* 4. SUBTLE PERIMETER VIGNETTE */}
-      {/* Guarantees deep true blacks on the outer bounds while maintaining glowing red stage center */}
+      {/* 4. DEEP VELVET BLACK VIGNETTE */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse 85% 75% at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.65) 85%, #000000 100%)',
+            'radial-gradient(ellipse 85% 75% at 50% 50%, transparent 42%, rgba(0, 0, 0, 0.6) 82%, #000000 100%)',
         }}
       />
     </div>
