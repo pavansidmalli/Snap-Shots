@@ -299,29 +299,22 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
     Record<number, { videoUrl: string; posterUrl?: string }>
   >(() => {
     try {
-      const saved = localStorage.getItem('snapshots_slide_replacements_strict_v4');
+      localStorage.removeItem('snapshots_slide_replacements_strict_v4');
+      const saved = localStorage.getItem('snapshots_slide_replacements_strict_v5');
       if (saved) {
         const parsed = JSON.parse(saved);
         const clean: Record<number, { videoUrl: string; posterUrl?: string }> = {};
         Object.entries(parsed).forEach(([k, v]: [string, any]) => {
-          if (v?.videoUrl && !v.videoUrl.startsWith('blob:') && !v.videoUrl.includes('/assets/uploads/')) {
+          if (
+            v?.videoUrl &&
+            !v.videoUrl.startsWith('blob:') &&
+            !v.videoUrl.includes('/assets/uploads/') &&
+            !v.videoUrl.includes('reel-3.mp4')
+          ) {
             clean[Number(k)] = v;
           }
         });
         return clean;
-      }
-
-      const legacy = localStorage.getItem('snapshots_replaced_videos_map');
-      if (legacy) {
-        const parsed = JSON.parse(legacy);
-        const migrated: Record<number, { videoUrl: string; posterUrl?: string }> = {};
-        siteConfig.portfolioReels.forEach((reel, idx) => {
-          const item = parsed[reel.id] || parsed[`slide-${idx}`];
-          if (item?.videoUrl && !item.videoUrl.startsWith('blob:') && !item.videoUrl.includes('/assets/uploads/')) {
-            migrated[idx] = item;
-          }
-        });
-        return migrated;
       }
       return {};
     } catch {
@@ -349,7 +342,13 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
               const parsed: Record<number, { videoUrl: string; posterUrl?: string }> = {};
               Object.entries(data).forEach(([key, val]: [string, any]) => {
                 const numKey = Number(key);
-                if (!isNaN(numKey) && val?.videoUrl && !val.videoUrl.startsWith('blob:') && !val.videoUrl.includes('/assets/uploads/')) {
+                if (
+                  !isNaN(numKey) &&
+                  val?.videoUrl &&
+                  !val.videoUrl.startsWith('blob:') &&
+                  !val.videoUrl.includes('/assets/uploads/') &&
+                  !val.videoUrl.includes('reel-3.mp4')
+                ) {
                   parsed[numKey] = {
                     videoUrl: val.videoUrl,
                     posterUrl: val.posterUrl || '',
@@ -361,7 +360,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
                   const merged = { ...prev, ...parsed };
                   try {
                     localStorage.setItem(
-                      'snapshots_slide_replacements_strict_v4',
+                      'snapshots_slide_replacements_strict_v5',
                       JSON.stringify(merged)
                     );
                   } catch {}
@@ -385,7 +384,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
         if (isMounted && Object.keys(firestoreSlides).length > 0) {
           const cleanFirestore: Record<number, { videoUrl: string; posterUrl?: string }> = {};
           Object.entries(firestoreSlides).forEach(([k, v]) => {
-            if (v?.videoUrl && !v.videoUrl.includes('/assets/uploads/')) {
+            if (v?.videoUrl && !v.videoUrl.includes('/assets/uploads/') && !v.videoUrl.includes('reel-3.mp4')) {
               cleanFirestore[Number(k)] = v;
             }
           });
@@ -394,7 +393,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
               const merged = { ...prev, ...cleanFirestore };
               try {
                 localStorage.setItem(
-                  'snapshots_slide_replacements_strict_v4',
+                  'snapshots_slide_replacements_strict_v5',
                   JSON.stringify(merged)
                 );
               } catch {}
@@ -529,7 +528,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
           };
           try {
             localStorage.setItem(
-              'snapshots_slide_replacements_strict_v4',
+              'snapshots_slide_replacements_strict_v5',
               JSON.stringify(updated)
             );
           } catch {}
@@ -575,7 +574,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
                 };
                 try {
                   localStorage.setItem(
-                    'snapshots_slide_replacements_strict_v4',
+                    'snapshots_slide_replacements_strict_v5',
                     JSON.stringify(updated)
                   );
                 } catch {}
@@ -615,7 +614,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
 
       try {
         localStorage.setItem(
-          'snapshots_slide_replacements_strict_v4',
+          'snapshots_slide_replacements_strict_v5',
           JSON.stringify(updated)
         );
       } catch {}
@@ -671,7 +670,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
       });
 
       localStorage.setItem(
-        'snapshots_slide_replacements_strict_v4',
+        'snapshots_slide_replacements_strict_v5',
         JSON.stringify(cleanSlides)
       );
 
@@ -770,7 +769,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
       delete updated[slideIndex];
       try {
         localStorage.setItem(
-          'snapshots_slide_replacements_strict_v4',
+          'snapshots_slide_replacements_strict_v5',
           JSON.stringify(updated)
         );
       } catch {}
@@ -795,7 +794,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
     if (e) e.stopPropagation();
     setReplacedBySlide({});
     try {
-      localStorage.removeItem('snapshots_slide_replacements_strict_v4');
+      localStorage.removeItem('snapshots_slide_replacements_strict_v5');
       localStorage.removeItem('snapshots_replaced_videos_map');
       localStorage.removeItem('snapshots_replaced_demo_video');
     } catch {}

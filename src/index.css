@@ -44,6 +44,7 @@
 
   body {
     font-family: var(--font-plus);
+    background: radial-gradient(circle at 50% 0%, #200404 0%, #120202 25%, #080000 60%, #000000 100%) fixed;
     background-color: #000000;
     color: #FFFFFF;
     overflow-x: hidden;

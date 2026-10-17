@@ -3,8 +3,8 @@
  * SNAP SHOTS - WORK THAT PERFORMS REELS CONFIGURATION
  * ============================================================================
  * Direct video links configured strictly to read the user's uploaded MP4
- * files from `/videos/` directory. Slides 1, 2, 5 & 7 removed as requested.
- * Kept slides: reel-3, reel-4, reel-6, reel-8, reel-9, reel-10.
+ * files from `/videos/` directory.
+ * Kept slides: reel-4, reel-6, reel-8, reel-9, reel-10.
  */
 
 export interface InstagramReelItem {
@@ -20,16 +20,6 @@ export interface InstagramReelItem {
 }
 
 export const instagramReels: InstagramReelItem[] = [
-  {
-    title: "Royal Groom & Grand Entry",
-    category: "Wedding",
-    url: "https://www.instagram.com/reel/DbQ0Hy2OT-h/",
-    videoUrl: "/videos/reel-3.mp4",
-    client: "Snap Shots Royal Weddings",
-    views: "340K",
-    duration: "0:34",
-    description: "Grand groom procession, royal attire styling, and slow-motion floral shower.",
-  },
   {
     title: "Pastel Outdoor Celebration & Decor",
     category: "Event",
