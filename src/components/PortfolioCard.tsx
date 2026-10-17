@@ -102,7 +102,7 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({ reel, onSelect }) 
             onError={() => setIsVideoError(true)}
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 transform-gpu will-change-transform"
           />
-        ) : (
+        ) : reel.posterUrl ? (
           <img
             src={reel.posterUrl}
             srcSet={getResponsiveImageSrcSet(reel.posterUrl, [320, 480, 640, 800])}
@@ -114,6 +114,8 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({ reel, onSelect }) 
             alt={reel.title}
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 transform-gpu will-change-transform"
           />
+        ) : (
+          <div className="absolute inset-0 w-full h-full bg-zinc-900" />
         )}
 
         {/* Subtle Gradient Overlays */}

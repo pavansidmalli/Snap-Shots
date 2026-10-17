@@ -162,31 +162,6 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
 
             {/* Right Action Cluster */}
             <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-              {/* Admin Login / Status Button */}
-              <button
-                type="button"
-                onClick={() => setIsLoginModalOpen(true)}
-                id="header-admin-login-btn"
-                className={`h-9 sm:h-10 px-3 sm:px-3.5 items-center justify-center gap-1.5 rounded-full text-xs font-bold transition-all duration-200 active:scale-95 cursor-pointer border ${
-                  isAdmin
-                    ? 'inline-flex bg-zinc-900 text-emerald-400 border-emerald-500/50 hover:bg-zinc-850 hover:border-emerald-400 shadow-sm'
-                    : 'inline-flex bg-zinc-900/90 text-zinc-300 hover:text-white border-zinc-700/80 hover:border-zinc-500 hover:bg-zinc-800 shadow-sm'
-                }`}
-                title={isAdmin ? 'Admin Mode Active (Click to manage/logout)' : 'Admin Login'}
-                aria-label={isAdmin ? 'Admin Mode Active' : 'Admin Login'}
-              >
-                {isAdmin ? (
-                  <>
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>Admin</span>
-                  </>
-                ) : (
-                  <>
-                    <Shield className="w-3.5 h-3.5 text-[#ffc800]" />
-                    <span className="inline">Admin</span>
-                  </>
-                )}
-              </button>
 
               {/* Desktop "BOOK A SHOOT" Action Button (Brand Red #bd1616) */}
               <button
@@ -315,24 +290,6 @@ export const Header: React.FC<HeaderProps> = ({ onBookClick }) => {
               >
                 <span>Book Now</span>
                 <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
-              </button>
-
-              {/* Admin Login / Manage Button */}
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  setIsLoginModalOpen(true);
-                }}
-                className={`w-full h-11 sm:h-12 rounded-full font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm active:scale-98 transition-all cursor-pointer border ${
-                  isAdmin
-                    ? 'bg-zinc-900 border-emerald-500/50 text-emerald-400 hover:bg-zinc-850'
-                    : 'bg-zinc-900/90 hover:bg-zinc-800 active:bg-zinc-850 border border-zinc-700/80 text-zinc-200 hover:text-white'
-                }`}
-                id="menu-admin-login-btn"
-              >
-                <Shield className="w-4 h-4 text-[#ffc800]" />
-                <span>{isAdmin ? 'Admin Mode (Active)' : 'Admin Login'}</span>
               </button>
 
               {/* Secondary Action Button: "Become a Creator" */}

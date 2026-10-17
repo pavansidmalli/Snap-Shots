@@ -32,7 +32,7 @@ export interface ReelWorkItem {
   title: string;
   category: string;
   videoUrl: string;
-  posterUrl: string;
+  posterUrl?: string;
   client: string;
   views: string;
   duration: string;

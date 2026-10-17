@@ -3,8 +3,8 @@
  * SNAP SHOTS - WORK THAT PERFORMS REELS CONFIGURATION
  * ============================================================================
  * Direct video links configured strictly to read the user's uploaded MP4
- * files from `/videos/` directory: reel-1.mp4 through reel-10.mp4.
- * All placeholder and external stock images/posters have been removed.
+ * files from `/videos/` directory. Slides 1, 2, 5 & 7 have videos removed
+ * as requested. Active videos: reel-3, reel-4, reel-6, reel-8, reel-9, reel-10.
  */
 
 export interface InstagramReelItem {
@@ -24,7 +24,6 @@ export const instagramReels: InstagramReelItem[] = [
     title: "Lord Ganesha Grand Utsav & Divine Celebrations",
     category: "Events & Festivals",
     url: "https://www.instagram.com/reel/SnapShotsGaneshaUtsav/",
-    videoUrl: "/videos/reel-1.mp4",
     client: "Snap Shots Utsav Coverage",
     views: "520K",
     duration: "0:17",
@@ -34,7 +33,6 @@ export const instagramReels: InstagramReelItem[] = [
     title: "Haldi Vibes & Traditional Rituals",
     category: "Wedding",
     url: "https://www.instagram.com/reel/DbWch7rCSw_/",
-    videoUrl: "/videos/reel-2.mp4",
     client: "Snap Shots Weddings",
     views: "285K",
     duration: "0:25",
@@ -64,7 +62,6 @@ export const instagramReels: InstagramReelItem[] = [
     title: "Sundowner Rhythm & Nightlife Energy",
     category: "Event",
     url: "https://www.instagram.com/reel/DbWdisUCxA2/",
-    videoUrl: "/videos/reel-5.mp4",
     client: "Snap Shots Nightlife",
     views: "310K",
     duration: "0:20",
@@ -84,7 +81,6 @@ export const instagramReels: InstagramReelItem[] = [
     title: "Golden Hour 25th Milestone Birthday",
     category: "Birthday",
     url: "https://www.instagram.com/reel/DbWch7rCSw_/",
-    videoUrl: "/videos/reel-7.mp4",
     client: "Snap Shots Birthdays",
     views: "145K",
     duration: "0:30",

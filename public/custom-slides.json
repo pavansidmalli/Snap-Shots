@@ -1,24 +1,12 @@
 {
-  "0": {
-    "videoUrl": "/videos/reel-1.mp4"
-  },
-  "1": {
-    "videoUrl": "/videos/reel-2.mp4"
-  },
   "2": {
     "videoUrl": "/videos/reel-3.mp4"
   },
   "3": {
     "videoUrl": "/videos/reel-4.mp4"
   },
-  "4": {
-    "videoUrl": "/videos/reel-5.mp4"
-  },
   "5": {
     "videoUrl": "/videos/reel-6.mp4"
-  },
-  "6": {
-    "videoUrl": "/videos/reel-7.mp4"
   },
   "7": {
     "videoUrl": "/videos/reel-8.mp4"

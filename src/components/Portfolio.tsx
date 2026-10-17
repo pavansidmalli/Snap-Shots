@@ -46,8 +46,8 @@ interface VideoSlideCardProps {
   title?: string;
   category?: string;
   instagramUrl?: string;
-  isAdmin?: boolean;
   slideNumber?: number;
+  onVideoRefReady?: (el: HTMLVideoElement | null) => void;
 }
 
 const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
@@ -59,8 +59,8 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
   title,
   category,
   instagramUrl,
-  isAdmin,
   slideNumber,
+  onVideoRefReady,
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isMediaReady, setIsMediaReady] = useState<boolean>(false);
@@ -88,8 +88,7 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
     const video = videoRef.current;
     if (!video || isInstagram) return;
 
-    // Cross-browser audio and playback policy compliance
-    video.defaultMuted = true;
+    video.defaultMuted = isCenter ? isMuted : true;
     video.muted = isCenter ? isMuted : true;
 
     if (isCenter) {
@@ -97,8 +96,8 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
         const playPromise = video.play();
         if (playPromise !== undefined) {
           playPromise.catch(() => {
-            // If browser blocked unmuted autoplay, retry muted
-            if (!video.muted) {
+            // Only fall back to muted if initial unmuted autoplay was rejected by browser policy
+            if (isMuted) {
               video.muted = true;
               video.play().catch(() => {});
             }
@@ -108,7 +107,8 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
         video.pause();
       }
     } else {
-      // Side videos MUST be paused at all times
+      // Side videos MUST be paused and muted at all times
+      video.muted = true;
       video.pause();
     }
   }, [isCenter, isPlaying, isMuted, videoUrl, isInstagram]);
@@ -219,7 +219,12 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
       {/* Case 2: Primary HTML5 Video Element for direct video files (.mp4, .webm, blob) */}
       {!isInstagram && videoUrl && (
         <video
-          ref={videoRef}
+          ref={(el) => {
+            videoRef.current = el;
+            if (isCenter && onVideoRefReady) {
+              onVideoRefReady(el);
+            }
+          }}
           src={videoUrl}
           poster={posterUrl && !posterUrl.includes('unsplash.com') ? posterUrl : undefined}
           playsInline
@@ -235,12 +240,15 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
                 v.currentTime = 0.001;
               } catch {}
             }
+            if (isCenter && onVideoRefReady && v) {
+              onVideoRefReady(v);
+            }
           }}
           onLoadedData={handleMediaLoaded}
           onCanPlay={handleMediaLoaded}
           onPlaying={handleMediaLoaded}
           onError={() => {
-            // Local file or remote video failed to load (e.g. 404 on Vercel host)
+            // Local file or remote video failed to load (e.g. 404 on host)
             setHasError(true);
             setIsMediaReady(true);
           }}
@@ -260,11 +268,6 @@ const VideoSlideCard: React.FC<VideoSlideCardProps> = ({
           <span className="text-[10px] text-zinc-300 mt-0.5 uppercase tracking-wider font-semibold">
             {category || 'Snap Shots 4K Edit'}
           </span>
-          {isAdmin && isCenter && (
-            <span className="mt-2 text-[10px] text-yellow-300 bg-black/90 px-2.5 py-1 rounded-md border border-yellow-500/50 shadow-md">
-              Awaiting <code className="text-white font-mono font-bold">/videos/reel-{slideNumber || 1}.mp4</code> • Click Slide #{slideNumber || 1} button above to upload
-            </span>
-          )}
         </div>
       )}
     </div>
@@ -410,36 +413,29 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
     };
   }, []);
 
-  // Map reels: Each slide index is strictly isolated and points to /videos/reel-[1-10].mp4
-  const filteredReels: ReelWorkItem[] = siteConfig.portfolioReels.map((reel, idx) => {
-    const replacement = replacedBySlide[idx];
-    const defaultVideoPath = `/videos/reel-${idx + 1}.mp4`;
-    const cleanReelPoster = reel.posterUrl && !reel.posterUrl.includes('unsplash.com') ? reel.posterUrl : undefined;
-    if (replacement && replacement.videoUrl && !replacement.videoUrl.includes('/assets/uploads/')) {
-      const cleanReplacementPoster =
-        replacement.posterUrl && !replacement.posterUrl.includes('unsplash.com')
-          ? replacement.posterUrl
-          : undefined;
-      // In production live site, skip expired/invalid blob URLs unless in AI Studio dev
-      if (replacement.videoUrl.startsWith('blob:') && !isAiStudioEnvironment()) {
+  // Map reels: Filter to only slides with active videos (slides 1, 2, 5 & 7 removed)
+  const filteredReels: ReelWorkItem[] = siteConfig.portfolioReels
+    .map((reel, idx) => {
+      const replacement = replacedBySlide[idx];
+      const cleanReelPoster = reel.posterUrl && !reel.posterUrl.includes('unsplash.com') ? reel.posterUrl : undefined;
+      if (replacement && replacement.videoUrl && !replacement.videoUrl.includes('/assets/uploads/')) {
+        const cleanReplacementPoster =
+          replacement.posterUrl && !replacement.posterUrl.includes('unsplash.com')
+            ? replacement.posterUrl
+            : undefined;
         return {
           ...reel,
-          videoUrl: defaultVideoPath,
+          videoUrl: replacement.videoUrl,
           posterUrl: cleanReplacementPoster || cleanReelPoster,
         };
       }
       return {
         ...reel,
-        videoUrl: replacement.videoUrl,
-        posterUrl: cleanReplacementPoster || cleanReelPoster,
+        videoUrl: reel.videoUrl || '',
+        posterUrl: cleanReelPoster,
       };
-    }
-    return {
-      ...reel,
-      videoUrl: reel.videoUrl || defaultVideoPath,
-      posterUrl: cleanReelPoster,
-    };
-  });
+    })
+    .filter((reel) => Boolean(reel.videoUrl && reel.videoUrl.trim() !== ''));
 
   const totalSlides = filteredReels.length;
 
@@ -457,6 +453,38 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
 
   const toggleCenterPlay = () => {
     setIsPlaying((prev) => !prev);
+  };
+
+  // Synchronous audio toggle ensuring immediate sound playback on mobile & touch devices
+  const toggleSound = (e?: React.MouseEvent | React.TouchEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+
+    const video = centerVideoRef.current;
+    if (video) {
+      video.muted = nextMuted;
+      if (!nextMuted) {
+        video.volume = 1.0;
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {});
+        }
+      }
+    }
+  };
+
+  // Tap on active center video: un-mutes immediately if muted (standard mobile video behavior), or toggles pause/play
+  const handleCenterSlideClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const video = centerVideoRef.current;
+    if (isMuted && video) {
+      toggleSound(e);
+      return;
+    }
+    toggleCenterPlay();
   };
 
   /**
@@ -857,9 +885,9 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
             return (
               <div
                 key={reel.id || index}
-                onClick={() => {
+                onClick={(e) => {
                   if (isCenter) {
-                    toggleCenterPlay();
+                    handleCenterSlideClick(e);
                   } else {
                     // Clicking ANY side card selects that exact slide immediately
                     setActiveIndex(index);
@@ -897,44 +925,54 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
                           title={reel.title}
                           category={reel.category}
                           instagramUrl={reel.instagramUrl}
-                          isAdmin={isAiStudio}
                           slideNumber={index + 1}
+                          onVideoRefReady={(el) => {
+                            if (isCenter) {
+                              centerVideoRef.current = el;
+                            }
+                          }}
                         />
 
-                        {/* AI Studio / Admin Only: Direct Upload Button on this exact slide */}
-                        {isAiStudio && isCenter && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              triggerUploadForSlide(index);
-                            }}
-                            className="absolute top-3.5 left-3.5 z-40 px-2.5 py-1.5 rounded-full bg-black/75 hover:bg-[#bd1616] text-white border border-white/20 transition-all cursor-pointer backdrop-blur-md shadow-lg flex items-center gap-1.5 hover:scale-105 active:scale-95"
-                            title={`Upload a video to replace Slide #${index + 1} only`}
-                          >
-                            <Upload className="w-3 h-3 text-white" />
-                            <span className="text-[10px] font-bold">Slide #{index + 1}</span>
-                          </button>
-                        )}
-
-                        {/* Sound Icon Button - shown for direct HTML5 videos only */}
+                        {/* Sound Icon Button - prominent touch target for mobile and desktop */}
                         {isCenter && !isInstagramReel && (
                           <button
                             type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setIsMuted((prev) => !prev);
-                            }}
-                            className="absolute top-3.5 right-3.5 z-40 p-2.5 rounded-full bg-black/60 hover:bg-[#bd1616] text-white border border-white/20 transition-all cursor-pointer backdrop-blur-md shadow-lg hover:scale-110 active:scale-95"
+                            onClick={toggleSound}
+                            className={`absolute top-3.5 right-3.5 z-40 h-11 w-11 sm:h-10 sm:w-10 flex items-center justify-center rounded-full transition-all cursor-pointer backdrop-blur-md shadow-xl active:scale-90 border ${
+                              isMuted
+                                ? 'bg-black/80 hover:bg-[#bd1616] text-white border-white/30'
+                                : 'bg-[#bd1616] text-white border-white/50 shadow-[#bd1616]/50 shadow-lg'
+                            }`}
                             aria-label={isMuted ? 'Unmute video audio' : 'Mute video audio'}
-                            title={isMuted ? 'Click to unmute sound' : 'Mute sound'}
+                            title={isMuted ? 'Tap to enable sound' : 'Mute sound'}
                           >
                             {isMuted ? (
-                              <VolumeX className="w-4 h-4 text-white" />
+                              <VolumeX className="w-5 h-5 text-white" />
                             ) : (
-                              <Volume2 className="w-4 h-4 text-white" />
+                              <Volume2 className="w-5 h-5 text-white animate-pulse" />
                             )}
                           </button>
+                        )}
+
+                        {/* Mobile-Friendly "Tap for Sound" Floating Pill: Shown when muted and playing */}
+                        {isCenter && isPlaying && isMuted && !isInstagramReel && (
+                          <button
+                            type="button"
+                            onClick={toggleSound}
+                            className="absolute bottom-5 left-1/2 -translate-x-1/2 z-40 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/90 hover:bg-[#bd1616] active:bg-[#750d0d] text-white text-xs font-bold border border-white/25 shadow-2xl backdrop-blur-md transition-all hover:scale-105 active:scale-95 cursor-pointer animate-pulse"
+                            aria-label="Tap to enable sound"
+                          >
+                            <VolumeX className="w-4 h-4 text-[#ffc800]" />
+                            <span>Tap for Sound</span>
+                          </button>
+                        )}
+
+                        {/* Sound On Indicator Badge when unmuted */}
+                        {isCenter && !isMuted && !isInstagramReel && (
+                          <div className="absolute top-3.5 left-3.5 z-40 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/80 border border-emerald-500/40 text-emerald-400 text-xs font-bold backdrop-blur-md pointer-events-none shadow-md">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                            <span>Sound On</span>
+                          </div>
                         )}
 
                         {/* Center Play Button Overlay: Shown when direct video is paused */}
@@ -1003,151 +1041,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
           </button>
         </div>
 
-        {/* AI Studio Only: Slide Selector & Dedicated Upload Toolbar with SAVE BUTTON */}
-        {isAiStudio && (
-          <div className="mt-6 p-4 rounded-3xl bg-zinc-950/80 border border-zinc-800 max-w-3xl mx-auto space-y-3.5 animate-in fade-in duration-300">
-            {/* Top row: Mode notice & quick slide switcher pills */}
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800/80 pb-3">
-              <div className="inline-flex items-center gap-1.5 text-xs text-zinc-300">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="font-bold text-white">AI Studio Mode:</span>
-                <span className="text-zinc-400">Select slide to replace its video</span>
-              </div>
-
-              {/* Numbered slide selector pills */}
-              <div className="flex items-center gap-1 flex-wrap">
-                {filteredReels.map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => {
-                      setActiveIndex(i);
-                      setIsPlaying(true);
-                    }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      activeIndex === i
-                        ? 'bg-[#bd1616] text-white shadow-md'
-                        : replacedBySlide[i]
-                        ? 'bg-zinc-800 text-emerald-400 border border-emerald-500/40'
-                        : 'bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800'
-                    }`}
-                  >
-                    #{i + 1}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Bottom row: Action Buttons for the EXACT selected slide */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-              <div className="flex flex-wrap items-center gap-2">
-                {/* 1. Upload for current slide */}
-                <button
-                  type="button"
-                  onClick={() => triggerUploadForSlide(activeIndex)}
-                  disabled={isUploading}
-                  id="ai-studio-upload-for-selected-slide-btn"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#bd1616] hover:bg-[#9e1212] active:bg-[#750d0d] text-white font-bold text-xs shadow-lg shadow-[#bd1616]/30 transition-all hover:scale-105 active:scale-95 disabled:opacity-60 cursor-pointer border border-[#9e1212]"
-                >
-                  {isUploading ? (
-                    <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
-                  ) : (
-                    <Upload className="w-3.5 h-3.5 text-white" />
-                  )}
-                  <span>
-                    {isUploading
-                      ? 'Saving to Server...'
-                      : `Upload for Slide #${activeIndex + 1}`}
-                  </span>
-                </button>
-
-                {/* 2. Paste URL for current slide */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    targetSlideRef.current = activeIndex;
-                    setIsUploadModalOpen(true);
-                  }}
-                  id="ai-studio-paste-url-for-slide-btn"
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold border border-zinc-700/80 transition-colors cursor-pointer"
-                >
-                  <span>Paste URL</span>
-                </button>
-
-                {/* 3. SAVE BUTTON: Prominently saves uploaded videos */}
-                <button
-                  type="button"
-                  onClick={handleSaveChanges}
-                  id="ai-studio-save-videos-btn"
-                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer border ${
-                    hasUnsavedChanges
-                      ? 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border-emerald-400 shadow-emerald-600/40 animate-pulse'
-                      : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border-zinc-700'
-                  }`}
-                  title="Save uploaded videos for slides"
-                >
-                  {hasUnsavedChanges ? (
-                    <>
-                      <Save className="w-3.5 h-3.5 text-white" />
-                      <span>Save Changes</span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                    </>
-                  ) : (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Save Videos</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {/* Reset buttons */}
-              <div className="flex items-center gap-2">
-                {isCurrentSlideCustomized && (
-                  <button
-                    type="button"
-                    onClick={(e) => handleResetSlide(activeIndex, e)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs text-zinc-300 hover:text-white transition-colors cursor-pointer"
-                    title={`Reset Slide #${activeIndex + 1} back to original`}
-                  >
-                    <RotateCcw className="w-3 h-3 text-[#bd1616]" />
-                    <span>Reset Slide #{activeIndex + 1}</span>
-                  </button>
-                )}
-
-                {hasAnyCustomReplacements && (
-                  <button
-                    type="button"
-                    onClick={handleResetAllSlides}
-                    className="text-xs text-zinc-500 hover:text-red-400 transition-colors cursor-pointer px-2"
-                  >
-                    Reset All
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Save Confirmation Toast Message */}
-            {saveSuccessMessage && (
-              <div className="flex items-center gap-2 p-2.5 rounded-2xl bg-emerald-950/70 border border-emerald-500/50 text-emerald-300 text-xs animate-in fade-in slide-in-from-top-1">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span className="font-semibold">{saveSuccessMessage}</span>
-              </div>
-            )}
-          </div>
-        )}
       </div>
-
-      {/* Video Upload Modal - strictly applies only to targetIndex */}
-      {isAiStudio && (
-        <UploadVideoModal
-          isOpen={isUploadModalOpen}
-          onClose={() => setIsUploadModalOpen(false)}
-          reels={filteredReels}
-          targetIndex={activeIndex}
-          onApplyToSlide={applySlideReplacement}
-        />
-      )}
     </div>
   );
 };

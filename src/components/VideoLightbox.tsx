@@ -90,7 +90,7 @@ export const VideoLightbox: React.FC<VideoLightboxProps> = ({ reel, onClose, onB
   );
   const effectiveVideoUrl = hasDirectVideo
     ? reel.videoUrl
-    : 'https://assets.mixkit.co/videos/preview/mixkit-bride-and-groom-having-their-first-dance-41221-large.mp4';
+    : reel.videoUrl || '/videos/reel-1.mp4';
 
   const togglePlay = () => {
     if (!videoRef.current) return;
@@ -212,7 +212,7 @@ export const VideoLightbox: React.FC<VideoLightboxProps> = ({ reel, onClose, onB
               <video
                 ref={videoRef}
                 src={effectiveVideoUrl}
-                poster={reel.posterUrl}
+                poster={reel.posterUrl && !reel.posterUrl.includes('unsplash.com') ? reel.posterUrl : undefined}
                 loop
                 playsInline
                 autoPlay
@@ -291,13 +291,15 @@ export const VideoLightbox: React.FC<VideoLightboxProps> = ({ reel, onClose, onB
           ) : (
             /* Controlled Local Poster Fallback */
             <div className="relative w-full h-full bg-zinc-950 flex flex-col items-center justify-center p-6 text-center">
-              <img
-                src={reel.posterUrl}
-                srcSet={getResponsiveImageSrcSet(reel.posterUrl, [360, 540, 720])}
-                sizes="(max-width: 768px) 100vw, 400px"
-                alt={reel.title}
-                className="absolute inset-0 w-full h-full object-cover opacity-60"
-              />
+              {reel.posterUrl && !reel.posterUrl.includes('unsplash.com') && (
+                <img
+                  src={reel.posterUrl}
+                  srcSet={getResponsiveImageSrcSet(reel.posterUrl, [360, 540, 720])}
+                  sizes="(max-width: 768px) 100vw, 400px"
+                  alt={reel.title}
+                  className="absolute inset-0 w-full h-full object-cover opacity-60"
+                />
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
               <div className="relative z-20 flex flex-col items-center">
                 <div className="h-16 w-16 rounded-full bg-[#bd1616] flex items-center justify-center text-white mb-3 shadow-xl">
