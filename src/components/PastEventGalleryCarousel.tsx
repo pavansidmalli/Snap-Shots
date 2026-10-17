@@ -128,9 +128,25 @@ export const PastEventGalleryCarousel: React.FC<PastEventGalleryCarouselProps> =
   return (
     <section
       id="past-work"
-      className="relative py-6 sm:py-10 bg-transparent overflow-hidden select-none"
-      aria-label="Past work continuous image gallery"
+      className="relative py-8 sm:py-14 bg-transparent overflow-hidden select-none"
+      aria-label="Wall of Our Snaps continuous image gallery"
     >
+      {/* Section Header */}
+      <div className="text-center max-w-3xl mx-auto px-4 mb-6 sm:mb-8">
+        <p className="uppercase text-[#bd1616] font-bold text-xs sm:text-sm tracking-widest">
+          CURATED GALLERY
+        </p>
+        <h2
+          className="mt-2 text-center text-white font-extrabold text-3xl sm:text-5xl tracking-tight leading-tight"
+          id="past-work-title"
+        >
+          Wall of Our Snaps
+        </h2>
+        <p className="mt-2.5 text-center text-zinc-400 font-normal text-xs sm:text-sm max-w-lg mx-auto">
+          Candid celebrations, authentic emotions, and signature shots captured by our certified creators.
+        </p>
+      </div>
+
       <div className="relative w-full max-w-[100vw] overflow-hidden">
         {/* Left & Right Cinematic Vignette Fades */}
         <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 sm:w-28 md:w-36 bg-gradient-to-r from-black via-black/80 to-transparent z-10" />

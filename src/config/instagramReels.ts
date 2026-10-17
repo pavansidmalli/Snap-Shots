@@ -3,8 +3,8 @@
  * SNAP SHOTS - WORK THAT PERFORMS REELS CONFIGURATION
  * ============================================================================
  * Direct video links configured strictly to read the user's uploaded MP4
- * files from `/videos/` directory. Slides 1, 2, 5 & 7 have videos removed
- * as requested. Active videos: reel-3, reel-4, reel-6, reel-8, reel-9, reel-10.
+ * files from `/videos/` directory. Slides 1, 2, 5 & 7 removed as requested.
+ * Kept slides: reel-3, reel-4, reel-6, reel-8, reel-9, reel-10.
  */
 
 export interface InstagramReelItem {
@@ -20,24 +20,6 @@ export interface InstagramReelItem {
 }
 
 export const instagramReels: InstagramReelItem[] = [
-  {
-    title: "Lord Ganesha Grand Utsav & Divine Celebrations",
-    category: "Events & Festivals",
-    url: "https://www.instagram.com/reel/SnapShotsGaneshaUtsav/",
-    client: "Snap Shots Utsav Coverage",
-    views: "520K",
-    duration: "0:17",
-    description: "Cinematic black & white fine art coverage of Lord Ganesha Utsav with dramatic spotlight illumination, incense mist, and sacred devotional rhythm.",
-  },
-  {
-    title: "Haldi Vibes & Traditional Rituals",
-    category: "Wedding",
-    url: "https://www.instagram.com/reel/DbWch7rCSw_/",
-    client: "Snap Shots Weddings",
-    views: "285K",
-    duration: "0:25",
-    description: "Vibrant Haldi celebration with marigold backdrop, traditional rituals and candid smiles in cinematic 4K.",
-  },
   {
     title: "Royal Groom & Grand Entry",
     category: "Wedding",
@@ -59,15 +41,6 @@ export const instagramReels: InstagramReelItem[] = [
     description: "Outdoor celebration in cinematic 4K master grade with dramatic overhead illumination and floral decor.",
   },
   {
-    title: "Sundowner Rhythm & Nightlife Energy",
-    category: "Event",
-    url: "https://www.instagram.com/reel/DbWdisUCxA2/",
-    client: "Snap Shots Nightlife",
-    views: "310K",
-    duration: "0:20",
-    description: "High-energy sundowner with beat-synced pacing, dynamic camera rotation, and neon grading.",
-  },
-  {
     title: "Sangeet Dance & Stage Fireworks",
     category: "Wedding",
     url: "https://www.instagram.com/reel/DdwIldARQSE/",
@@ -76,15 +49,6 @@ export const instagramReels: InstagramReelItem[] = [
     views: "195K",
     duration: "0:26",
     description: "Electrifying Sangeet choreography with cold pyros and smooth cinematic gimbal glide.",
-  },
-  {
-    title: "Golden Hour 25th Milestone Birthday",
-    category: "Birthday",
-    url: "https://www.instagram.com/reel/DbWch7rCSw_/",
-    client: "Snap Shots Birthdays",
-    views: "145K",
-    duration: "0:30",
-    description: "Sun-drenched rooftop celebration with champagne pop slow-motion and candid laughter.",
   },
   {
     title: "Streetwear Fashion Drop & Runway",

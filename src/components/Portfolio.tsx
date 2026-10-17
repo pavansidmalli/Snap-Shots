@@ -299,7 +299,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
     Record<number, { videoUrl: string; posterUrl?: string }>
   >(() => {
     try {
-      const saved = localStorage.getItem('snapshots_slide_replacements_strict_v3');
+      const saved = localStorage.getItem('snapshots_slide_replacements_strict_v4');
       if (saved) {
         const parsed = JSON.parse(saved);
         const clean: Record<number, { videoUrl: string; posterUrl?: string }> = {};
@@ -361,7 +361,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
                   const merged = { ...prev, ...parsed };
                   try {
                     localStorage.setItem(
-                      'snapshots_slide_replacements_strict_v3',
+                      'snapshots_slide_replacements_strict_v4',
                       JSON.stringify(merged)
                     );
                   } catch {}
@@ -394,7 +394,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
               const merged = { ...prev, ...cleanFirestore };
               try {
                 localStorage.setItem(
-                  'snapshots_slide_replacements_strict_v3',
+                  'snapshots_slide_replacements_strict_v4',
                   JSON.stringify(merged)
                 );
               } catch {}
@@ -529,7 +529,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
           };
           try {
             localStorage.setItem(
-              'snapshots_slide_replacements_strict_v3',
+              'snapshots_slide_replacements_strict_v4',
               JSON.stringify(updated)
             );
           } catch {}
@@ -575,7 +575,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
                 };
                 try {
                   localStorage.setItem(
-                    'snapshots_slide_replacements_strict_v3',
+                    'snapshots_slide_replacements_strict_v4',
                     JSON.stringify(updated)
                   );
                 } catch {}
@@ -615,7 +615,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
 
       try {
         localStorage.setItem(
-          'snapshots_slide_replacements_strict_v3',
+          'snapshots_slide_replacements_strict_v4',
           JSON.stringify(updated)
         );
       } catch {}
@@ -671,7 +671,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
       });
 
       localStorage.setItem(
-        'snapshots_slide_replacements_strict_v3',
+        'snapshots_slide_replacements_strict_v4',
         JSON.stringify(cleanSlides)
       );
 
@@ -770,7 +770,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
       delete updated[slideIndex];
       try {
         localStorage.setItem(
-          'snapshots_slide_replacements_strict_v3',
+          'snapshots_slide_replacements_strict_v4',
           JSON.stringify(updated)
         );
       } catch {}
@@ -795,7 +795,7 @@ export const Portfolio: React.FC<PortfolioProps> = () => {
     if (e) e.stopPropagation();
     setReplacedBySlide({});
     try {
-      localStorage.removeItem('snapshots_slide_replacements_strict_v3');
+      localStorage.removeItem('snapshots_slide_replacements_strict_v4');
       localStorage.removeItem('snapshots_replaced_videos_map');
       localStorage.removeItem('snapshots_replaced_demo_video');
     } catch {}
